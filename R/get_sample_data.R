@@ -38,7 +38,6 @@
 #' }
 #' @export
 get_sample_data <- function(source, cache_dir = tempdir()) {
-
   # Define available sources and their corresponding URLs
   sources <- list(
     animalta = list(
@@ -81,7 +80,6 @@ get_sample_data <- function(source, cache_dir = tempdir()) {
       url = "https://raw.githubusercontent.com/animovement/movement-data/main/data/trex/beetle.csv",
       filename = "trex_sample.csv"
     )
-
   )
   # Check if source is provided
   if (missing(source)) {
