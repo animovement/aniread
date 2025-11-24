@@ -36,6 +36,10 @@ reference:
   - read_trex
 
 - title: "Writer functions"
-  desc: These functions are the allow you to save your data.
+  desc: These functions are allow you to save your data.
   contents:
   - write_aniframe
+
+- title: Miscellaneous
+  contents:
+  - get_sample_data
