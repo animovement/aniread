@@ -6,10 +6,10 @@
 <!-- badges: start -->
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352843.svg)](https://doi.org/10.5281/zenodo.17352843)
-[![R-CMD-check](https://github.com/roaldarbol/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/roaldarbol/aniread/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
-badge](https://roaldarbol.r-universe.dev/badges/aniread)](https://roaldarbol.r-universe.dev)
-[![codecov](https://codecov.io/gh/roaldarbol/aniread/graph/badge.svg?token=Pf5n3yzLzK)](https://codecov.io/gh/roaldarbol/aniread)
+badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
+[![codecov](https://codecov.io/gh/animovement/aniread/graph/badge.svg?token=Pf5n3yzLzK)](https://codecov.io/gh/animovement/aniread)
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
@@ -23,7 +23,7 @@ trackballs.
 You can install the development version of *aniread* with:
 
 ``` r
-install.packages('aniread', repos = c('https://roaldarbol.r-universe.dev', 'https://cloud.r-project.org'))
+install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 Once you have installed the package, you can load it with:
@@ -50,7 +50,7 @@ To cite *aniread* in publications use:
 citation("aniread")
 #> To cite aniread in publications use:
 #> 
-#>   Roald-Arbøl M (2025). "aniread: An R toolbox for reading and writing
+#>   Roald-Arbøl M (2025). "aniread: An R package for reading and writing
 #>   movement data." doi:10.5281/zenodo.17352843
 #>   <https://doi.org/10.5281/zenodo.17352843>,
 #>   <http://www.roald-arboel.com/aniread/>.
@@ -59,11 +59,11 @@ citation("aniread")
 #> 
 #>   @Misc{aniread,
 #>     doi = {10.5281/zenodo.17352843},
-#>     title = {aniread: An R toolbox for reading and writing movement data},
+#>     title = {aniread: An R package for reading and writing movement data},
 #>     author = {Mikkel Roald-Arbøl},
 #>     year = {2025},
 #>     url = {http://www.roald-arboel.com/aniread/},
-#>     abstract = {An R toolbox for reading and writing movement data.},
+#>     abstract = {An R package for reading and writing movement data.},
 #>     version = {0.1.0},
 #>   }
 ```
