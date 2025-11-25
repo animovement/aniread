@@ -1,12 +1,16 @@
 # tests/testthat/test-read_fictrac.R
 
 # Helper function to create test FicTrac data matching actual format
-create_test_fictrac_file <- function(path, n_rows = 100, start_time = 53854352) {
+create_test_fictrac_file <- function(
+  path,
+  n_rows = 100,
+  start_time = 53854352
+) {
   # Create realistic FicTrac data matching the actual format
   # FicTrac data is comma-space separated
 
   data <- data.frame(
-    frame = 0:(n_rows - 1),  # Starts at 0, not 1
+    frame = 0:(n_rows - 1), # Starts at 0, not 1
     delta_rot_cam_x = rnorm(n_rows, 0, 0.001),
     delta_rot_cam_y = rnorm(n_rows, 0, 0.001),
     delta_rot_cam_z = rnorm(n_rows, 0, 0.0005),
@@ -34,11 +38,14 @@ create_test_fictrac_file <- function(path, n_rows = 100, start_time = 53854352) 
   )
 
   # Write with comma-space separation (matching actual FicTrac format)
-  write.table(data, path,
-              sep = ", ",
-              row.names = FALSE,
-              col.names = FALSE,
-              quote = FALSE)
+  write.table(
+    data,
+    path,
+    sep = ", ",
+    row.names = FALSE,
+    col.names = FALSE,
+    quote = FALSE
+  )
 
   return(invisible(path))
 }
@@ -94,7 +101,7 @@ test_that("read_fictrac ball_radius conversion works", {
   result_radians <- read_fictrac(temp_file, ball_radius = NULL)
 
   # Read with conversion
-  ball_radius <- 5  # cm
+  ball_radius <- 5 # cm
   result_cm <- read_fictrac(temp_file, ball_radius = ball_radius)
 
   # Check that positions are scaled correctly
@@ -105,8 +112,14 @@ test_that("read_fictrac ball_radius conversion works", {
   meta_radians <- aniframe::get_metadata(result_radians)
   meta_cm <- aniframe::get_metadata(result_cm)
 
-  expect_equal(meta_radians$unit_space, factor("none", levels = levels(aniframe::default_metadata()$unit_space)))
-  expect_equal(meta_cm$unit_space, factor("cm", levels = levels(aniframe::default_metadata()$unit_space)))
+  expect_equal(
+    meta_radians$unit_space,
+    factor("none", levels = levels(aniframe::default_metadata()$unit_space))
+  )
+  expect_equal(
+    meta_cm$unit_space,
+    factor("cm", levels = levels(aniframe::default_metadata()$unit_space))
+  )
 })
 
 test_that("read_fictrac unit_ball_radius parameter works", {
@@ -116,14 +129,28 @@ test_that("read_fictrac unit_ball_radius parameter works", {
   create_test_fictrac_file(temp_file)
 
   # Test different units
-  result_mm <- read_fictrac(temp_file, ball_radius = 50, unit_ball_radius = "mm")
-  result_m <- read_fictrac(temp_file, ball_radius = 0.05, unit_ball_radius = "m")
+  result_mm <- read_fictrac(
+    temp_file,
+    ball_radius = 50,
+    unit_ball_radius = "mm"
+  )
+  result_m <- read_fictrac(
+    temp_file,
+    ball_radius = 0.05,
+    unit_ball_radius = "m"
+  )
 
   meta_mm <- aniframe::get_metadata(result_mm)
   meta_m <- aniframe::get_metadata(result_m)
 
-  expect_equal(meta_mm$unit_space,  factor("mm", levels = levels(aniframe::default_metadata()$unit_space)))
-  expect_equal(meta_m$unit_space,  factor("m", levels = levels(aniframe::default_metadata()$unit_space)))
+  expect_equal(
+    meta_mm$unit_space,
+    factor("mm", levels = levels(aniframe::default_metadata()$unit_space))
+  )
+  expect_equal(
+    meta_m$unit_space,
+    factor("m", levels = levels(aniframe::default_metadata()$unit_space))
+  )
 })
 
 test_that("read_fictrac metadata is correctly set", {
@@ -139,9 +166,21 @@ test_that("read_fictrac metadata is correctly set", {
   expect_equal(meta$source, "fictrac")
   expect_equal(meta$filename, basename(temp_file))
   expect_type(meta$sampling_rate, "double")
-  expect_equal(meta$unit_space,  factor("none", levels = levels(aniframe::default_metadata()$unit_space)))
-  expect_equal(meta$unit_time,  factor("s", levels = levels(aniframe::default_metadata()$unit_time)))
-  expect_equal(meta$coordinate_system, factor("cartesian_2d", levels = levels(aniframe::default_metadata()$coordinate_system)))
+  expect_equal(
+    meta$unit_space,
+    factor("none", levels = levels(aniframe::default_metadata()$unit_space))
+  )
+  expect_equal(
+    meta$unit_time,
+    factor("s", levels = levels(aniframe::default_metadata()$unit_time))
+  )
+  expect_equal(
+    meta$coordinate_system,
+    factor(
+      "cartesian_2d",
+      levels = levels(aniframe::default_metadata()$coordinate_system)
+    )
+  )
 
   # Sampling rate should be reasonable (inverse of median dt)
   # With ~7ms intervals, should be ~142.86 Hz
@@ -186,11 +225,14 @@ test_that("read_fictrac sampling rate calculation is robust to variable interval
     alt_timestamp = alt_timestamps
   )
 
-  write.table(data, temp_file,
-              sep = ", ",
-              row.names = FALSE,
-              col.names = FALSE,
-              quote = FALSE)
+  write.table(
+    data,
+    temp_file,
+    sep = ", ",
+    row.names = FALSE,
+    col.names = FALSE,
+    quote = FALSE
+  )
 
   result <- read_fictrac(temp_file)
   meta <- aniframe::get_metadata(result)
@@ -229,7 +271,11 @@ test_that("read_fictrac handles actual FicTrac format correctly", {
   expect_equal(result$y[2], -0.0010868214772053, tolerance = 1e-10)
 
   # Time should be in seconds from start
-  expect_equal(result$time[2], (53854357.881 - 53854352.112) / 1000, tolerance = 1e-6)
+  expect_equal(
+    result$time[2],
+    (53854357.881 - 53854352.112) / 1000,
+    tolerance = 1e-6
+  )
 })
 
 test_that("read_fictrac preserves position precision", {
@@ -269,11 +315,14 @@ test_that("read_fictrac preserves position precision", {
     alt_timestamp = seq(53854352, length.out = n_rows, by = 10)
   )
 
-  write.table(data, temp_file,
-              sep = ", ",
-              row.names = FALSE,
-              col.names = FALSE,
-              quote = FALSE)
+  write.table(
+    data,
+    temp_file,
+    sep = ", ",
+    row.names = FALSE,
+    col.names = FALSE,
+    quote = FALSE
+  )
 
   result <- read_fictrac(temp_file)
 
@@ -302,8 +351,8 @@ test_that("read_fictrac with ball_radius gives correct physical units", {
     abs_rot_lab_x = rep(1.787, 5),
     abs_rot_lab_y = rep(1.795, 5),
     abs_rot_lab_z = rep(-0.641, 5),
-    pos_x = c(0, 0.1, 0.2, 0.3, 0.4),  # radians
-    pos_y = c(0, 0, 0.1, 0.2, 0.3),    # radians
+    pos_x = c(0, 0.1, 0.2, 0.3, 0.4), # radians
+    pos_y = c(0, 0, 0.1, 0.2, 0.3), # radians
     heading = rep(0, 5),
     direction = rep(0, 5),
     speed = rep(0.001, 5),
@@ -315,11 +364,14 @@ test_that("read_fictrac with ball_radius gives correct physical units", {
     alt_timestamp = seq(53854352, length.out = 5, by = 10)
   )
 
-  write.table(data, temp_file,
-              sep = ", ",
-              row.names = FALSE,
-              col.names = FALSE,
-              quote = FALSE)
+  write.table(
+    data,
+    temp_file,
+    sep = ", ",
+    row.names = FALSE,
+    col.names = FALSE,
+    quote = FALSE
+  )
 
   # Read with 5cm radius
   result <- read_fictrac(temp_file, ball_radius = 5, unit_ball_radius = "cm")
@@ -331,7 +383,10 @@ test_that("read_fictrac with ball_radius gives correct physical units", {
 
   # Check metadata
   meta <- aniframe::get_metadata(result)
-  expect_equal(meta$unit_space, factor("cm", levels = levels(aniframe::default_metadata()$unit_space)))
+  expect_equal(
+    meta$unit_space,
+    factor("cm", levels = levels(aniframe::default_metadata()$unit_space))
+  )
 })
 
 test_that("read_fictrac handles empty file gracefully", {

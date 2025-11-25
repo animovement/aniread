@@ -24,11 +24,7 @@
 #' }
 #'
 #' @export
-read_fictrac <- function(path,
-                         ball_radius = NULL,
-                         unit_ball_radius = "cm"
-                         ) {
-
+read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
   # Validate data
   validate_files(
     path,
@@ -38,16 +34,26 @@ read_fictrac <- function(path,
   # Headers
   fictrac_headers <- c(
     "frame",
-    "delta_rot_cam_x", "delta_rot_cam_y", "delta_rot_cam_z",
+    "delta_rot_cam_x",
+    "delta_rot_cam_y",
+    "delta_rot_cam_z",
     "delta_rot_error",
-    "delta_rot_lab_x", "delta_rot_lab_y", "delta_rot_lab_z",
-    "abs_rot_cam_x", "abs_rot_cam_y", "abs_rot_cam_z",
-    "abs_rot_lab_x", "abs_rot_lab_y", "abs_rot_lab_z",
-    "pos_x", "pos_y",
+    "delta_rot_lab_x",
+    "delta_rot_lab_y",
+    "delta_rot_lab_z",
+    "abs_rot_cam_x",
+    "abs_rot_cam_y",
+    "abs_rot_cam_z",
+    "abs_rot_lab_x",
+    "abs_rot_lab_y",
+    "abs_rot_lab_z",
+    "pos_x",
+    "pos_y",
     "heading",
     "direction",
     "speed",
-    "movement_x", "movement_y",
+    "movement_x",
+    "movement_y",
     "timestamp",
     "seq_num",
     "delta_timestamp",
@@ -59,21 +65,23 @@ read_fictrac <- function(path,
     path,
     col_names = FALSE,
     show_col_types = FALSE
-    ) |>
+  ) |>
     suppressMessages()
   names(data) <- fictrac_headers
 
   data <- data |>
     dplyr::select(c("alt_timestamp", "pos_x", "pos_y")) |>
     dplyr::mutate(
-      alt_timestamp = (.data$alt_timestamp - dplyr::first(.data$alt_timestamp)) / 1000,
+      alt_timestamp = (.data$alt_timestamp -
+        dplyr::first(.data$alt_timestamp)) /
+        1000,
       keypoint = "centroid"
-      ) |>
+    ) |>
     dplyr::rename(
       time = "alt_timestamp",
       x = "pos_x",
       y = "pos_y"
-      )
+    )
 
   # Calculate median sampling rate
   median_dt <- data$time |>
