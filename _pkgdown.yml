@@ -29,6 +29,7 @@ reference:
   - read_bonsai
   - read_deeplabcut
   - read_fictrac
+  - read_freemocap
   - read_idtracker
   - read_lightningpose
   - read_movement
