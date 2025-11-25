@@ -30,12 +30,15 @@ read_freemocap <- function(path) {
   data <- vroom::vroom(path) |>
     suppressMessages()
 
-  if (ncol(data) < 10) { # There's 8 columns - awaiting extra reprojection_error
+  if (ncol(data) < 10) {
+    # There's 8 columns - awaiting extra reprojection_error
     data <- data |>
       dplyr::select(-"timestamp_by_camera") |>
       dplyr::rename(time = "frame")
   } else {
-    cli::cli_abort("We only support FreeMoCap data in tidy format - look for a file that ends in 'by_frame.csv'.")
+    cli::cli_abort(
+      "We only support FreeMoCap data in tidy format - look for a file that ends in 'by_frame.csv'."
+    )
   }
 
   data <- data |>
@@ -47,7 +50,7 @@ read_freemocap <- function(path) {
       coordinate_system = "cartesian_3d"
     )
 
-  if (!all(is.na(data$timestamp))){
+  if (!all(is.na(data$timestamp))) {
     # Add timestamp to metadata and keep only elapsed time
     data <- data |>
       aniframe::set_metadata(
@@ -56,7 +59,7 @@ read_freemocap <- function(path) {
       ) |>
       dplyr::mutate(
         time = as.numeric(.data$timestamp - dplyr::first(.data$timestamp))
-        )
+      )
   } else {
     # Else just set unit_time to frame
     data <- data |>

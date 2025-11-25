@@ -81,7 +81,11 @@ create_test_files <- function(dir = tempdir()) {
   )
 
   vroom::vroom_write(valid_data, paths$valid, delim = ",")
-  vroom::vroom_write(valid_data_timestamps, paths$valid_with_timestamps, delim = ",")
+  vroom::vroom_write(
+    valid_data_timestamps,
+    paths$valid_with_timestamps,
+    delim = ","
+  )
   vroom::vroom_write(wrong_format_data, paths$wrong_format, delim = ",")
   vroom::vroom_write(missing_cols_data, paths$missing_columns, delim = ",")
   vroom::vroom_write(malformed_data, paths$malformed, delim = ",")
@@ -108,10 +112,22 @@ path_malformed <- test_files$malformed
 # Expected metadata values
 default_metadata <- aniframe::default_metadata()
 expected_source <- "freemocap"
-expected_unit_space <- factor("mm", levels = levels(default_metadata$unit_space))
-expected_unit_time_with_timestamps <- factor("s", levels = levels(default_metadata$unit_time))
-expected_unit_time_without_timestamps <- factor("frame", levels = levels(default_metadata$unit_time))
-expected_coordinate_system <- factor("cartesian_3d", levels = levels(default_metadata$coordinate_system))
+expected_unit_space <- factor(
+  "mm",
+  levels = levels(default_metadata$unit_space)
+)
+expected_unit_time_with_timestamps <- factor(
+  "s",
+  levels = levels(default_metadata$unit_time)
+)
+expected_unit_time_without_timestamps <- factor(
+  "frame",
+  levels = levels(default_metadata$unit_time)
+)
+expected_coordinate_system <- factor(
+  "cartesian_3d",
+  levels = levels(default_metadata$coordinate_system)
+)
 expected_filename <- basename(path_valid)
 
 # Expected column names
