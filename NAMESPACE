@@ -2,6 +2,7 @@
 
 export(get_sample_data)
 export(read_animalta)
+export(read_anipose)
 export(read_bonsai)
 export(read_deeplabcut)
 export(read_fictrac)

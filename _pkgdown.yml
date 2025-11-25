@@ -26,6 +26,7 @@ reference:
   desc: These functions are the links between R and your movement data.
   contents:
   - read_animalta
+  - read_anipose
   - read_bonsai
   - read_deeplabcut
   - read_fictrac
