@@ -6,7 +6,7 @@
 \usage{
 read_trackball(
   paths,
-  setup = c("of_free", "of_fixed", "fictrac"),
+  setup = c("of_free", "of_fixed"),
   sampling_rate,
   col_time = "time",
   col_dx = "x",
@@ -21,7 +21,7 @@ read_trackball(
 \arguments{
 \item{paths}{Two file paths, one for each sensor (although one is allowed for a fixed setup, \code{of_fixed}).}
 
-\item{setup}{Which type of experimental setup was used. Expects either \code{of_free}, \code{of_fixed} or \code{fictrac} (soon).}
+\item{setup}{Which type of experimental setup was used. Expects either \code{of_free} or \code{of_fixed}.}
 
 \item{sampling_rate}{Sampling rate tells the function how long time it should integrate over. A sampling rate of 60(Hz) will mean windows of 1/60 sec are used to integrate over.}
 

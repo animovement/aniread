@@ -28,6 +28,7 @@ reference:
   - read_animalta
   - read_bonsai
   - read_deeplabcut
+  - read_fictrac
   - read_idtracker
   - read_lightningpose
   - read_movement
