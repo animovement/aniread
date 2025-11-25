@@ -3,7 +3,7 @@
 #' Read trackball data from a variety of setups and configurations.
 #'
 #' @param paths Two file paths, one for each sensor (although one is allowed for a fixed setup, `of_fixed`).
-#' @param setup Which type of experimental setup was used. Expects either `of_free`, `of_fixed` or `fictrac` (soon).
+#' @param setup Which type of experimental setup was used. Expects either `of_free` or `of_fixed`.
 #' @param sampling_rate Sampling rate tells the function how long time it should integrate over. A sampling rate of 60(Hz) will mean windows of 1/60 sec are used to integrate over.
 #' @param col_time Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).
 #' @param col_dx Column name for x-axis values
@@ -18,7 +18,7 @@
 #' @export
 read_trackball <- function(
   paths,
-  setup = c("of_free", "of_fixed", "fictrac"),
+  setup = c("of_free", "of_fixed"),
   sampling_rate,
   col_time = "time",
   col_dx = "x",
