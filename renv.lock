@@ -25,7 +25,7 @@
     },
     "aniframe": {
       "Package": "aniframe",
-      "Version": "0.2.3",
+      "Version": "0.2.4",
       "Source": "Repository",
       "Repository": "https://animovement.r-universe.dev",
       "Requirements": [
@@ -35,7 +35,7 @@
         "pillar",
         "rlang"
       ],
-      "Hash": "254affcb9b4972128158d8ecfb5908ba"
+      "Hash": "d440d747488526072420f9700bef8ff8"
     },
     "bit": {
       "Package": "bit",
