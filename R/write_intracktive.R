@@ -47,7 +47,9 @@ write_intracktive <- function(data, filename, quiet = FALSE) {
   present_cols <- grouping_cols[grouping_cols %in% names(data)]
 
   if (length(present_cols) == 0) {
-    cli::cli_abort("No grouping columns found. Expected at least one of: {.val {grouping_cols}}")
+    cli::cli_abort(
+      "No grouping columns found. Expected at least one of: {.val {grouping_cols}}"
+    )
   }
 
   # Create track_id from combination of present grouping columns
@@ -61,7 +63,7 @@ write_intracktive <- function(data, filename, quiet = FALSE) {
 
   # Write to CSV
   vroom::vroom_write(intracktive_data, filename, delim = ",")
-  if (quiet == FALSE){
+  if (quiet == FALSE) {
     cli::cli_alert_success("Wrote inTRACKtive CSV to {.path {filename}}")
   }
 

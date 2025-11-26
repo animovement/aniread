@@ -23,10 +23,7 @@
 #' read_custom("data.csv", cols = c(time = 1, x = 2, y = 3))
 #' }
 #' @export
-read_custom <- function(path,
-                        cols,
-                        metadata = list()
-) {
+read_custom <- function(path, cols, metadata = list()) {
   # Validate input file
   validate_files(path)
 
