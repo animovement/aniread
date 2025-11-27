@@ -18,6 +18,7 @@
 #' @param cache_dir Character string specifying the directory where to cache the downloaded
 #'   files. Defaults to a temporary directory using `tempdir()`. Set to a permanent
 #'   location to persist data across R sessions.
+#' @param quiet TRUE/FALSE. TRUE suppresses inform messages.
 #'
 #' @return Character string with the path to the downloaded file.
 #'
