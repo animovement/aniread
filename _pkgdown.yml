@@ -28,6 +28,7 @@ reference:
   - read_animalta
   - read_anipose
   - read_bonsai
+  - read_custom
   - read_deeplabcut
   - read_fictrac
   - read_freemocap
