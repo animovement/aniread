@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,9 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/roaldarbol/aniread/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/animovement/aniread/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch"><li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
@@ -41,8 +42,7 @@
 
       <div class="section-desc"><p>These functions are the links between R and your movement data.</p></div>
 
-
-    </div><div class="section level2">
+      <dl></dl></div><div class="section level2">
 
 
 
@@ -53,56 +53,132 @@
 
         </dt>
         <dd>Read AnimalTA data</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="read_anipose.html">read_anipose()</a></code>
+
+        </dt>
+        <dd>Read Anipose 3D pose estimation data</dd>
+
+        <dt>
 
           <code><a href="read_bonsai.html">read_bonsai()</a></code>
 
         </dt>
         <dd>Read centroid tracking data from Bonsai</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="read_custom.html">read_custom()</a></code>
+
+        </dt>
+        <dd>Read a custom file format</dd>
+
+        <dt>
 
           <code><a href="read_deeplabcut.html">read_deeplabcut()</a></code>
 
         </dt>
         <dd>Read DeepLabCut data</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="read_fictrac.html">read_fictrac()</a></code>
+
+        </dt>
+        <dd>Read projected FicTrac data</dd>
+
+        <dt>
+
+          <code><a href="read_freemocap.html">read_freemocap()</a></code>
+
+        </dt>
+        <dd>Read FreeMoCap motion capture data</dd>
+
+        <dt>
 
           <code><a href="read_idtracker.html">read_idtracker()</a></code>
 
         </dt>
         <dd>Read idtracker.ai data</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="read_lightningpose.html">read_lightningpose()</a></code>
 
         </dt>
         <dd>Read LightningPose data</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="read_movement.html">read_movement()</a></code>
           <span class="badge lifecycle lifecycle-experimental">experimental</span>
         </dt>
         <dd>Read movement data</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="read_sleap.html">read_sleap()</a></code>
 
         </dt>
         <dd>Read SLEAP data</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="read_trackball.html">read_trackball()</a></code>
 
         </dt>
         <dd>Read trackball data</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="read_trex.html">read_trex()</a></code>
 
         </dt>
         <dd>Read TRex Movement Tracking Data</dd>
+      </dl></div><div class="section level2">
+      <h2 id="writer-functions">Writer functions<a class="anchor" aria-label="anchor" href="#writer-functions"></a></h2>
+
+      <div class="section-desc"><p>These functions are allow you to save your data.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="write_aniframe.html">write_aniframe()</a></code>
+
+        </dt>
+        <dd>Write an <em>aniframe</em> to disk</dd>
+
+        <dt>
+
+          <code><a href="write_intracktive.html">write_intracktive()</a></code>
+
+        </dt>
+        <dd>Write aniframe data to inTRACKtive CSV format</dd>
+      </dl></div><div class="section level2">
+      <h2 id="miscellaneous">Miscellaneous<a class="anchor" aria-label="anchor" href="#miscellaneous"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="get_sample_data.html">get_sample_data()</a></code>
+
+        </dt>
+        <dd>Download sample tracking data</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
@@ -110,7 +186,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
