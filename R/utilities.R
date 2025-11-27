@@ -5,7 +5,9 @@
 }
 
 #' @keywords internal
-.is.POSIXt <- function(x) inherits(x, "POSIXt")
+.is.POSIXt <- function(x) {
+  inherits(x, "POSIXt")
+}
 
 #' @keywords internal
 .scale_values <- function(data, variables, scaling_factor) {
