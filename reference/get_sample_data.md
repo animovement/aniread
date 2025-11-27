@@ -7,7 +7,7 @@ repeated downloads.
 ## Usage
 
 ``` r
-get_sample_data(source, cache_dir = tempdir())
+get_sample_data(source, cache_dir = tempdir(), quiet = FALSE)
 ```
 
 ## Arguments
@@ -43,6 +43,10 @@ get_sample_data(source, cache_dir = tempdir())
   downloaded files. Defaults to a temporary directory using
   [`tempdir()`](https://rdrr.io/r/base/tempfile.html). Set to a
   permanent location to persist data across R sessions.
+
+- quiet:
+
+  TRUE/FALSE. TRUE suppresses inform messages.
 
 ## Value
 

@@ -48,7 +48,7 @@ to the downloaded file. The function caches the data to avoid repeated downloads
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_sample_data</span><span class="op">(</span><span class="va">source</span>, cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_sample_data</span><span class="op">(</span><span class="va">source</span>, cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,6 +73,10 @@ to the downloaded file. The function caches the data to avoid repeated downloads
 <dd><p>Character string specifying the directory where to cache the downloaded
 files. Defaults to a temporary directory using <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>. Set to a permanent
 location to persist data across R sessions.</p></dd>
+
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>TRUE/FALSE. TRUE suppresses inform messages.</p></dd>
 
 </dl></div>
     <div class="section level2">
