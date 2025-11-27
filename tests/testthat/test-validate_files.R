@@ -99,5 +99,3 @@ test_that("Test whether the full validation function works", {
     validate_files(paths_multiple, expected_suffix = "csv")
   )
 })
-
-#
