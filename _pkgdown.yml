@@ -26,11 +26,25 @@ reference:
   desc: These functions are the links between R and your movement data.
   contents:
   - read_animalta
+  - read_anipose
   - read_bonsai
+  - read_custom
   - read_deeplabcut
+  - read_fictrac
+  - read_freemocap
   - read_idtracker
   - read_lightningpose
   - read_movement
   - read_sleap
   - read_trackball
   - read_trex
+
+- title: "Writer functions"
+  desc: These functions are allow you to save your data.
+  contents:
+  - write_aniframe
+  - write_intracktive
+
+- title: Miscellaneous
+  contents:
+  - get_sample_data

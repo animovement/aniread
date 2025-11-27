@@ -11,17 +11,17 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
-install.packages('aniread', repos = c('https://roaldarbol.r-universe.dev', 'https://cloud.r-project.org'))
+install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 
 # aniread
 <!-- badges: start -->
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352843.svg)](https://doi.org/10.5281/zenodo.17352843)
-[![R-CMD-check](https://github.com/roaldarbol/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/roaldarbol/aniread/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
-badge](https://roaldarbol.r-universe.dev/badges/aniread)](https://roaldarbol.r-universe.dev)
-[![codecov](https://codecov.io/gh/roaldarbol/aniread/graph/badge.svg?token=Pf5n3yzLzK)](https://codecov.io/gh/roaldarbol/aniread)
+badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
+[![codecov](https://codecov.io/gh/animovement/aniread/graph/badge.svg?token=Pf5n3yzLzK)](https://codecov.io/gh/animovement/aniread)
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
@@ -33,7 +33,7 @@ The primary aim of the *aniread* package is to provide methods for reading movem
 You can install the development version of *aniread* with:
 
 ```{r, eval=FALSE}
-install.packages('aniread', repos = c('https://roaldarbol.r-universe.dev', 'https://cloud.r-project.org'))
+install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 Once you have installed the package, you can load it with:

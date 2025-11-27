@@ -1,19 +1,19 @@
 Package: aniread
 Type: Package
 Title: An R package for reading and writing movement data
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: 
     person(
       "Mikkel", 
       "Roald-Arbøl", 
       role = c("aut", "cre"), 
-      email = "aniread.fi28v@passmail.com",
+      email = "animovement.84w1m@passmail.com",
       comment = c(ORCID = "0000-0002-9998-0058")
       )
 Description: An R package for reading and writing movement data.
 License: MIT + file LICENSE
-URL: http://www.roald-arboel.com/aniread/, https://github.com/roaldarbol/aniread/
-BugReports: https://github.com/roaldarbol/aniread/issues
+URL: http://animovement.dev/aniread/, https://github.com/animovement/aniread/
+BugReports: https://github.com/animovement/aniread/issues
 Encoding: UTF-8
 LazyData: true
 Imports: 
@@ -26,10 +26,12 @@ Imports:
     tidyselect,
     vroom
 Suggests: 
+    arrow,
     knitr,
+    mockery,
     rhdf5,
     testthat (>= 3.0.0)
-Additional_repositories: https://roaldarbol.r-universe.dev
+Additional_repositories: https://animovement.r-universe.dev
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3

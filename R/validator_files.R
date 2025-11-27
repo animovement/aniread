@@ -26,6 +26,7 @@ validate_files <- function(
     ensure_is_not_dir(p)
     ensure_file_exists_when_expected(p, expected_permission)
     ensure_file_has_access_permissions(p, expected_permission)
+    ensure_file_is_not_empty(p)
     if (!is.null(expected_suffix)) {
       ensure_file_has_expected_suffix(p, expected_suffix)
     }
@@ -36,12 +37,19 @@ validate_files <- function(
   }
 }
 
+#' @inheritParams validate_files
+#' @keywords internal
+is_dir <- function(path) {
+  dir.exists(path)
+}
+
+
 #' Ensure that the path does not point to a directory.
 #' @description Ensure that the path does not point to a directory.
 #' @inheritParams validate_files
 #' @keywords internal
 ensure_is_not_dir <- function(path) {
-  if (dir.exists(path)) {
+  if (is_dir(path)) {
     cli::cli_abort("Expected a file path but got a directory: {path}")
   }
 }
@@ -154,4 +162,22 @@ does_file_have_expected_headers <- function(
     suppressMessages()
   has_correct_headers <- all(expected_headers %in% names(df))
   return(has_correct_headers)
+}
+
+#' Check if file is empty
+#' @description Check if file is empty.
+#' @inheritParams validate_files
+#' @keywords internal
+is_empty_file <- function(path) {
+  file.size(path) == 0
+}
+
+#' Ensure that the file is not empty.
+#' @description Ensure that the file is not empty.
+#' @inheritParams validate_files
+#' @keywords internal
+ensure_file_is_not_empty <- function(path) {
+  if (is_empty_file(path)) {
+    cli::cli_abort("File {path} is empty.")
+  }
 }

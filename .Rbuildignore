@@ -10,3 +10,4 @@
 ^\.github$
 ^CITATION\.cff$
 ^README\.Rmd$
+^.vscode$

@@ -4,21 +4,21 @@
 \name{aniread-package}
 \alias{aniread}
 \alias{aniread-package}
-\title{aniread: An R toolbox for reading and writing movement data}
+\title{aniread: An R package for reading and writing movement data}
 \description{
-An R toolbox for reading and writing movement data.
+An R package for reading and writing movement data.
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{http://www.roald-arboel.com/aniread/}
-  \item \url{https://github.com/roaldarbol/aniread/}
-  \item Report bugs at \url{https://github.com/roaldarbol/aniread/issues}
+  \item \url{http://animovement.dev/aniread/}
+  \item \url{https://github.com/animovement/aniread/}
+  \item Report bugs at \url{https://github.com/animovement/aniread/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Mikkel Roald-Arbøl \email{aniread.fi28v@passmail.com} (\href{https://orcid.org/0000-0002-9998-0058}{ORCID})
+\strong{Maintainer}: Mikkel Roald-Arbøl \email{animovement.84w1m@passmail.com} (\href{https://orcid.org/0000-0002-9998-0058}{ORCID})
 
 }
 \keyword{internal}
