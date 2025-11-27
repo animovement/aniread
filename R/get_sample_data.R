@@ -37,7 +37,7 @@
 #' data <- read_deeplabcut(path)
 #' }
 #' @export
-get_sample_data <- function(source, cache_dir = tempdir()) {
+get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
   # Define available sources and their corresponding URLs
   sources <- list(
     animalta = list(
@@ -103,7 +103,9 @@ get_sample_data <- function(source, cache_dir = tempdir()) {
   data_path <- file.path(cache_dir, filename)
 
   if (!file.exists(data_path)) {
-    cli::cli_inform("Downloading sample {source} data...")
+    if (quiet == FALSE) {
+      cli::cli_inform("Downloading sample {source} data...")
+    }
 
     # Create cache directory if it doesn't exist
     if (!dir.exists(cache_dir)) {
