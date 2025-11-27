@@ -4,7 +4,7 @@
 \alias{get_sample_data}
 \title{Download sample tracking data}
 \usage{
-get_sample_data(source, cache_dir = tempdir())
+get_sample_data(source, cache_dir = tempdir(), quiet = FALSE)
 }
 \arguments{
 \item{source}{Character string specifying the tracking software. Currently supported:
@@ -24,6 +24,8 @@ get_sample_data(source, cache_dir = tempdir())
 \item{cache_dir}{Character string specifying the directory where to cache the downloaded
 files. Defaults to a temporary directory using \code{tempdir()}. Set to a permanent
 location to persist data across R sessions.}
+
+\item{quiet}{TRUE/FALSE. TRUE suppresses inform messages.}
 }
 \value{
 Character string with the path to the downloaded file.
