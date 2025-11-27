@@ -42,6 +42,7 @@ reference:
   desc: These functions are allow you to save your data.
   contents:
   - write_aniframe
+  - write_intracktive
 
 - title: Miscellaneous
   contents:
