@@ -95,7 +95,7 @@ ensure_file_has_access_permissions <- function(path, expected_permission) {
 #' @inheritParams validate_files
 #' @keywords internal
 ensure_file_has_expected_suffix <- function(path, expected_suffix) {
-  path_suffix <- .get_file_ext(path)
+  path_suffix <- get_file_ext(path)
   if (!path_suffix %in% expected_suffix) {
     cli::cli_abort(
       "Expected file with suffix(es) {expected_suffix}, but got suffix {path_suffix} instead."

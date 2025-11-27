@@ -62,7 +62,7 @@ read_trackball <- function(
   # Scale distance and time and select output columns
   data <- data |>
     dplyr::mutate(keypoint = factor("centroid")) |>
-    .scale_values(c("x", "y", "dx", "dy"), distance_scale) |>
+    scale_values(c("x", "y", "dx", "dy"), distance_scale) |>
     dplyr::mutate(
       time = .data$time / sampling_rate,
       individual = factor(NA),
@@ -123,7 +123,7 @@ read_opticalflow <- function(path, col_time, verbose = FALSE) {
 
   # If time is a datetime stamp, convert it into seconds from start
   # NEEDS TO GO INTO THE TIME VALIDATOR
-  if (.is.POSIXt(data$time) == TRUE) {
+  if (inherits(data$time, "POSIXt") == TRUE) {
     data <- data |>
       dplyr::mutate(time = as.numeric(.data$time))
   } else if (is.character(data$time)) {
@@ -266,4 +266,16 @@ compute_xy_coordinates_fixed <- function(
     ) |>
     dplyr::relocate("time", .before = 1)
   return(data)
+}
+
+#' @keywords internal
+scale_values <- function(data, variables, scaling_factor) {
+  # Adjust distances for mouse sensor "dots-per-cm"
+  if (!is.null(scaling_factor)) {
+    data <- data |>
+      dplyr::mutate(dplyr::across(
+        dplyr::all_of(variables),
+        ~ .x / scaling_factor
+      ))
+  }
 }

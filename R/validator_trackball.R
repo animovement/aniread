@@ -53,7 +53,7 @@ ensure_number_of_files <- function(paths, setup) {
 ensure_identical_suffix <- function(paths) {
   ## Check file extension
   if (length(paths) == 2) {
-    file_exts <- c(.get_file_ext(paths[1]), .get_file_ext(paths[2]))
+    file_exts <- c(get_file_ext(paths[1]), get_file_ext(paths[2]))
     if (file_exts[1] != file_exts[2]) {
       cli::cli_abort(
         "Files have different suffixes. Please provide 2 files of the same format."
