@@ -33,7 +33,7 @@
 #' @export
 write_aniframe <- function(data, filename, ...) {
   dot_args <- list(...)
-  ext <- .get_file_ext(filename)
+  ext <- get_file_ext(filename)
   allowed_exts <- c("parquet", "csv", "tsv")
 
   # Input validation

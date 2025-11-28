@@ -10,14 +10,14 @@ read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
   # Needs to check the file extension
   # If probabilites are given, extension needs to be csv
   validate_files(path, expected_suffix = c("csv", "h5"))
-  if (!is.null(path_probabilities) & .get_file_ext(path) == "h5") {
+  if (!is.null(path_probabilities) & get_file_ext(path) == "h5") {
     cli::cli_warn(
       "You supplied a h5 file and probabilities in csv; the h5 data already contains the probabilities, so we only the h5 data."
     )
   }
-  if (.get_file_ext(path) == "csv") {
+  if (get_file_ext(path) == "csv") {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
-  } else if (.get_file_ext(path) == "h5") {
+  } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)
   }
 

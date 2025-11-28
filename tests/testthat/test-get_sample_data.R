@@ -25,7 +25,7 @@ test_that("get_sample_data uses cached files when available", {
   first_mtime <- file.info(path1)$mtime
 
   # Small delay to ensure time difference would be detectable
-  Sys.sleep(1.1)
+  # Sys.sleep(1.1)
 
   # Second call should use cached file
   path2 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)

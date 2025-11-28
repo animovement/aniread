@@ -7,7 +7,7 @@
 read_sleap <- function(path) {
   validate_files(path, expected_suffix = c("h5", "csv"))
 
-  file_ext <- .get_file_ext(path)
+  file_ext <- get_file_ext(path)
   if (file_ext == "h5") {
     data <- read_sleap_h5(path)
   } else if (file_ext == "csv") {

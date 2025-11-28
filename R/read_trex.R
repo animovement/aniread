@@ -46,7 +46,7 @@
 read_trex <- function(path) {
   # Validators
   validate_files(path, expected_suffix = "csv")
-  file_ext <- .get_file_ext(path)
+  file_ext <- get_file_ext(path)
   if (file_ext == "csv") {
     data <- read_trex_csv(path)
   }
