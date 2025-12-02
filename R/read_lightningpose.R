@@ -7,5 +7,8 @@
 #' @return a movement dataframe
 #' @export
 read_lightningpose <- function(path) {
-  read_deeplabcut(path, multianimal = FALSE)
+  read_deeplabcut(path, multianimal = FALSE) |>
+    aniframe::set_metadata(
+      source = "lightningpose"
+    )
 }
