@@ -3,7 +3,8 @@
 #' Downloads sample data for different animal tracking software and returns the path
 #' to the downloaded file. The function caches the data to avoid repeated downloads.
 #'
-#' @param source Character string specifying the tracking software. Currently supported:
+#' @param source Character string specifying either a tracking software name or a URL.
+#'   Currently supported software names:
 #'   - "animalta": Data from AnimalTA (single individual, multi-arena)
 #'   - "anipose": Mouse paw tracking data
 #'   - "bonsai": Tracking data from Bonsai
@@ -14,6 +15,9 @@
 #'   - "lightningpose": Mouse tracking from LightningPose
 #'   - "sleap": Single mouse EPM tracking from SLEAP (.h5 format)
 #'   - "trex": Beetle tracking from TRex
+#'
+#'   Alternatively, provide a URL string (starting with "http://" or "https://")
+#'   to download a file from a custom location.
 #'
 #' @param cache_dir Character string specifying the directory where to cache the downloaded
 #'   files. Defaults to a temporary directory using `tempdir()`. Set to a permanent
@@ -27,7 +31,7 @@
 #' If the file already exists in the cache directory, it will use the cached version
 #' instead of downloading it again.
 #'
-#' The data sources are hosted at: https://github.com/animovement/movement-data
+#' The predefined data sources are hosted at: https://github.com/animovement/movement-data
 #'
 #' @examples
 #' \dontrun{
@@ -36,6 +40,9 @@
 #'
 #' # Read the data with the corresponding reader function
 #' data <- read_deeplabcut(path)
+#'
+#' # Download from a custom URL
+#' path <- get_sample_data("https://example.com/data/tracking.csv")
 #' }
 #' @export
 get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
@@ -82,6 +89,7 @@ get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
       filename = "trex_sample.csv"
     )
   )
+
   # Check if source is provided
   if (missing(source)) {
     cli::cli_abort(
@@ -89,23 +97,37 @@ get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
     )
   }
 
-  # Check if source is supported
-  if (!source %in% names(sources)) {
-    cli::cli_abort(c(
-      "Source {.val {source}} is not supported.",
-      "i" = "Currently supported sources: {.val {names(sources)}}"
-    ))
-  }
+  # Check if source is a URL
+  is_url <- grepl("^https?://", source)
 
-  # Get URL and filename for the specified source
-  file_url <- sources[[source]]$url
-  filename <- sources[[source]]$filename
+  if (is_url) {
+    # Use the provided URL and extract filename from basename
+    file_url <- source
+    filename <- basename(source)
+  } else {
+    # Check if source is a supported predefined source
+    if (!source %in% names(sources)) {
+      cli::cli_abort(c(
+        "Source {.val {source}} is not supported.",
+        "i" = "Currently supported sources: {.val {names(sources)}}",
+        "i" = "Alternatively, provide a URL starting with 'http://' or 'https://'"
+      ))
+    }
+
+    # Get URL and filename for the specified source
+    file_url <- sources[[source]]$url
+    filename <- sources[[source]]$filename
+  }
 
   data_path <- file.path(cache_dir, filename)
 
   if (!file.exists(data_path)) {
     if (quiet == FALSE) {
-      cli::cli_inform("Downloading sample {source} data...")
+      if (is_url) {
+        cli::cli_inform("Downloading data from custom URL...")
+      } else {
+        cli::cli_inform("Downloading sample {source} data...")
+      }
     }
 
     # Create cache directory if it doesn't exist
@@ -124,7 +146,7 @@ get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
     # Check if download failed
     if (inherits(download_success, "try-error")) {
       cli::cli_abort(c(
-        "Failed to download sample data.",
+        "Failed to download data.",
         "i" = "Please check your internet connection.",
         "i" = "URL attempted: {.url {file_url}}"
       ))
