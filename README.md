@@ -9,8 +9,7 @@
 [![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
-[![Codecov test
-coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread)
+<!-- [![Codecov test coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread) -->
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
