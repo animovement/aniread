@@ -20,6 +20,8 @@
 # - TRex returns single path for single-file dataset
 
 test_that("get_sample_data downloads data for valid sources", {
+  skip_on_ci()
+
   temp_cache <- tempfile()
 
   # Test a few different sources with their default datasets
@@ -37,6 +39,8 @@ test_that("get_sample_data downloads data for valid sources", {
 })
 
 test_that("get_sample_data downloads data with specific dataset parameter", {
+  skip_on_ci()
+
   temp_cache <- tempfile()
 
   # Test getting a non-default dataset
@@ -54,18 +58,34 @@ test_that("get_sample_data downloads data with specific dataset parameter", {
   unlink(temp_cache, recursive = TRUE)
 })
 
+test_that("get_sample_data downloads small files on CI", {
+  temp_cache <- tempfile()
+
+  # Only test with small, fast files on CI
+  small_sources <- c("fictrac", "bonsai", "animalta")
+
+  for (source in small_sources) {
+    path <- get_sample_data(source, cache_dir = temp_cache, quiet = TRUE)
+    expect_true(file.exists(path))
+    expect_true(file.info(path)$size > 0)
+  }
+
+  # Cleanup
+  unlink(temp_cache, recursive = TRUE)
+})
+
 test_that("get_sample_data uses cached files when available", {
   temp_cache <- tempfile()
 
-  # First download
-  path1 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  # Use a small file for this test
+  path1 <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
   first_mtime <- file.info(path1)$mtime
 
   # Small delay to ensure time difference would be detectable
   Sys.sleep(0.1)
 
   # Second call should use cached file
-  path2 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path2 <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
   second_mtime <- file.info(path2)$mtime
 
   expect_equal(path1, path2)
@@ -80,7 +100,7 @@ test_that("get_sample_data creates cache directory if it doesn't exist", {
 
   expect_false(dir.exists(temp_cache))
 
-  path <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
 
   expect_true(dir.exists(temp_cache))
   expect_true(file.exists(path))
@@ -90,15 +110,16 @@ test_that("get_sample_data creates cache directory if it doesn't exist", {
 })
 
 test_that("get_sample_data fails with informative error for unsupported source", {
-  expect_error(
+  err <- tryCatch(
     get_sample_data("invalid_source"),
-    "not supported"
+    error = function(e) e
   )
 
-  expect_error(
-    get_sample_data("invalid_source"),
-    "list_datasets = TRUE"
-  )
+  err_msg <- conditionMessage(err)
+
+  expect_match(err_msg, "not supported")
+  expect_match(err_msg, "list_datasets")
+  expect_match(err_msg, "URL")
 })
 
 test_that("get_sample_data fails with informative error for unsupported dataset", {
@@ -126,6 +147,8 @@ test_that("get_sample_data fails when source is missing", {
 })
 
 test_that("get_sample_data returns correct file paths for sources", {
+  skip_on_ci()
+
   temp_cache <- tempfile()
 
   # Test default datasets for each source
@@ -157,7 +180,7 @@ test_that("get_sample_data returns correct file paths for sources", {
 test_that("get_sample_data returns path as character string", {
   temp_cache <- tempfile()
 
-  path <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
 
   expect_type(path, "character")
   expect_length(path, 1)
@@ -169,8 +192,9 @@ test_that("get_sample_data returns path as character string", {
 test_that("different sources download different files", {
   temp_cache <- tempfile()
 
-  path1 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
-  path2 <- get_sample_data("sleap", cache_dir = temp_cache, quiet = TRUE)
+  # Use small files
+  path1 <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
+  path2 <- get_sample_data("bonsai", cache_dir = temp_cache, quiet = TRUE)
 
   expect_false(identical(path1, path2))
   expect_true(file.exists(path1))
@@ -188,7 +212,7 @@ test_that("different sources download different files", {
 test_that("get_sample_data downloads data from custom URL", {
   temp_cache <- tempfile()
 
-  # Use a real URL from the movement-data repo
+  # Use a real URL from the movement-data repo (small file)
   custom_url <- "https://raw.githubusercontent.com/animovement/movement-data/main/data/trex/beetle.csv"
 
   path <- get_sample_data(custom_url, cache_dir = temp_cache, quiet = TRUE)
@@ -244,7 +268,7 @@ test_that("get_sample_data caches custom URL downloads", {
 test_that("get_sample_data handles URLs with complex paths", {
   temp_cache <- tempfile()
 
-  # URL with nested path structure
+  # URL with nested path structure (small file)
   complex_url <- "https://raw.githubusercontent.com/animovement/movement-data/main/data/fictrac/fictrac_sample.dat"
 
   path <- get_sample_data(complex_url, cache_dir = temp_cache, quiet = TRUE)
@@ -298,6 +322,8 @@ test_that("list_datasets with source shows datasets for that source", {
 })
 
 test_that("TRex returns vector of file paths for multi-file datasets", {
+  skip_on_ci()
+
   temp_cache <- tempfile()
 
   # Get the five-locusts dataset which is a zip file
@@ -343,6 +369,8 @@ test_that("TRex returns single path for single-file dataset", {
 })
 
 test_that("get_sample_data handles binary files correctly", {
+  skip_on_ci()
+
   temp_cache <- tempfile()
 
   # Test h5 file (binary)
