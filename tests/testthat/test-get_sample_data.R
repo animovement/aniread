@@ -18,7 +18,7 @@ test_that("get_sample_data downloads data for valid sources", {
   temp_cache <- tempfile()
 
   # Test a few different sources
-  sources_to_test <- c("deeplabcut", "sleap", "fictrac")
+  sources_to_test <- c("deeplabcut_sample", "sleap", "fictrac")
 
   for (source in sources_to_test) {
     path <- get_sample_data(source, cache_dir = temp_cache, quiet = TRUE)
@@ -36,14 +36,22 @@ test_that("get_sample_data uses cached files when available", {
   temp_cache <- tempfile()
 
   # First download
-  path1 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path1 <- get_sample_data(
+    "deeplabcut_sample",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
   first_mtime <- file.info(path1)$mtime
 
   # Small delay to ensure time difference would be detectable
-  # Sys.sleep(1.1)
+  Sys.sleep(0.1)
 
   # Second call should use cached file
-  path2 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path2 <- get_sample_data(
+    "deeplabcut_sample",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
   second_mtime <- file.info(path2)$mtime
 
   expect_equal(path1, path2)
@@ -58,7 +66,11 @@ test_that("get_sample_data creates cache directory if it doesn't exist", {
 
   expect_false(dir.exists(temp_cache))
 
-  path <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path <- get_sample_data(
+    "deeplabcut_sample",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
 
   expect_true(dir.exists(temp_cache))
   expect_true(file.exists(path))
@@ -103,7 +115,7 @@ test_that("get_sample_data returns correct file paths for all sources", {
     animalta = "animalta_sample.csv",
     anipose = "anipose_sample.csv",
     bonsai = "bonsai_sample.csv",
-    deeplabcut = "deeplabcut_sample.csv",
+    deeplabcut_sample = "deeplabcut_sample.csv",
     fictrac = "fictrac_sample.dat",
     freemocap = "freemocap_sample.csv",
     idtrackerai = "idtracker_sample.h5",
@@ -124,7 +136,11 @@ test_that("get_sample_data returns correct file paths for all sources", {
 test_that("get_sample_data returns path as character string", {
   temp_cache <- tempfile()
 
-  path <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path <- get_sample_data(
+    "deeplabcut_sample",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
 
   expect_type(path, "character")
   expect_length(path, 1)
@@ -136,7 +152,11 @@ test_that("get_sample_data returns path as character string", {
 test_that("different sources download different files", {
   temp_cache <- tempfile()
 
-  path1 <- get_sample_data("deeplabcut", cache_dir = temp_cache, quiet = TRUE)
+  path1 <- get_sample_data(
+    "deeplabcut_sample",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
   path2 <- get_sample_data("sleap", cache_dir = temp_cache, quiet = TRUE)
 
   expect_false(identical(path1, path2))

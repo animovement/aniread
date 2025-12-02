@@ -60,9 +60,13 @@ get_sample_data <- function(source, cache_dir = tempdir(), quiet = FALSE) {
       url = "https://raw.githubusercontent.com/animovement/movement-data/main/data/bonsai/LI850.csv",
       filename = "bonsai_sample.csv"
     ),
-    deeplabcut = list(
+    deeplabcut_sample = list(
       url = "https://raw.githubusercontent.com/animovement/movement-data/main/data/deeplabcut/mouse_single.csv",
       filename = "deeplabcut_sample.csv"
+    ),
+    deeplabcut = list(
+      url = "https://gin.g-node.org/neuroinformatics/movement-test-data/src/aaffa0d74fca2dd0931055b8a4ab8e2f760ef754/poses/DLC_single-mouse_EPM.predictions.csv",
+      filename = "deeplabcut_example.csv"
     ),
     fictrac = list(
       url = "https://raw.githubusercontent.com/animovement/movement-data/main/data/fictrac/fictrac_sample.dat",
