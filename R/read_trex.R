@@ -52,7 +52,12 @@ read_trex <- function(path) {
   }
 
   # Init metadata
-  data <- aniframe::as_aniframe(data)
+  data <- data |>
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "trex",
+      filename = basename(path)
+    )
 
   return(data)
 }

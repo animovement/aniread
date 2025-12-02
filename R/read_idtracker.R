@@ -23,7 +23,13 @@ read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe()
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "idtrackerai",
+      filename = basename(path),
+      unit_space = "px",
+      unit_time = "frame"
+    )
 
   return(data)
 }

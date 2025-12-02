@@ -16,7 +16,11 @@ read_sleap <- function(path) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe()
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "sleap",
+      filename = basename(path)
+    )
 
   return(data)
 }

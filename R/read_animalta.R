@@ -43,7 +43,11 @@ read_animalta <- function(path, detailed = FALSE) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe()
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "animalta",
+      filename = basename(path)
+    )
 
   return(data)
 }
