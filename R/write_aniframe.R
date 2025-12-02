@@ -76,19 +76,7 @@ write_aniframe_parquet <- function(data, filename, ...) {
   dot_args <- list(...)
 
   # Check that arrow is installed
-  rlang::check_installed(
-    "arrow",
-    reason = "to use write_aniframe()",
-    action = function(...) {
-      utils::install.packages(
-        'arrow',
-        repos = c(
-          'https://roaldarbol.r-universe.dev',
-          'https://cloud.r-project.org'
-        )
-      )
-    }
-  )
+  check_arrow()
 
   # Validate filename
   ensure_file_has_expected_suffix(filename, "parquet")

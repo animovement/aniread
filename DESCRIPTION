@@ -16,6 +16,8 @@ URL: http://animovement.dev/aniread/, https://github.com/animovement/aniread/
 BugReports: https://github.com/animovement/aniread/issues
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 4.1.0)
 Imports: 
     aniframe,
     cli,
