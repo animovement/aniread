@@ -1,4 +1,4 @@
-#' Calibrate trackball from raw sensor file
+#' Get calibration values for trackball data
 #'
 #' Reads a calibration recording and computes calibration values. Spin the ball
 #' a known number of times in one direction while recording.
@@ -11,7 +11,7 @@
 #'
 #' @return A list with two elements:
 #'   - `counts_per_rotation`: Sensor counts per full rotation (for `ball_calibration` in `read_trackball`).
-#'   - `calibration_factor`: Distance per sensor count (for `set_unit_distance`).
+#'   - `calibration_factor`: Distance per sensor count (for `set_unit_space`).
 #' @export
 calibrate_trackball <- function(
   path,

@@ -33,6 +33,7 @@ read_trackball <- function(
   # Read data
   if (n_sensors == 2) {
     data_list <- list()
+    start_datetimes <- c()
     for (i in 1:n_sensors) {
       data_list[[i]] <- read_opticalflow(
         paths[i],
@@ -41,6 +42,13 @@ read_trackball <- function(
         col_dy = col_dy
       ) |>
         dplyr::mutate(sensor_n = i)
+      start_datetimes[i] <- attr(data_list[[i]], "start_datetime")
+    }
+    # Shared start is the later of the two (max of mins)
+    if (all(!is.na(start_datetimes))) {
+      start_datetime <- max(start_datetimes)
+    } else {
+      start_datetime <- NA
     }
     data <- join_trackball_files(data_list, sampling_rate = sampling_rate)
   } else {
@@ -49,7 +57,9 @@ read_trackball <- function(
       col_time = col_time,
       col_dx = col_dx,
       col_dy = col_dy
-    ) |>
+    )
+    start_datetime <- attr(data, "start_datetime")
+    data <- data |>
       dplyr::mutate(time_group = floor(.data$time * sampling_rate)) |>
       dplyr::group_by(.data$time_group) |>
       dplyr::summarise(
@@ -91,7 +101,10 @@ read_trackball <- function(
     aniframe::set_metadata(
       source = "trackball_bonsai",
       filename = paths,
-      sampling_rate = sampling_rate
+      sampling_rate = sampling_rate,
+      unit_space = "none",
+      unit_time = "s",
+      start_datetime = start_datetime
     )
 
   return(data)
@@ -140,20 +153,25 @@ read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
       "time" = dplyr::all_of(col_time)
     )
 
-  # If time is a datetime stamp, convert it into seconds from start
+  start_datetime <- NULL
+
   if (inherits(data$time, "POSIXt")) {
+    start_datetime <- min(data$time)
     data <- data |>
       dplyr::mutate(
         time = as.numeric(.data$time),
         time = .data$time - min(.data$time)
       )
   } else if (is.character(data$time)) {
+    start_datetime <- min(as.POSIXct(data$time))
     data <- data |>
       dplyr::mutate(
         time = as.numeric(as.POSIXct(.data$time)),
         time = .data$time - min(.data$time)
       )
   } else {
+    # Numeric timestamps - no real datetime available
+    start_datetime <- NA
     med_diff <- stats::median(diff(sort(data$time)))
     divisor <- if (med_diff > 1000) 1e6 else 1
 
@@ -162,6 +180,8 @@ read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
         time = (as.numeric(.data$time) - min(as.numeric(.data$time))) / divisor
       )
   }
+
+  attr(data, "start_datetime") <- start_datetime
   return(data)
 }
 
