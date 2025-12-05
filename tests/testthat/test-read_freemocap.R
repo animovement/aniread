@@ -12,8 +12,10 @@
 # - Edge cases (empty data, missing columns, malformed data)
 
 # Helper function ---------------------------------------------------------
+# Use withr for temp directory management
+test_dir <- withr::local_tempdir()
 
-create_test_files <- function(dir = tempdir()) {
+create_test_files <- function(dir = test_dir) {
   # Valid data without timestamps
   valid_data <- data.frame(
     frame = rep(0:2, each = 3),
