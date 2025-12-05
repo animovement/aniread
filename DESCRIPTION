@@ -31,7 +31,6 @@ Imports:
 Suggests: 
     arrow,
     knitr,
-    mockery,
     rhdf5,
     testthat (>= 3.0.0)
 Additional_repositories: https://animovement.r-universe.dev
