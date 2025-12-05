@@ -8,11 +8,7 @@
 #' @param col_time Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).
 #' @param col_dx Column name for x-axis values
 #' @param col_dy Column name for y-axis values
-#' @param ball_calibration When running an `of_fixed` experiment, you may (but it is not necessary) provide a calibration factor. This factor is the number recorded after a 360 degree spin. You can use the `calibrate_trackball` function to get this number. Alternatively, provide the `ball_diameter` and a `distance_scale` (e.g. mouse dpcm).
-#' @param ball_diameter When running a `of_fixed` experiment, the ball diameter is needed together with either `ball_calibration` or `distance_scale`.
-#' @param distance_scale If using computer mice, you might be getting unit-less data out. However, computer mice have a factor called "dots-per-cm", which you can use to convert your estimates into centimeters.
-#' @param distance_unit Which unit should be used. If `distance_scale` is also used, the unit will be for the scaled data. E.g. for trackball data with optical flow sensors, you can use the mouse dots-per-cm (dpcm) of 394 by setting `distance_unit = "cm"` and `distance_scale = 394`.
-#' @param verbose If `FALSE` (default), suppress most warning messages.
+#' @param quiet If `TRUE` (default), suppresses most warning messages.
 #'
 #' @return a movement dataframe
 #' @export
@@ -23,26 +19,32 @@ read_trackball <- function(
   col_time = "time",
   col_dx = "x",
   col_dy = "y",
-  ball_calibration = NULL,
-  ball_diameter = NULL,
-  distance_scale = NULL,
-  distance_unit = NULL,
-  verbose = FALSE
+  quiet = TRUE
 ) {
   validate_files(paths, expected_suffix = "csv") #expected_headers = c("x", "y", "time")
-  validate_trackball(paths, setup, col_time)
+  #validate_trackball(paths, setup, col_time)
   n_sensors <- length(paths)
 
   # Read data
   if (n_sensors == 2) {
     data_list <- list()
     for (i in 1:n_sensors) {
-      data_list[[i]] <- read_opticalflow(paths[i], col_time) |>
+      data_list[[i]] <- read_opticalflow(
+        paths[i],
+        col_time = col_time,
+        col_dx = col_dx,
+        col_dy = col_dy
+      ) |>
         dplyr::mutate(sensor_n = i)
     }
-    data <- join_trackball_files(data_list, sampling_rate)
+    data <- join_trackball_files(data_list, sampling_rate = sampling_rate)
   } else {
-    data <- read_opticalflow(paths[i], col_time)
+    data <- read_opticalflow(
+      paths[i],
+      col_time = col_time,
+      col_dx = col_dx,
+      col_dy = col_dy
+    )
   }
 
   # Calculate coordinates (free/fixed)
@@ -51,33 +53,17 @@ read_trackball <- function(
       compute_xy_coordinates_free()
   } else if (setup == "of_fixed") {
     data <- data |>
-      compute_xy_coordinates_fixed(
-        n_sensors,
-        ball_diameter,
-        ball_calibration,
-        distance_scale
-      )
+      compute_xy_coordinates_fixed(n_sensors)
   }
 
   # Scale distance and time and select output columns
   data <- data |>
-    dplyr::mutate(keypoint = factor("centroid")) |>
-    scale_values(c("x", "y", "dx", "dy"), distance_scale) |>
-    dplyr::mutate(
-      time = .data$time / sampling_rate,
-      individual = factor(NA),
-      confidence = as.numeric(NA)
-    ) |>
-    # dplyr::mutate(uid = stringi::stri_rand_strings(1, 20, pattern = "[A-Z0-9]")) |>
+    dplyr::mutate(keypoint = "centroid") |>
     dplyr::select(
-      "time",
-      "individual",
       "keypoint",
+      "time",
       "x",
-      "y",
-      "confidence",
-      "dx",
-      "dy"
+      "y"
     )
 
   # Init metadata
@@ -95,9 +81,9 @@ read_trackball <- function(
 #' @param path Path to the file.
 #' @inheritParams read_trackball
 #' @keywords internal
-read_opticalflow <- function(path, col_time, verbose = FALSE) {
+read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
   # Read file
-  if (does_file_have_expected_headers(path, c("x", "y", "time"))) {
+  if (does_file_have_expected_headers(path, c(col_time, col_dx, col_dy))) {
     data <- vroom::vroom(
       path,
       delim = ",",
@@ -117,18 +103,26 @@ read_opticalflow <- function(path, col_time, verbose = FALSE) {
 
   # Change column names
   data <- data |>
-    dplyr::rename("dx" := 1) |>
-    dplyr::rename("dy" := 2) |>
+    dplyr::rename("dx" := dplyr::all_of(col_dx)) |>
+    dplyr::rename("dy" := dplyr::all_of(col_dy)) |>
     dplyr::rename("time" := dplyr::all_of(col_time))
 
   # If time is a datetime stamp, convert it into seconds from start
   # NEEDS TO GO INTO THE TIME VALIDATOR
-  if (inherits(data$time, "POSIXt") == TRUE) {
+  if (is.character(data$time)) {
     data <- data |>
-      dplyr::mutate(time = as.numeric(.data$time))
-  } else if (is.character(data$time)) {
+      dplyr::mutate(
+        time = as.numeric(as.POSIXct(.data$time)),
+        time = .data$time - min(.data$time)
+      )
+  } else {
+    med_diff <- median(diff(sort(data$time)))
+    divisor <- if (med_diff > 1000) 1e6 else 1
+
     data <- data |>
-      dplyr::mutate(time = as.numeric(as.POSIXct(.data$time)))
+      dplyr::mutate(
+        time = (as.numeric(.data$time) - min(as.numeric(.data$time))) / divisor
+      )
   }
   return(data)
 }
@@ -213,8 +207,7 @@ compute_xy_coordinates_free <- function(data) {
     dplyr::mutate(
       x = cumsum(.data$dx),
       y = cumsum(.data$dy)
-    ) |>
-    dplyr::relocate("time", .before = 1)
+    )
   return(data)
 }
 
@@ -222,10 +215,7 @@ compute_xy_coordinates_free <- function(data) {
 #' @keywords internal
 compute_xy_coordinates_fixed <- function(
   data,
-  n_sensors,
-  ball_diameter,
-  ball_calibration,
-  distance_scale
+  n_sensors
 ) {
   if (n_sensors == 2) {
     data <- data |>
@@ -244,38 +234,16 @@ compute_xy_coordinates_fixed <- function(
   }
 
   # Compute the xy coordinates by calculating the angle turned and displacement in every bin
-  if (!is.null(ball_calibration)) {
-    data <- data |>
-      dplyr::mutate(d_angle = (.data$sensor_dx / ball_calibration) * 2 * pi) # in radians
-  } else if (!is.null(distance_scale)) {
-    data <- data |>
-      dplyr::mutate(
-        d_angle = (.data$sensor_dx / (ball_diameter * pi * distance_scale)) *
-          2 *
-          pi
-      ) # in radians
-  }
   data <- data |>
     dplyr::mutate(
+      d_angle = .data$sensor_dx * 2 * pi, # in radians
       dx = .data$sensor_dy * cos(.data$d_angle),
       dy = .data$sensor_dy * sin(.data$d_angle)
     ) |>
     dplyr::mutate(
       x = cumsum(.data$dx),
       y = cumsum(.data$dy)
-    ) |>
-    dplyr::relocate("time", .before = 1)
-  return(data)
-}
+    )
 
-#' @keywords internal
-scale_values <- function(data, variables, scaling_factor) {
-  # Adjust distances for mouse sensor "dots-per-cm"
-  if (!is.null(scaling_factor)) {
-    data <- data |>
-      dplyr::mutate(dplyr::across(
-        dplyr::all_of(variables),
-        ~ .x / scaling_factor
-      ))
-  }
+  data
 }
