@@ -30,9 +30,9 @@ Imports:
 Suggests: 
     arrow,
     knitr,
-    mockery,
     rhdf5,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Additional_repositories: https://animovement.r-universe.dev
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

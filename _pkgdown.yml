@@ -48,3 +48,4 @@ reference:
 - title: Miscellaneous
   contents:
   - get_sample_data
+  - calibrate_trackball

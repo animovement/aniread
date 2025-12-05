@@ -63,8 +63,8 @@ write_aniframe <- function(data, filename, ...) {
 write_aniframe_csv <- function(data, filename, ...) {
   dot_args <- list(...)
 
-  # # Validate filename
-  # ensure_file_has_expected_suffix(filename, "csv")
+  # Validate filename
+  ensure_file_has_expected_suffix(filename, c("csv", "tsv"))
 
   # Write data
   vroom::vroom_write(data, filename, ...) |>
