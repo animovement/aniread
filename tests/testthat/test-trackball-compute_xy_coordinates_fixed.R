@@ -3,8 +3,8 @@
 # - Renames time_group to time
 # - Averages x_1 and x_2 for sensor_dx (two sensors)
 # - Uses y_1 for sensor_dy
-# - Calculates angle from ball_calibration
-# - Calculates angle from ball_diameter and distance_scale
+# - Calculates angle from counts_per_rotation
+# - Calculates angle from ball_diameter and dots_per_cm
 # - Errors when calibration params missing
 # - Calculates dx as sensor_dy * cos(d_angle)
 # - Calculates dy as sensor_dy * sin(d_angle)
@@ -23,9 +23,9 @@ test_that("compute_xy_coordinates_fixed renames time_group to time", {
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_true("time" %in% names(result))
@@ -45,9 +45,9 @@ test_that("compute_xy_coordinates_fixed averages x_1 and x_2 for sensor_dx", {
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_equal(result$sensor_dx, 150)
@@ -65,17 +65,17 @@ test_that("compute_xy_coordinates_fixed uses y_1 for sensor_dy", {
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_equal(result$sensor_dy, 50)
 })
 
-test_that("compute_xy_coordinates_fixed calculates angle from ball_calibration", {
-  # ball_calibration = counts for one full rotation
-  # d_angle = (sensor_dx / ball_calibration) * 2 * pi
+test_that("compute_xy_coordinates_fixed calculates angle from counts_per_rotation", {
+  # counts_per_rotation = counts for one full rotation
+  # d_angle = (sensor_dx / counts_per_rotation) * 2 * pi
   data <- data.frame(
     time_group = 0,
     x_1 = 250,
@@ -87,18 +87,18 @@ test_that("compute_xy_coordinates_fixed calculates angle from ball_calibration",
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   # sensor_dx = 250, d_angle = (250 / 1000) * 2 * pi = 0.25 * 2 * pi = pi/2
   expect_equal(result$d_angle, pi / 2)
 })
 
-test_that("compute_xy_coordinates_fixed calculates angle from ball_diameter and distance_scale", {
-  # d_angle = (sensor_dx / (ball_diameter * pi * distance_scale)) * 2 * pi
-  # Full rotation = ball_diameter * pi * distance_scale counts
+test_that("compute_xy_coordinates_fixed calculates angle from ball_diameter and dots_per_cm", {
+  # d_angle = (sensor_dx / (ball_diameter * pi * dots_per_cm)) * 2 * pi
+  # Full rotation = ball_diameter * pi * dots_per_cm counts
   data <- data.frame(
     time_group = 0,
     x_1 = 100,
@@ -108,7 +108,7 @@ test_that("compute_xy_coordinates_fixed calculates angle from ball_diameter and 
   )
 
   ball_diameter <- 50
-  distance_scale <- 10
+  dots_per_cm <- 10
   # Full rotation counts = 50 * pi * 10 = 500 * pi
   # sensor_dx = 100
   # d_angle = (100 / (500 * pi)) * 2 * pi = 200 / 500 = 0.4
@@ -116,12 +116,12 @@ test_that("compute_xy_coordinates_fixed calculates angle from ball_diameter and 
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = NULL,
+    counts_per_rotation = NULL,
     ball_diameter = ball_diameter,
-    distance_scale = distance_scale
+    dots_per_cm = dots_per_cm
   )
 
-  expected_angle <- (100 / (ball_diameter * pi * distance_scale)) * 2 * pi
+  expected_angle <- (100 / (ball_diameter * pi * dots_per_cm)) * 2 * pi
   expect_equal(result$d_angle, expected_angle)
 })
 
@@ -138,9 +138,9 @@ test_that("compute_xy_coordinates_fixed errors when calibration params missing",
     compute_xy_coordinates_fixed(
       data,
       n_sensors = 2,
-      ball_calibration = NULL,
+      counts_per_rotation = NULL,
       ball_diameter = NULL,
-      distance_scale = NULL
+      dots_per_cm = NULL
     )
   )
 
@@ -149,9 +149,9 @@ test_that("compute_xy_coordinates_fixed errors when calibration params missing",
     compute_xy_coordinates_fixed(
       data,
       n_sensors = 2,
-      ball_calibration = NULL,
+      counts_per_rotation = NULL,
       ball_diameter = 50,
-      distance_scale = NULL
+      dots_per_cm = NULL
     )
   )
 })
@@ -169,9 +169,9 @@ test_that("compute_xy_coordinates_fixed calculates dx and dy with trigonometry",
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_equal(result$dx, 100 * cos(0))
@@ -193,9 +193,9 @@ test_that("compute_xy_coordinates_fixed calculates dx and dy at 90 degrees", {
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_equal(result$d_angle, pi / 2)
@@ -216,9 +216,9 @@ test_that("compute_xy_coordinates_fixed calculates x and y as cumulative sums", 
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 2,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_equal(result$x, c(10, 30, 60, 100))
@@ -238,9 +238,9 @@ test_that("compute_xy_coordinates_fixed works with single sensor", {
   result <- compute_xy_coordinates_fixed(
     data,
     n_sensors = 1,
-    ball_calibration = 1000,
+    counts_per_rotation = 1000,
     ball_diameter = NULL,
-    distance_scale = NULL
+    dots_per_cm = NULL
   )
 
   expect_true("time" %in% names(result))

@@ -8,9 +8,9 @@
 #' @param col_time Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).
 #' @param col_dx Column name for x-axis values
 #' @param col_dy Column name for y-axis values
-#' @param ball_calibration For `of_fixed` setup: the sensor count for a full 360 degree rotation. Can be obtained using `calibrate_trackball()`.
-#' @param ball_diameter For `of_fixed` setup: the ball diameter (in same units as desired output). Required if using `distance_scale` instead of `ball_calibration`.
-#' @param distance_scale For `of_fixed` setup: sensor dots-per-unit (e.g. dots-per-cm). Use with `ball_diameter` as an alternative to `ball_calibration`.
+#' @param counts_per_rotation For `of_fixed` setup: the sensor count for a full 360 degree rotation. Can be obtained using `calibrate_trackball()`.
+#' @param ball_diameter For `of_fixed` setup: the ball diameter (in same units as desired output). Required if using `dots_per_cm` instead of `counts_per_rotation`.
+#' @param dots_per_cm For `of_fixed` setup: sensor dots-per-cm. Use with `ball_diameter` as an alternative to `counts_per_rotation`.
 #' @param quiet If `TRUE` (default), suppresses most warning messages.
 #'
 #' @return a movement dataframe
@@ -22,9 +22,9 @@ read_trackball <- function(
   col_time = "time",
   col_dx = "x",
   col_dy = "y",
-  ball_calibration = NULL,
+  counts_per_rotation = NULL,
   ball_diameter = NULL,
-  distance_scale = NULL,
+  dots_per_cm = NULL,
   quiet = TRUE
 ) {
   validate_files(paths, expected_suffix = "csv")
@@ -66,9 +66,9 @@ read_trackball <- function(
     data <- data |>
       compute_xy_coordinates_fixed(
         n_sensors = n_sensors,
-        ball_calibration = ball_calibration,
+        counts_per_rotation = counts_per_rotation,
         ball_diameter = ball_diameter,
-        distance_scale = distance_scale
+        dots_per_cm = dots_per_cm
       )
   }
 
@@ -252,9 +252,9 @@ compute_xy_coordinates_free <- function(data) {
 compute_xy_coordinates_fixed <- function(
   data,
   n_sensors,
-  ball_calibration,
+  counts_per_rotation,
   ball_diameter,
-  distance_scale
+  dots_per_cm
 ) {
   if (n_sensors == 2) {
     data <- data |>
@@ -273,19 +273,19 @@ compute_xy_coordinates_fixed <- function(
   }
 
   # Compute angle from sensor reading
-  if (!is.null(ball_calibration)) {
+  if (!is.null(counts_per_rotation)) {
     data <- data |>
-      dplyr::mutate(d_angle = (.data$sensor_dx / ball_calibration) * 2 * pi)
-  } else if (!is.null(distance_scale) && !is.null(ball_diameter)) {
+      dplyr::mutate(d_angle = (.data$sensor_dx / counts_per_rotation) * 2 * pi)
+  } else if (!is.null(dots_per_cm) && !is.null(ball_diameter)) {
     data <- data |>
       dplyr::mutate(
-        d_angle = (.data$sensor_dx / (ball_diameter * pi * distance_scale)) *
+        d_angle = (.data$sensor_dx / (ball_diameter * pi * dots_per_cm)) *
           2 *
           pi
       )
   } else {
     cli::cli_abort(
-      "For {.arg setup} = 'of_fixed', provide either {.arg ball_calibration} or both {.arg ball_diameter} and {.arg distance_scale}."
+      "For {.arg setup} = 'of_fixed', provide either {.arg counts_per_rotation} or both {.arg ball_diameter} and {.arg dots_per_cm}."
     )
   }
 

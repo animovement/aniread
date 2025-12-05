@@ -57,7 +57,7 @@ test_that("read_trackball works with of_fixed setup and two sensors", {
     paths = c(path1, path2),
     setup = "of_fixed",
     sampling_rate = 10,
-    ball_calibration = 1000
+    counts_per_rotation = 1000
   )
 
   expect_s3_class(result, "aniframe")
@@ -77,7 +77,7 @@ test_that("read_trackball works with of_fixed setup and one sensor", {
     paths = path,
     setup = "of_fixed",
     sampling_rate = 10,
-    ball_calibration = 1000
+    counts_per_rotation = 1000
   )
 
   expect_s3_class(result, "aniframe")
@@ -196,7 +196,7 @@ test_that("read_trackball errors on non-csv files", {
       paths = path,
       setup = "of_fixed",
       sampling_rate = 10,
-      ball_calibration = 1000
+      counts_per_rotation = 1000
     )
   )
 })
@@ -256,7 +256,7 @@ test_that("read_trackball of_fixed produces correct square path", {
   # For of_fixed:
   # sensor_dx = (x_1 + x_2) / 2 → rotation
   # sensor_dy = y_1 → forward movement
-  # d_angle = (sensor_dx / ball_calibration) * 2 * pi
+  # d_angle = (sensor_dx / counts_per_rotation) * 2 * pi
   # dx = sensor_dy * cos(d_angle)
   # dy = sensor_dy * sin(d_angle)
   #
@@ -264,10 +264,10 @@ test_that("read_trackball of_fixed produces correct square path", {
   # x = cumsum(dx) = c(0, 1, 1, -1, -1, 0)
   # y = cumsum(dy) = c(1, 1, -1, -1, 1, 1)
   #
-  # Working backwards with ball_calibration = 1000:
+  # Working backwards with counts_per_rotation = 1000:
   # d_angle = atan2(dy, dx)
   # sensor_dy = sqrt(dx^2 + dy^2)
-  # sensor_dx = d_angle / (2 * pi) * ball_calibration
+  # sensor_dx = d_angle / (2 * pi) * counts_per_rotation
   #
   # Step 0: dx=0, dy=1 → angle=pi/2, dist=1 → sensor_dx=250, sensor_dy=1
   # Step 1: dx=1, dy=0 → angle=0, dist=1 → sensor_dx=0, sensor_dy=1
@@ -303,7 +303,7 @@ test_that("read_trackball of_fixed produces correct square path", {
     paths = c(path1, path2),
     setup = "of_fixed",
     sampling_rate = 1,
-    ball_calibration = 1000
+    counts_per_rotation = 1000
   )
 
   expect_equal(result$x, c(0, 1, 1, -1, -1, 0), tolerance = 1e-10)
