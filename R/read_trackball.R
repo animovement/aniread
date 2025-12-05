@@ -154,7 +154,7 @@ read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
         time = .data$time - min(.data$time)
       )
   } else {
-    med_diff <- median(diff(sort(data$time)))
+    med_diff <- stats::median(diff(sort(data$time)))
     divisor <- if (med_diff > 1000) 1e6 else 1
 
     data <- data |>

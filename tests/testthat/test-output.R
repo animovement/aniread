@@ -85,8 +85,7 @@ df_trackball <- read_trackball(
   sampling_rate = 60,
   col_time = 4,
   col_dx = 1,
-  col_dy = 2,
-  distance_scale = 394
+  col_dy = 2
 )
 
 # Check output header names

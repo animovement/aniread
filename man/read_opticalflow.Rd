@@ -4,14 +4,18 @@
 \alias{read_opticalflow}
 \title{Read optical flow sensor file}
 \usage{
-read_opticalflow(path, col_time, verbose = FALSE)
+read_opticalflow(path, col_time, col_dx, col_dy, quiet = TRUE)
 }
 \arguments{
 \item{path}{Path to the file.}
 
 \item{col_time}{Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).}
 
-\item{verbose}{If \code{FALSE} (default), suppress most warning messages.}
+\item{col_dx}{Column name for x-axis values}
+
+\item{col_dy}{Column name for y-axis values}
+
+\item{quiet}{If \code{TRUE} (default), suppresses most warning messages.}
 }
 \description{
 Read optical flow sensor data.

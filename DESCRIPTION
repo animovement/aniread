@@ -20,7 +20,6 @@ Depends:
     R (>= 4.1.0)
 Imports: 
     aniframe,
-    anytime,
     cli,
     dplyr,
     janitor,
@@ -32,7 +31,8 @@ Suggests:
     arrow,
     knitr,
     rhdf5,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Additional_repositories: https://animovement.r-universe.dev
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

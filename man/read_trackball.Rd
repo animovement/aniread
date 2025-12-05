@@ -11,11 +11,10 @@ read_trackball(
   col_time = "time",
   col_dx = "x",
   col_dy = "y",
-  ball_calibration = NULL,
+  counts_per_rotation = NULL,
   ball_diameter = NULL,
-  distance_scale = NULL,
-  distance_unit = NULL,
-  verbose = FALSE
+  dots_per_cm = NULL,
+  quiet = TRUE
 )
 }
 \arguments{
@@ -31,15 +30,13 @@ read_trackball(
 
 \item{col_dy}{Column name for y-axis values}
 
-\item{ball_calibration}{When running an \code{of_fixed} experiment, you may (but it is not necessary) provide a calibration factor. This factor is the number recorded after a 360 degree spin. You can use the \code{calibrate_trackball} function to get this number. Alternatively, provide the \code{ball_diameter} and a \code{distance_scale} (e.g. mouse dpcm).}
+\item{counts_per_rotation}{For \code{of_fixed} setup: the sensor count for a full 360 degree rotation. Can be obtained using \code{calibrate_trackball()}.}
 
-\item{ball_diameter}{When running a \code{of_fixed} experiment, the ball diameter is needed together with either \code{ball_calibration} or \code{distance_scale}.}
+\item{ball_diameter}{For \code{of_fixed} setup: the ball diameter (in same units as desired output). Required if using \code{dots_per_cm} instead of \code{counts_per_rotation}.}
 
-\item{distance_scale}{If using computer mice, you might be getting unit-less data out. However, computer mice have a factor called "dots-per-cm", which you can use to convert your estimates into centimeters.}
+\item{dots_per_cm}{For \code{of_fixed} setup: sensor dots-per-cm. Use with \code{ball_diameter} as an alternative to \code{counts_per_rotation}.}
 
-\item{distance_unit}{Which unit should be used. If \code{distance_scale} is also used, the unit will be for the scaled data. E.g. for trackball data with optical flow sensors, you can use the mouse dots-per-cm (dpcm) of 394 by setting \code{distance_unit = "cm"} and \code{distance_scale = 394}.}
-
-\item{verbose}{If \code{FALSE} (default), suppress most warning messages.}
+\item{quiet}{If \code{TRUE} (default), suppresses most warning messages.}
 }
 \value{
 a movement dataframe
