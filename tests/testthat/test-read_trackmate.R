@@ -1,0 +1,300 @@
+# Tests for read_trackmate
+#
+# - File validation errors (non-existent, wrong suffix)
+# - Errors when no tracks found
+# - Errors when no filtered tracks found
+# - Correct spot attribute extraction (slim and non-slim)
+# - Correct spot-to-track mapping
+# - Duplicate track-frame detection and warning
+# - Unit conversion (pixel -> px, sec -> s)
+# - Output is an aniframe with correct structure
+# - Metadata is set correctly
+# - Z column set to NA when only one unique value
+# - Frame column removed when time stamps exist
+
+test_that("read_trackmate errors on non-existent file", {
+  expect_error(
+    read_trackmate("nonexistent.xml"),
+    class = "rlang_error"
+  )
+})
+
+test_that("read_trackmate errors on wrong file suffix", {
+  tmp <- tempfile(fileext = ".csv")
+  file.create(tmp)
+  on.exit(unlink(tmp))
+
+  expect_error(
+    read_trackmate(tmp),
+    class = "rlang_error"
+  )
+})
+
+test_that("read_trackmate errors when no tracks in XML", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="pixel" timeunits="sec"/>
+			<AllSpots/>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  expect_error(
+    read_trackmate(tmp),
+    "No tracks found"
+  )
+})
+
+test_that("read_trackmate errors when no filtered tracks in XML", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="pixel" timeunits="sec"/>
+			<AllSpots/>
+			<AllTracks>
+				<Track TRACK_ID="0"/>
+			</AllTracks>
+			<FilteredTracks/>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  expect_error(
+    read_trackmate(tmp),
+    "No filtered tracks"
+  )
+})
+
+test_that("read_trackmate parses valid XML correctly", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0" RADIUS="2.5" QUALITY="100"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="0.5" FRAME="1" RADIUS="2.5" QUALITY="100"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+
+  expect_s3_class(result, "aniframe")
+  expect_equal(nrow(result), 2)
+  expect_true(all(c("time", "x", "y") %in% names(result)))
+  expect_equal(result$x, c(10.0, 15.0))
+  expect_equal(result$y, c(20.0, 25.0))
+})
+
+test_that("read_trackmate converts units correctly", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="pixel" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+  meta <- aniframe::get_metadata(result)
+  default_meta <- aniframe::default_metadata()
+
+  expect_equal(
+    meta$unit_space,
+    factor("px", levels = levels(default_meta$unit_space))
+  )
+  expect_equal(
+    meta$unit_time,
+    factor("s", levels = levels(default_meta$unit_time))
+  )
+  expect_equal(meta$source, "trackmate")
+})
+
+test_that("read_trackmate only includes filtered tracks", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+					<Spot ID="3" POSITION_X="100.0" POSITION_Y="200.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="4" POSITION_X="105.0" POSITION_Y="205.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+				<Track TRACK_ID="1">
+					<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="4"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+
+  expect_equal(nrow(result), 2)
+  expect_equal(nlevels(result$individual), 1)
+  expect_equal(as.character(unique(result$individual)), "0")
+  expect_false(any(result$x > 50))
+})
+
+test_that("read_trackmate assigns keypoint column as centroid", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+  default_meta <- aniframe::default_metadata()
+
+  expect_true("keypoint" %in% names(result))
+  expect_equal(
+    unique(result$keypoint),
+    factor("centroid")
+  )
+})
+
+test_that("read_trackmate warns on duplicate track-frame combinations", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  expect_warning(
+    read_trackmate(tmp),
+    "duplicate"
+  )
+})
+
+test_that("read_trackmate sets z to NA when only one unique value", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+
+  expect_true(all(is.na(result$z)))
+})
+
+test_that("read_trackmate removes frame column when time stamps exist", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+
+  expect_false("frame" %in% names(result))
+})

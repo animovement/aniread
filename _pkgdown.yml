@@ -37,6 +37,7 @@ reference:
   - read_movement
   - read_sleap
   - read_trackball
+  - read_trackmate
   - read_trex
 
 - title: "Writer functions"

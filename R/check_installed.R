@@ -33,3 +33,21 @@ check_arrow <- function() {
     }
   )
 }
+
+#' @keywords internal
+check_xml2 <- function() {
+  # Check that xml2 is installed
+  rlang::check_installed(
+    "xml2",
+    reason = "for using the reading TrackMate files,",
+    action = function(...) {
+      utils::install.packages(
+        'xml2',
+        repos = c(
+          'https://animovement.r-universe.dev',
+          'https://cloud.r-project.org'
+        )
+      )
+    }
+  )
+}
