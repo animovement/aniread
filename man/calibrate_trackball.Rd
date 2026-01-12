@@ -2,7 +2,7 @@
 % Please edit documentation in R/calibrate_trackball.R
 \name{calibrate_trackball}
 \alias{calibrate_trackball}
-\title{Calibrate trackball from raw sensor file}
+\title{Get calibration values for trackball data}
 \usage{
 calibrate_trackball(
   path,
@@ -27,7 +27,7 @@ calibrate_trackball(
 A list with two elements:
 \itemize{
 \item \code{counts_per_rotation}: Sensor counts per full rotation (for \code{ball_calibration} in \code{read_trackball}).
-\item \code{calibration_factor}: Distance per sensor count (for \code{set_unit_distance}).
+\item \code{calibration_factor}: Distance per sensor count (for \code{set_unit_space}).
 }
 }
 \description{
