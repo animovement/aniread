@@ -4,10 +4,12 @@
 \alias{read_octron}
 \title{Read Octron Segmentation Data}
 \usage{
-read_octron(path)
+read_octron(path, keep_bbox = FALSE)
 }
 \arguments{
 \item{path}{Path to the Octron CSV file.}
+
+\item{keep_bbox}{Keep bounding box coordinates? Default FALSE.}
 }
 \value{
 An aniframe

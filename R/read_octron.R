@@ -19,11 +19,11 @@ read_octron <- function(path, keep_bbox = FALSE) {
 
   data <- data |>
     dplyr::rename(
-      individual = track_id,
-      time = frame_idx,
-      x = pos_x,
-      y = pos_y,
-      confidence = confidence
+      individual = "track_id",
+      time = "frame_idx",
+      x = "pos_x",
+      y = "pos_y",
+      confidence = "confidence"
     ) |>
     dplyr::mutate(
       keypoint = "centroid",
@@ -31,31 +31,31 @@ read_octron <- function(path, keep_bbox = FALSE) {
     dplyr::select(-c("frame_counter", "bbox_area"))
 
   data <- data |>
-    dplyr::select(-keypoint) |>
+    dplyr::select(-"keypoint") |>
     dplyr::rename(
-      centroid_x = x,
-      centroid_y = y,
-      bbox_min_x = bbox_x_min,
-      bbox_min_y = bbox_y_min,
-      bbox_max_x = bbox_x_max,
-      bbox_max_y = bbox_y_max
+      centroid_x = "x",
+      centroid_y = "y",
+      bbox_min_x = "bbox_x_min",
+      bbox_min_y = "bbox_y_min",
+      bbox_max_x = "bbox_x_max",
+      bbox_max_y = "bbox_y_max"
     ) |>
     tidyr::pivot_longer(
       cols = c(
-        centroid_x,
-        centroid_y,
-        bbox_min_x,
-        bbox_min_y,
-        bbox_max_x,
-        bbox_max_y
+        "centroid_x",
+        "centroid_y",
+        "bbox_min_x",
+        "bbox_min_y",
+        "bbox_max_x",
+        "bbox_max_y"
       ),
       names_to = c("keypoint", ".value"),
       names_pattern = "(.+)_(x|y)"
     ) |>
     dplyr::mutate(
       dplyr::across(
-        c(area, eccentricity, solidity, orientation),
-        \(col) dplyr::if_else(keypoint == "centroid", col, NA)
+        c("area", "eccentricity", "solidity", "orientation"),
+        \(col) dplyr::if_else(.data$keypoint == "centroid", col, NA)
       )
     )
 
