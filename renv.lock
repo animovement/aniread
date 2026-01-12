@@ -87,7 +87,7 @@
     },
     "aniframe": {
       "Package": "aniframe",
-      "Version": "0.3.3",
+      "Version": "0.3.5",
       "Source": "Repository",
       "Type": "Package",
       "Title": "An R package providing core data structures for movement data",
@@ -120,7 +120,7 @@
       "Repository": "https://animovement.r-universe.dev",
       "RemoteUrl": "https://github.com/animovement/aniframe",
       "RemoteRef": "HEAD",
-      "RemoteSha": "ffed84c04ca479cbef60e32a86f84af0310ceafb",
+      "RemoteSha": "3ff92249715252fc556e69ce4166ef9501f4e7c6",
       "NeedsCompilation": "no",
       "Author": "Mikkel Roald-Arbøl [aut, cre] (ORCID: <https://orcid.org/0000-0002-9998-0058>)",
       "Maintainer": "Mikkel Roald-Arbøl <animovement.84w1m@passmail.com>"
