@@ -39,7 +39,11 @@ read_bonsai <- function(path) {
   # Set aniframe class and metadata
   data <- data |>
     aniframe::as_aniframe() |>
-    aniframe::set_metadata(start_datetime = data$time[[1]]) |>
+    aniframe::set_metadata(
+      source = "bonsai",
+      filename = basename(path),
+      start_datetime = data$time[[1]]
+    ) |>
     dplyr::mutate(time = as.numeric(.data$time - min(.data$time, na.rm = TRUE)))
   return(data)
 }

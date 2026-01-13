@@ -16,7 +16,11 @@ read_sleap <- function(path) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe()
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "sleap",
+      filename = basename(path)
+    )
 
   return(data)
 }
@@ -25,19 +29,7 @@ read_sleap <- function(path) {
 #' @keywords internal
 read_sleap_h5 <- function(path) {
   # Check that rhdf5 is installed
-  rlang::check_installed(
-    "rhdf5",
-    reason = "to read SLEAP HDF5 files",
-    action = function(...) {
-      utils::install.packages(
-        'rhdf5',
-        repos = c(
-          'https://roaldarbol.r-universe.dev',
-          'https://cloud.r-project.org'
-        )
-      )
-    }
-  )
+  check_rhdf5()
 
   n_individuals <- rhdf5::h5ls(path) |>
     dplyr::as_tibble() |>

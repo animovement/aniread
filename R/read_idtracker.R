@@ -23,7 +23,13 @@ read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe()
+    aniframe::as_aniframe() |>
+    aniframe::set_metadata(
+      source = "idtrackerai",
+      filename = basename(path),
+      unit_space = "px",
+      unit_time = "frame"
+    )
 
   return(data)
 }
@@ -101,19 +107,7 @@ read_idtracker_probabilities <- function(path) {
 #' @keywords internal
 read_idtracker_h5 <- function(path, version = version) {
   # Check that rhdf5 is installed
-  rlang::check_installed(
-    "rhdf5",
-    reason = "to read idtracker.ai HDF5 files",
-    action = function(...) {
-      utils::install.packages(
-        'rhdf5',
-        repos = c(
-          'https://roaldarbol.r-universe.dev',
-          'https://cloud.r-project.org'
-        )
-      )
-    }
-  )
+  check_rhdf5()
 
   traj_dimensions <- rhdf5::h5ls(path) |>
     dplyr::as_tibble(.name_repair = "unique") |>

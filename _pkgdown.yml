@@ -35,8 +35,10 @@ reference:
   - read_idtracker
   - read_lightningpose
   - read_movement
+  - read_octron
   - read_sleap
   - read_trackball
+  - read_trackmate
   - read_trex
 
 - title: "Writer functions"
@@ -48,3 +50,4 @@ reference:
 - title: Miscellaneous
   contents:
   - get_sample_data
+  - calibrate_trackball

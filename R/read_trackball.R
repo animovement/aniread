@@ -8,11 +8,10 @@
 #' @param col_time Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).
 #' @param col_dx Column name for x-axis values
 #' @param col_dy Column name for y-axis values
-#' @param ball_calibration When running an `of_fixed` experiment, you may (but it is not necessary) provide a calibration factor. This factor is the number recorded after a 360 degree spin. You can use the `calibrate_trackball` function to get this number. Alternatively, provide the `ball_diameter` and a `distance_scale` (e.g. mouse dpcm).
-#' @param ball_diameter When running a `of_fixed` experiment, the ball diameter is needed together with either `ball_calibration` or `distance_scale`.
-#' @param distance_scale If using computer mice, you might be getting unit-less data out. However, computer mice have a factor called "dots-per-cm", which you can use to convert your estimates into centimeters.
-#' @param distance_unit Which unit should be used. If `distance_scale` is also used, the unit will be for the scaled data. E.g. for trackball data with optical flow sensors, you can use the mouse dots-per-cm (dpcm) of 394 by setting `distance_unit = "cm"` and `distance_scale = 394`.
-#' @param verbose If `FALSE` (default), suppress most warning messages.
+#' @param counts_per_rotation For `of_fixed` setup: the sensor count for a full 360 degree rotation. Can be obtained using `calibrate_trackball()`.
+#' @param ball_diameter For `of_fixed` setup: the ball diameter (in same units as desired output). Required if using `dots_per_cm` instead of `counts_per_rotation`.
+#' @param dots_per_cm For `of_fixed` setup: sensor dots-per-cm. Use with `ball_diameter` as an alternative to `counts_per_rotation`.
+#' @param quiet If `TRUE` (default), suppresses most warning messages.
 #'
 #' @return a movement dataframe
 #' @export
@@ -23,26 +22,50 @@ read_trackball <- function(
   col_time = "time",
   col_dx = "x",
   col_dy = "y",
-  ball_calibration = NULL,
+  counts_per_rotation = NULL,
   ball_diameter = NULL,
-  distance_scale = NULL,
-  distance_unit = NULL,
-  verbose = FALSE
+  dots_per_cm = NULL,
+  quiet = TRUE
 ) {
-  validate_files(paths, expected_suffix = "csv") #expected_headers = c("x", "y", "time")
-  validate_trackball(paths, setup, col_time)
+  validate_files(paths, expected_suffix = "csv")
   n_sensors <- length(paths)
 
   # Read data
   if (n_sensors == 2) {
     data_list <- list()
+    start_datetimes <- c()
     for (i in 1:n_sensors) {
-      data_list[[i]] <- read_opticalflow(paths[i], col_time) |>
+      data_list[[i]] <- read_opticalflow(
+        paths[i],
+        col_time = col_time,
+        col_dx = col_dx,
+        col_dy = col_dy
+      ) |>
         dplyr::mutate(sensor_n = i)
+      start_datetimes[i] <- attr(data_list[[i]], "start_datetime")
     }
-    data <- join_trackball_files(data_list, sampling_rate)
+    # Shared start is the later of the two (max of mins)
+    if (all(!is.na(start_datetimes))) {
+      start_datetime <- max(start_datetimes)
+    } else {
+      start_datetime <- NA
+    }
+    data <- join_trackball_files(data_list, sampling_rate = sampling_rate)
   } else {
-    data <- read_opticalflow(paths[i], col_time)
+    data <- read_opticalflow(
+      paths,
+      col_time = col_time,
+      col_dx = col_dx,
+      col_dy = col_dy
+    )
+    start_datetime <- attr(data, "start_datetime")
+    data <- data |>
+      dplyr::mutate(time_group = floor(.data$time * sampling_rate)) |>
+      dplyr::group_by(.data$time_group) |>
+      dplyr::summarise(
+        x_1 = sum(.data$dx),
+        y_1 = sum(.data$dy)
+      )
   }
 
   # Calculate coordinates (free/fixed)
@@ -52,39 +75,36 @@ read_trackball <- function(
   } else if (setup == "of_fixed") {
     data <- data |>
       compute_xy_coordinates_fixed(
-        n_sensors,
-        ball_diameter,
-        ball_calibration,
-        distance_scale
+        n_sensors = n_sensors,
+        counts_per_rotation = counts_per_rotation,
+        ball_diameter = ball_diameter,
+        dots_per_cm = dots_per_cm
       )
   }
 
   # Scale distance and time and select output columns
   data <- data |>
-    dplyr::mutate(keypoint = factor("centroid")) |>
-    scale_values(c("x", "y", "dx", "dy"), distance_scale) |>
     dplyr::mutate(
       time = .data$time / sampling_rate,
-      individual = factor(NA),
-      confidence = as.numeric(NA)
+      keypoint = "centroid"
     ) |>
-    # dplyr::mutate(uid = stringi::stri_rand_strings(1, 20, pattern = "[A-Z0-9]")) |>
     dplyr::select(
-      "time",
-      "individual",
       "keypoint",
+      "time",
       "x",
-      "y",
-      "confidence",
-      "dx",
-      "dy"
+      "y"
     )
 
   # Init metadata
   data <- data |>
     aniframe::as_aniframe() |>
     aniframe::set_metadata(
-      sampling_rate = sampling_rate
+      source = "trackball_bonsai",
+      filename = paths,
+      sampling_rate = sampling_rate,
+      unit_space = "none",
+      unit_time = "s",
+      start_datetime = start_datetime
     )
 
   return(data)
@@ -95,9 +115,14 @@ read_trackball <- function(
 #' @param path Path to the file.
 #' @inheritParams read_trackball
 #' @keywords internal
-read_opticalflow <- function(path, col_time, verbose = FALSE) {
+read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
   # Read file
-  if (does_file_have_expected_headers(path, c("x", "y", "time"))) {
+  if (
+    is.character(col_time) &&
+      is.character(col_dx) &&
+      is.character(col_dy) &&
+      does_file_have_expected_headers(path, c(col_time, col_dx, col_dy))
+  ) {
     data <- vroom::vroom(
       path,
       delim = ",",
@@ -109,27 +134,54 @@ read_opticalflow <- function(path, col_time, verbose = FALSE) {
       path,
       skip = 2,
       delim = ",",
-      show_col_types = TRUE,
+      show_col_types = FALSE,
       .name_repair = "unique"
     ) |>
       suppressMessages()
   }
 
+  # Resolve column identifiers to names
+  col_time <- resolve_column(data, col_time)
+  col_dx <- resolve_column(data, col_dx)
+  col_dy <- resolve_column(data, col_dy)
+
   # Change column names
   data <- data |>
-    dplyr::rename("dx" := 1) |>
-    dplyr::rename("dy" := 2) |>
-    dplyr::rename("time" := dplyr::all_of(col_time))
+    dplyr::rename(
+      "dx" = dplyr::all_of(col_dx),
+      "dy" = dplyr::all_of(col_dy),
+      "time" = dplyr::all_of(col_time)
+    )
 
-  # If time is a datetime stamp, convert it into seconds from start
-  # NEEDS TO GO INTO THE TIME VALIDATOR
-  if (inherits(data$time, "POSIXt") == TRUE) {
+  start_datetime <- NULL
+
+  if (inherits(data$time, "POSIXt")) {
+    start_datetime <- min(data$time)
     data <- data |>
-      dplyr::mutate(time = as.numeric(.data$time))
+      dplyr::mutate(
+        time = as.numeric(.data$time),
+        time = .data$time - min(.data$time)
+      )
   } else if (is.character(data$time)) {
+    start_datetime <- min(as.POSIXct(data$time))
     data <- data |>
-      dplyr::mutate(time = as.numeric(as.POSIXct(.data$time)))
+      dplyr::mutate(
+        time = as.numeric(as.POSIXct(.data$time)),
+        time = .data$time - min(.data$time)
+      )
+  } else {
+    # Numeric timestamps - no real datetime available
+    start_datetime <- NA
+    med_diff <- stats::median(diff(sort(data$time)))
+    divisor <- if (med_diff > 1000) 1e6 else 1
+
+    data <- data |>
+      dplyr::mutate(
+        time = (as.numeric(.data$time) - min(as.numeric(.data$time))) / divisor
+      )
   }
+
+  attr(data, "start_datetime") <- start_datetime
   return(data)
 }
 
@@ -143,14 +195,17 @@ join_trackball_files <- function(data_list, sampling_rate) {
   highest_min_time <- max(c(min(data_list[[1]]$time), min(data_list[[2]]$time)))
   lowest_max_time <- min(c(max(data_list[[1]]$time), max(data_list[[2]]$time)))
   data_list[[1]] <- data_list[[1]] |>
-    dplyr::filter(.data$time > highest_min_time & .data$time < lowest_max_time)
+    dplyr::filter(
+      .data$time >= highest_min_time & .data$time <= lowest_max_time
+    )
   data_list[[2]] <- data_list[[2]] |>
-    dplyr::filter(.data$time > highest_min_time & .data$time < lowest_max_time)
+    dplyr::filter(
+      .data$time >= highest_min_time & .data$time <= lowest_max_time
+    )
 
   # We use the provided sampling rate to create shared a shared time frame
   data_list[[1]] <- data_list[[1]] |>
     dplyr::mutate(time = as.numeric(.data$time - highest_min_time)) |>
-    dplyr::filter(.data$time > 0) |>
     dplyr::mutate(time_group = floor(.data$time * sampling_rate)) |>
     dplyr::group_by(.data$time_group) |>
     dplyr::summarise(
@@ -159,7 +214,6 @@ join_trackball_files <- function(data_list, sampling_rate) {
     )
   data_list[[2]] <- data_list[[2]] |>
     dplyr::mutate(time = as.numeric(.data$time - highest_min_time)) |>
-    dplyr::filter(.data$time > 0) |>
     dplyr::mutate(time_group = floor(.data$time * sampling_rate)) |>
     dplyr::group_by(.data$time_group) |>
     dplyr::summarise(
@@ -201,21 +255,16 @@ join_trackball_files <- function(data_list, sampling_rate) {
 #' @inheritParams read_trackball
 #' @keywords internal
 compute_xy_coordinates_free <- function(data) {
-  # Convert time back to seconds
-  data <- data |>
+  data |>
     dplyr::rename(
       time = "time_group",
       dx = "y_1",
       dy = "y_2"
-    )
-
-  data <- data |>
+    ) |>
     dplyr::mutate(
       x = cumsum(.data$dx),
       y = cumsum(.data$dy)
-    ) |>
-    dplyr::relocate("time", .before = 1)
-  return(data)
+    )
 }
 
 #' @inheritParams read_trackball
@@ -223,59 +272,67 @@ compute_xy_coordinates_free <- function(data) {
 compute_xy_coordinates_fixed <- function(
   data,
   n_sensors,
+  counts_per_rotation,
   ball_diameter,
-  ball_calibration,
-  distance_scale
+  dots_per_cm
 ) {
   if (n_sensors == 2) {
     data <- data |>
       dplyr::rename(time = "time_group") |>
       dplyr::mutate(
-        sensor_dx = mean(c(.data$x_1, .data$x_2)), # Takes the mean of the x reading on both sensors
+        sensor_dx = (.data$x_1 + .data$x_2) / 2,
         sensor_dy = .data$y_1
       )
   } else if (n_sensors == 1) {
     data <- data |>
       dplyr::rename(
         time = "time_group",
-        sensor_dx = .data$x_1,
-        sensor_dy = .data$y_1
+        sensor_dx = "x_1",
+        sensor_dy = "y_1"
       )
   }
 
-  # Compute the xy coordinates by calculating the angle turned and displacement in every bin
-  if (!is.null(ball_calibration)) {
+  # Compute angle from sensor reading
+  if (!is.null(counts_per_rotation)) {
     data <- data |>
-      dplyr::mutate(d_angle = (.data$sensor_dx / ball_calibration) * 2 * pi) # in radians
-  } else if (!is.null(distance_scale)) {
+      dplyr::mutate(d_angle = (.data$sensor_dx / counts_per_rotation) * 2 * pi)
+  } else if (!is.null(dots_per_cm) && !is.null(ball_diameter)) {
     data <- data |>
       dplyr::mutate(
-        d_angle = (.data$sensor_dx / (ball_diameter * pi * distance_scale)) *
+        d_angle = (.data$sensor_dx / (ball_diameter * pi * dots_per_cm)) *
           2 *
           pi
-      ) # in radians
+      )
+  } else {
+    cli::cli_abort(
+      "For {.arg setup} = 'of_fixed', provide either {.arg counts_per_rotation} or both {.arg ball_diameter} and {.arg dots_per_cm}."
+    )
   }
-  data <- data |>
+
+  # Compute xy coordinates from angle and displacement
+  data |>
     dplyr::mutate(
       dx = .data$sensor_dy * cos(.data$d_angle),
-      dy = .data$sensor_dy * sin(.data$d_angle)
-    ) |>
-    dplyr::mutate(
+      dy = .data$sensor_dy * sin(.data$d_angle),
       x = cumsum(.data$dx),
       y = cumsum(.data$dy)
-    ) |>
-    dplyr::relocate("time", .before = 1)
-  return(data)
+    )
 }
 
+#' Resolve column identifier to column name
+#' @param data Data frame
+#' @param col Column identifier (name or index)
+#' @return Column name as character
 #' @keywords internal
-scale_values <- function(data, variables, scaling_factor) {
-  # Adjust distances for mouse sensor "dots-per-cm"
-  if (!is.null(scaling_factor)) {
-    data <- data |>
-      dplyr::mutate(dplyr::across(
-        dplyr::all_of(variables),
-        ~ .x / scaling_factor
-      ))
+resolve_column <- function(data, col) {
+  if (is.numeric(col)) {
+    if (col < 1 || col > ncol(data)) {
+      cli::cli_abort("Column index {col} is out of bounds (1-{ncol(data)}).")
+    }
+    return(names(data)[col])
   }
+  if (!col %in% names(data)) {
+    cli::cli_abort("Column {.val {col}} not found in data.")
+  }
+  col
 }
