@@ -91,8 +91,8 @@
     },
     "aniframe": {
       "Package": "aniframe",
-      "Version": "0.3.5",
-      "Source": "GitHub",
+      "Version": "0.4.0",
+      "Source": "Repository",
       "Type": "Package",
       "Title": "An R package providing core data structures for movement data",
       "Authors@R": "person( \"Mikkel\",  \"Roald-Arbøl\",  role = c(\"aut\", \"cre\"),  email = \"animovement.84w1m@passmail.com\", comment = c(ORCID = \"0000-0002-9998-0058\") )",
@@ -101,7 +101,6 @@
       "URL": "http://animovement.dev/aniframe/, https://github.com/animovement/aniframe/",
       "BugReports": "https://github.com/animovement/aniframe/issues",
       "Encoding": "UTF-8",
-      "LazyData": "true",
       "Depends": [
         "R (>= 4.1.0)"
       ],
@@ -122,14 +121,13 @@
       "RoxygenNote": "7.3.3",
       "VignetteBuilder": "knitr",
       "Config/Needs/website": "rmarkdown",
+      "Repository": "https://animovement.r-universe.dev",
+      "RemoteUrl": "https://github.com/animovement/aniframe",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "dee39692f31faa06fccb82821ebff62309a994f4",
+      "NeedsCompilation": "no",
       "Author": "Mikkel Roald-Arbøl [aut, cre] (ORCID: <https://orcid.org/0000-0002-9998-0058>)",
-      "Maintainer": "Mikkel Roald-Arbøl <animovement.84w1m@passmail.com>",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "animovement",
-      "RemoteRepo": "aniframe",
-      "RemoteRef": "tidy-variables",
-      "RemoteSha": "ae5cc3386a144b9b94f4058c99614e5c34998d9b"
+      "Maintainer": "Mikkel Roald-Arbøl <animovement.84w1m@passmail.com>"
     },
     "anytime": {
       "Package": "anytime",
