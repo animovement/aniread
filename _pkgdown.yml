@@ -34,7 +34,6 @@ reference:
   - read_freemocap
   - read_idtracker
   - read_lightningpose
-  - read_movement
   - read_octron
   - read_sleap
   - read_trackball
