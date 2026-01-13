@@ -9,7 +9,8 @@
 [![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
-<!-- [![Codecov test coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread) -->
+[![Codecov test
+coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread)
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
@@ -50,9 +51,8 @@ To cite *aniread* in publications use:
 citation("aniread")
 #> To cite aniread in publications use:
 #> 
-#>   Roald-Arbøl M (2025). "aniread: An R package for reading and writing
-#>   movement data." doi:10.5281/zenodo.17352843
-#>   <https://doi.org/10.5281/zenodo.17352843>,
+#>   Roald-Arbøl M (2025). "aniread: An R package for reading and writing movement data."
+#>   doi:10.5281/zenodo.17352843 <https://doi.org/10.5281/zenodo.17352843>,
 #>   <http://animovement.dev/aniread/>.
 #> 
 #> A BibTeX entry for LaTeX users is
@@ -64,6 +64,6 @@ citation("aniread")
 #>     year = {2025},
 #>     url = {http://animovement.dev/aniread/},
 #>     abstract = {An R package for reading and writing movement data.},
-#>     version = {0.2.0},
+#>     version = {0.3.0},
 #>   }
 ```

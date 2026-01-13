@@ -5,3 +5,5 @@
 docs
 .DS_Store
 .vscode
+/.quarto/
+**/*.quarto_ipynb
