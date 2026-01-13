@@ -22,5 +22,5 @@ movement data.”
       year = {2025},
       url = {http://animovement.dev/aniread/},
       abstract = {An R package for reading and writing movement data.},
-      version = {0.2.0},
+      version = {0.3.0},
     }

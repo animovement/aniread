@@ -6,7 +6,14 @@ aniframe.
 ## Usage
 
 ``` r
-read_custom(path, cols, metadata = list())
+read_custom(
+  path,
+  cols,
+  variables_what = NULL,
+  variables_when = NULL,
+  variables_where = NULL,
+  metadata = list()
+)
 ```
 
 ## Arguments
@@ -21,13 +28,27 @@ read_custom(path, cols, metadata = list())
   them, e.g. `c(time = "time", x = "x", y = "y")`. Names should be the
   desired output column names, and values can be either the original
   column names (as characters) or column positions (as integers, e.g.
-  `c(time = 1, x = 2, y = 3)`). .
+  `c(time = 1, x = 2, y = 3)`).
+
+- variables_what:
+
+  Character vector of identity columns that together define a unique
+  entity. Uses aniframe defaults if NULL.
+
+- variables_when:
+
+  Character vector of temporal columns that together define a unique
+  timepoint. Uses aniframe defaults if NULL.
+
+- variables_where:
+
+  Character vector of spatial columns that together define position. If
+  NULL, detected from data.
 
 - metadata:
 
   A list of metadata to attach to the resulting aniframe. Default is an
-  empty list. To see which metadata fields can be set, see
-  aniframe::default_metadata().
+  empty list.
 
 ## Value
 
@@ -38,8 +59,29 @@ metadata.
 
 ``` r
 if (FALSE) { # \dontrun{
-# Using column names
+# Simple case: rename columns to standard names, use defaults
 read_custom("data.csv", cols = c(time = "frame", x = "pos_x", y = "pos_y"))
+
+# With identity variable
+read_custom(
+  "data.csv",
+  cols = c(track = "track_id", time = "frame", x = "pos_x", y = "pos_y"),
+  variables_what = "track"
+)
+
+# Full specification with trials
+read_custom(
+  "data.csv",
+  cols = c(
+    id = "animal_id",
+    trial = "trial_num",
+    frame = "frame_idx",
+    x = "x_coord",
+    y = "y_coord"
+  ),
+  variables_what = "id",
+  variables_when = c("trial", "frame")
+)
 
 # Using column positions
 read_custom("data.csv", cols = c(time = 1, x = 2, y = 3))

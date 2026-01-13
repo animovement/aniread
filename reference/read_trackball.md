@@ -12,11 +12,10 @@ read_trackball(
   col_time = "time",
   col_dx = "x",
   col_dy = "y",
-  ball_calibration = NULL,
+  counts_per_rotation = NULL,
   ball_diameter = NULL,
-  distance_scale = NULL,
-  distance_unit = NULL,
-  verbose = FALSE
+  dots_per_cm = NULL,
+  quiet = TRUE
 )
 ```
 
@@ -53,35 +52,26 @@ read_trackball(
 
   Column name for y-axis values
 
-- ball_calibration:
+- counts_per_rotation:
 
-  When running an `of_fixed` experiment, you may (but it is not
-  necessary) provide a calibration factor. This factor is the number
-  recorded after a 360 degree spin. You can use the
-  `calibrate_trackball` function to get this number. Alternatively,
-  provide the `ball_diameter` and a `distance_scale` (e.g. mouse dpcm).
+  For `of_fixed` setup: the sensor count for a full 360 degree rotation.
+  Can be obtained using
+  [`calibrate_trackball()`](http://animovement.dev/aniread/reference/calibrate_trackball.md).
 
 - ball_diameter:
 
-  When running a `of_fixed` experiment, the ball diameter is needed
-  together with either `ball_calibration` or `distance_scale`.
+  For `of_fixed` setup: the ball diameter (in same units as desired
+  output). Required if using `dots_per_cm` instead of
+  `counts_per_rotation`.
 
-- distance_scale:
+- dots_per_cm:
 
-  If using computer mice, you might be getting unit-less data out.
-  However, computer mice have a factor called "dots-per-cm", which you
-  can use to convert your estimates into centimeters.
+  For `of_fixed` setup: sensor dots-per-cm. Use with `ball_diameter` as
+  an alternative to `counts_per_rotation`.
 
-- distance_unit:
+- quiet:
 
-  Which unit should be used. If `distance_scale` is also used, the unit
-  will be for the scaled data. E.g. for trackball data with optical flow
-  sensors, you can use the mouse dots-per-cm (dpcm) of 394 by setting
-  `distance_unit = "cm"` and `distance_scale = 394`.
-
-- verbose:
-
-  If `FALSE` (default), suppress most warning messages.
+  If `TRUE` (default), suppresses most warning messages.
 
 ## Value
 

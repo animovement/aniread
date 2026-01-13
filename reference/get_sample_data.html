@@ -9,7 +9,7 @@ to the downloaded file. The function caches the data to avoid repeated downloads
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,13 @@ to the downloaded file. The function caches the data to avoid repeated downloads
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_sample_data</span><span class="op">(</span><span class="va">source</span>, cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_sample_data</span><span class="op">(</span></span>
+<span>  <span class="va">source</span>,</span>
+<span>  dataset <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cache_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  list_datasets <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -56,17 +62,26 @@ to the downloaded file. The function caches the data to avoid repeated downloads
 
 
 <dl><dt id="arg-source">source<a class="anchor" aria-label="anchor" href="#arg-source"></a></dt>
-<dd><p>Character string specifying the tracking software. Currently supported:</p><ul><li><p>"animalta": Data from AnimalTA (single individual, multi-arena)</p></li>
+<dd><p>Character string specifying either a tracking software name or a URL.
+Currently supported software names:</p><ul><li><p>"animalta": Data from AnimalTA</p></li>
 <li><p>"anipose": Mouse paw tracking data</p></li>
 <li><p>"bonsai": Tracking data from Bonsai</p></li>
-<li><p>"deeplabcut": Mouse tracking from DeepLabCut</p></li>
-<li><p>"fictrac": Fictrac sample data (.dat format)</p></li>
-<li><p>"freemocap": FreeMoCap test data by frame</p></li>
-<li><p>"idtrackerai": Trajectories from idtracker.ai (.h5 format)</p></li>
-<li><p>"lightningpose": Mouse tracking from LightningPose</p></li>
-<li><p>"sleap": Single mouse EPM tracking from SLEAP (.h5 format)</p></li>
-<li><p>"trex": Beetle tracking from TRex</p></li>
-</ul></dd>
+<li><p>"deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)</p></li>
+<li><p>"fictrac": Fictrac sample data</p></li>
+<li><p>"freemocap": FreeMoCap motion capture test data</p></li>
+<li><p>"idtracker": Trajectories from idtracker.ai</p></li>
+<li><p>"lightningpose": Mouse tracking from LightningPose (2 datasets)</p></li>
+<li><p>"movement": Movement package native format (2 datasets)</p></li>
+<li><p>"sleap": Animal tracking from SLEAP (3 datasets)</p></li>
+<li><p>"trex": Multi-animal tracking from TRex (returns vector of individual files)</p></li>
+</ul><p>Alternatively, provide a URL string (starting with "http://" or "https://")
+to download a file from a custom location.</p></dd>
+
+
+<dt id="arg-dataset">dataset<a class="anchor" aria-label="anchor" href="#arg-dataset"></a></dt>
+<dd><p>Character string specifying which dataset to download for sources
+that have multiple options. If NULL (default), the first listed dataset is used.
+Call <code>get_sample_data(list_datasets = TRUE)</code> to see all available options.</p></dd>
 
 
 <dt id="arg-cache-dir">cache_dir<a class="anchor" aria-label="anchor" href="#arg-cache-dir"></a></dt>
@@ -78,27 +93,53 @@ location to persist data across R sessions.</p></dd>
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
 <dd><p>TRUE/FALSE. TRUE suppresses inform messages.</p></dd>
 
+
+<dt id="arg-list-datasets">list_datasets<a class="anchor" aria-label="anchor" href="#arg-list-datasets"></a></dt>
+<dd><p>TRUE/FALSE. If TRUE, prints available sources and datasets.
+Can be called with or without specifying a source.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Character string with the path to the downloaded file.</p>
+    <p>Character string (or vector) with the path(s) to the downloaded file(s).
+For TRex datasets, returns a character vector of paths to the individual tracking
+files. For all other sources, returns a single file path. Returns NULL invisibly
+if <code>list_datasets = TRUE</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The function downloads sample data from a GitHub repository and caches it locally.
-If the file already exists in the cache directory, it will use the cached version
-instead of downloading it again.</p>
-<p>The data sources are hosted at: https://github.com/animovement/movement-data</p>
-    </div>
+    <p>The function downloads sample data and caches it locally. If the file already exists
+in the cache directory, it will use the cached version instead of downloading again.</p>
+<p>Some sources have multiple datasets available. The first dataset listed for each
+source is used by default when <code>dataset = NULL</code>.</p>
+<p>Special handling for TRex datasets:
+TRex datasets are distributed as zip files containing multiple individual tracking
+files (one per animal). The function automatically extracts these and returns a
+vector of paths to the individual files.</p>
+<p>The predefined data sources are hosted at:</p><ul><li><p>https://gin.g-node.org/neuroinformatics/movement-test-data</p></li>
+<li><p>https://github.com/animovement/movement-data</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Get path to DeepLabCut sample data</span></span></span>
-<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"deeplabcut"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># See all available sources and datasets</span></span></span>
+<span class="r-in"><span><span class="fu">get_sample_data</span><span class="op">(</span>list_datasets <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Read the data with the corresponding reader function</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="read_deeplabcut.html">read_deeplabcut</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># See datasets for a specific source</span></span></span>
+<span class="r-in"><span><span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"sleap"</span>, list_datasets <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get default dataset for SLEAP</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"sleap"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get a specific SLEAP dataset</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"sleap"</span>, dataset <span class="op">=</span> <span class="st">"zebras_drone"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get TRex data (returns vector of paths to individual files)</span></span></span>
+<span class="r-in"><span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"trex"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Download from a custom URL</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu">get_sample_data</span><span class="op">(</span><span class="st">"https://example.com/data/tracking.csv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

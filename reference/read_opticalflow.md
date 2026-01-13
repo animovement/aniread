@@ -5,7 +5,7 @@ Read optical flow sensor data.
 ## Usage
 
 ``` r
-read_opticalflow(path, col_time, verbose = FALSE)
+read_opticalflow(path, col_time, col_dx, col_dy, quiet = TRUE)
 ```
 
 ## Arguments
@@ -21,6 +21,14 @@ read_opticalflow(path, col_time, verbose = FALSE)
   has one (character). Should either be a datetime (POSIXt) or seconds
   (numeric).
 
-- verbose:
+- col_dx:
 
-  If `FALSE` (default), suppress most warning messages.
+  Column name for x-axis values
+
+- col_dy:
+
+  Column name for y-axis values
+
+- quiet:
+
+  If `TRUE` (default), suppresses most warning messages.

@@ -7,35 +7,54 @@ repeated downloads.
 ## Usage
 
 ``` r
-get_sample_data(source, cache_dir = tempdir(), quiet = FALSE)
+get_sample_data(
+  source,
+  dataset = NULL,
+  cache_dir = tempdir(),
+  quiet = FALSE,
+  list_datasets = FALSE
+)
 ```
 
 ## Arguments
 
 - source:
 
-  Character string specifying the tracking software. Currently
-  supported:
+  Character string specifying either a tracking software name or a URL.
+  Currently supported software names:
 
-  - "animalta": Data from AnimalTA (single individual, multi-arena)
+  - "animalta": Data from AnimalTA
 
   - "anipose": Mouse paw tracking data
 
   - "bonsai": Tracking data from Bonsai
 
-  - "deeplabcut": Mouse tracking from DeepLabCut
+  - "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
 
-  - "fictrac": Fictrac sample data (.dat format)
+  - "fictrac": Fictrac sample data
 
-  - "freemocap": FreeMoCap test data by frame
+  - "freemocap": FreeMoCap motion capture test data
 
-  - "idtrackerai": Trajectories from idtracker.ai (.h5 format)
+  - "idtracker": Trajectories from idtracker.ai
 
-  - "lightningpose": Mouse tracking from LightningPose
+  - "lightningpose": Mouse tracking from LightningPose (2 datasets)
 
-  - "sleap": Single mouse EPM tracking from SLEAP (.h5 format)
+  - "movement": Movement package native format (2 datasets)
 
-  - "trex": Beetle tracking from TRex
+  - "sleap": Animal tracking from SLEAP (3 datasets)
+
+  - "trex": Multi-animal tracking from TRex (returns vector of
+    individual files)
+
+  Alternatively, provide a URL string (starting with "http://" or
+  "https://") to download a file from a custom location.
+
+- dataset:
+
+  Character string specifying which dataset to download for sources that
+  have multiple options. If NULL (default), the first listed dataset is
+  used. Call `get_sample_data(list_datasets = TRUE)` to see all
+  available options.
 
 - cache_dir:
 
@@ -48,27 +67,58 @@ get_sample_data(source, cache_dir = tempdir(), quiet = FALSE)
 
   TRUE/FALSE. TRUE suppresses inform messages.
 
+- list_datasets:
+
+  TRUE/FALSE. If TRUE, prints available sources and datasets. Can be
+  called with or without specifying a source.
+
 ## Value
 
-Character string with the path to the downloaded file.
+Character string (or vector) with the path(s) to the downloaded file(s).
+For TRex datasets, returns a character vector of paths to the individual
+tracking files. For all other sources, returns a single file path.
+Returns NULL invisibly if `list_datasets = TRUE`.
 
 ## Details
 
-The function downloads sample data from a GitHub repository and caches
-it locally. If the file already exists in the cache directory, it will
-use the cached version instead of downloading it again.
+The function downloads sample data and caches it locally. If the file
+already exists in the cache directory, it will use the cached version
+instead of downloading again.
 
-The data sources are hosted at:
-https://github.com/animovement/movement-data
+Some sources have multiple datasets available. The first dataset listed
+for each source is used by default when `dataset = NULL`.
+
+Special handling for TRex datasets: TRex datasets are distributed as zip
+files containing multiple individual tracking files (one per animal).
+The function automatically extracts these and returns a vector of paths
+to the individual files.
+
+The predefined data sources are hosted at:
+
+- https://gin.g-node.org/neuroinformatics/movement-test-data
+
+- https://github.com/animovement/movement-data
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Get path to DeepLabCut sample data
-path <- get_sample_data("deeplabcut")
+# See all available sources and datasets
+get_sample_data(list_datasets = TRUE)
 
-# Read the data with the corresponding reader function
-data <- read_deeplabcut(path)
+# See datasets for a specific source
+get_sample_data("sleap", list_datasets = TRUE)
+
+# Get default dataset for SLEAP
+path <- get_sample_data("sleap")
+
+# Get a specific SLEAP dataset
+path <- get_sample_data("sleap", dataset = "zebras_drone")
+
+# Get TRex data (returns vector of paths to individual files)
+paths <- get_sample_data("trex")
+
+# Download from a custom URL
+path <- get_sample_data("https://example.com/data/tracking.csv")
 } # }
 ```

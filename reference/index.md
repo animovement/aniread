@@ -24,10 +24,14 @@ These functions are the links between R and your movement data.
   : Read LightningPose data
 - [`read_movement()`](http://animovement.dev/aniread/reference/read_movement.md)
   **\[experimental\]** : Read movement data
+- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+  : Read Octron Segmentation Data
 - [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md)
   : Read SLEAP data
 - [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
   : Read trackball data
+- [`read_trackmate()`](http://animovement.dev/aniread/reference/read_trackmate.md)
+  : Read TrackMate XML into an aniframe
 - [`read_trex()`](http://animovement.dev/aniread/reference/read_trex.md)
   : Read TRex Movement Tracking Data
 
@@ -47,3 +51,5 @@ These functions are allow you to save your data.
 
 - [`get_sample_data()`](http://animovement.dev/aniread/reference/get_sample_data.md)
   : Download sample tracking data
+- [`calibrate_trackball()`](http://animovement.dev/aniread/reference/calibrate_trackball.md)
+  : Get calibration values for trackball data

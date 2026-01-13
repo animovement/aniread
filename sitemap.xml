@@ -6,6 +6,7 @@
 <url><loc>http://animovement.dev/aniread/index.html</loc></url>
 <url><loc>http://animovement.dev/aniread/news/index.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/aniread-package.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/calibrate_trackball.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/does_file_have_expected_headers.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_dlc_expected_header_levels.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_file_exists_when_expected.html</loc></url>
@@ -32,12 +33,15 @@
 <url><loc>http://animovement.dev/aniread/reference/read_idtracker.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_lightningpose.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_movement.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/read_octron.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_opticalflow.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_sleap.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_sleap_h5.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_trackball.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/read_trackmate.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_trex.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_trex_csv.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/resolve_column.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_deeplabcut_csv.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_files.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_trackball.html</loc></url>

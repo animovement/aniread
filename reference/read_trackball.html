@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,11 +52,10 @@
 <span>  col_time <span class="op">=</span> <span class="st">"time"</span>,</span>
 <span>  col_dx <span class="op">=</span> <span class="st">"x"</span>,</span>
 <span>  col_dy <span class="op">=</span> <span class="st">"y"</span>,</span>
-<span>  ball_calibration <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  counts_per_rotation <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ball_diameter <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  distance_scale <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  distance_unit <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  dots_per_cm <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,24 +87,20 @@
 <dd><p>Column name for y-axis values</p></dd>
 
 
-<dt id="arg-ball-calibration">ball_calibration<a class="anchor" aria-label="anchor" href="#arg-ball-calibration"></a></dt>
-<dd><p>When running an <code>of_fixed</code> experiment, you may (but it is not necessary) provide a calibration factor. This factor is the number recorded after a 360 degree spin. You can use the <code>calibrate_trackball</code> function to get this number. Alternatively, provide the <code>ball_diameter</code> and a <code>distance_scale</code> (e.g. mouse dpcm).</p></dd>
+<dt id="arg-counts-per-rotation">counts_per_rotation<a class="anchor" aria-label="anchor" href="#arg-counts-per-rotation"></a></dt>
+<dd><p>For <code>of_fixed</code> setup: the sensor count for a full 360 degree rotation. Can be obtained using <code><a href="calibrate_trackball.html">calibrate_trackball()</a></code>.</p></dd>
 
 
 <dt id="arg-ball-diameter">ball_diameter<a class="anchor" aria-label="anchor" href="#arg-ball-diameter"></a></dt>
-<dd><p>When running a <code>of_fixed</code> experiment, the ball diameter is needed together with either <code>ball_calibration</code> or <code>distance_scale</code>.</p></dd>
+<dd><p>For <code>of_fixed</code> setup: the ball diameter (in same units as desired output). Required if using <code>dots_per_cm</code> instead of <code>counts_per_rotation</code>.</p></dd>
 
 
-<dt id="arg-distance-scale">distance_scale<a class="anchor" aria-label="anchor" href="#arg-distance-scale"></a></dt>
-<dd><p>If using computer mice, you might be getting unit-less data out. However, computer mice have a factor called "dots-per-cm", which you can use to convert your estimates into centimeters.</p></dd>
+<dt id="arg-dots-per-cm">dots_per_cm<a class="anchor" aria-label="anchor" href="#arg-dots-per-cm"></a></dt>
+<dd><p>For <code>of_fixed</code> setup: sensor dots-per-cm. Use with <code>ball_diameter</code> as an alternative to <code>counts_per_rotation</code>.</p></dd>
 
 
-<dt id="arg-distance-unit">distance_unit<a class="anchor" aria-label="anchor" href="#arg-distance-unit"></a></dt>
-<dd><p>Which unit should be used. If <code>distance_scale</code> is also used, the unit will be for the scaled data. E.g. for trackball data with optical flow sensors, you can use the mouse dots-per-cm (dpcm) of 394 by setting <code>distance_unit = "cm"</code> and <code>distance_scale = 394</code>.</p></dd>
-
-
-<dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>If <code>FALSE</code> (default), suppress most warning messages.</p></dd>
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>If <code>TRUE</code> (default), suppresses most warning messages.</p></dd>
 
 </dl></div>
     <div class="section level2">
