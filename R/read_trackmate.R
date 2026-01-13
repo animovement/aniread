@@ -98,7 +98,7 @@ read_trackmate <- function(path, slim = TRUE) {
   # Remove the frame column if there are time stamps
   if (!all(is.na(data$time))) {
     data <- data |>
-      dplyr::select(-frame)
+      dplyr::select(-"frame")
   }
 
   data
