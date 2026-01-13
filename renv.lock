@@ -129,7 +129,7 @@
       "RemoteUsername": "animovement",
       "RemoteRepo": "aniframe",
       "RemoteRef": "tidy-variables",
-      "RemoteSha": "179c75b3ec1a8080b64a062e8553fa16d19533cd"
+      "RemoteSha": "ae5cc3386a144b9b94f4058c99614e5c34998d9b"
     },
     "anytime": {
       "Package": "anytime",
