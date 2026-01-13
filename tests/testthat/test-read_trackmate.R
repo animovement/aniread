@@ -13,42 +13,42 @@
 # - Frame column removed when time stamps exist
 
 test_that("read_trackmate errors on non-existent file", {
-	expect_error(
-		read_trackmate("nonexistent.xml"),
-		class = "rlang_error"
-	)
+  expect_error(
+    read_trackmate("nonexistent.xml"),
+    class = "rlang_error"
+  )
 })
 
 test_that("read_trackmate errors on wrong file suffix", {
-	tmp <- tempfile(fileext = ".csv")
-	file.create(tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".csv")
+  file.create(tmp)
+  on.exit(unlink(tmp))
 
-	expect_error(
-		read_trackmate(tmp),
-		class = "rlang_error"
-	)
+  expect_error(
+    read_trackmate(tmp),
+    class = "rlang_error"
+  )
 })
 
 test_that("read_trackmate errors when no tracks in XML", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
 			<AllSpots/>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	expect_error(
-		read_trackmate(tmp),
-		"No tracks found"
-	)
+  expect_error(
+    read_trackmate(tmp),
+    "No tracks found"
+  )
 })
 
 test_that("read_trackmate errors when no filtered tracks in XML", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
 			<AllSpots/>
@@ -58,18 +58,18 @@ test_that("read_trackmate errors when no filtered tracks in XML", {
 			<FilteredTracks/>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	expect_error(
-		read_trackmate(tmp),
-		"No filtered tracks"
-	)
+  expect_error(
+    read_trackmate(tmp),
+    "No filtered tracks"
+  )
 })
 
 test_that("read_trackmate parses valid XML correctly", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -88,21 +88,21 @@ test_that("read_trackmate parses valid XML correctly", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
+  result <- read_trackmate(tmp)
 
-	expect_s3_class(result, "aniframe")
-	expect_equal(nrow(result), 2)
-	expect_true(all(c("time", "x", "y") %in% names(result)))
-	expect_equal(result$x, c(10.0, 15.0))
-	expect_equal(result$y, c(20.0, 25.0))
+  expect_s3_class(result, "aniframe")
+  expect_equal(nrow(result), 2)
+  expect_true(all(c("time", "x", "y") %in% names(result)))
+  expect_equal(result$x, c(10.0, 15.0))
+  expect_equal(result$y, c(20.0, 25.0))
 })
 
 test_that("read_trackmate converts units correctly", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
 			<AllSpots>
@@ -121,27 +121,27 @@ test_that("read_trackmate converts units correctly", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
-	meta <- aniframe::get_metadata(result)
-	default_meta <- aniframe::default_metadata()
+  result <- read_trackmate(tmp)
+  meta <- aniframe::get_metadata(result)
+  default_meta <- aniframe::default_metadata()
 
-	expect_equal(
-		meta$unit_space,
-		factor("px", levels = levels(default_meta$unit_space))
-	)
-	expect_equal(
-		meta$unit_time,
-		factor("s", levels = levels(default_meta$unit_time))
-	)
-	expect_equal(meta$source, "trackmate")
+  expect_equal(
+    meta$unit_space,
+    factor("px", levels = levels(default_meta$unit_space))
+  )
+  expect_equal(
+    meta$unit_time,
+    factor("s", levels = levels(default_meta$unit_time))
+  )
+  expect_equal(meta$source, "trackmate")
 })
 
 test_that("read_trackmate only includes filtered tracks", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -165,20 +165,20 @@ test_that("read_trackmate only includes filtered tracks", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
+  result <- read_trackmate(tmp)
 
-	expect_equal(nrow(result), 2)
-	expect_equal(nlevels(result$track), 1)
-	expect_equal(as.character(unique(result$track)), "0")
-	expect_false(any(result$x > 50))
+  expect_equal(nrow(result), 2)
+  expect_equal(nlevels(result$track), 1)
+  expect_equal(as.character(unique(result$track)), "0")
+  expect_false(any(result$x > 50))
 })
 
 test_that("read_trackmate assigns keypoint column as centroid", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -197,22 +197,22 @@ test_that("read_trackmate assigns keypoint column as centroid", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
-	default_meta <- aniframe::default_metadata()
+  result <- read_trackmate(tmp)
+  default_meta <- aniframe::default_metadata()
 
-	expect_true("keypoint" %in% names(result))
-	expect_equal(
-		unique(result$keypoint),
-		factor("centroid")
-	)
+  expect_true("keypoint" %in% names(result))
+  expect_equal(
+    unique(result$keypoint),
+    factor("centroid")
+  )
 })
 
 test_that("read_trackmate warns on duplicate track-frame combinations", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -231,18 +231,18 @@ test_that("read_trackmate warns on duplicate track-frame combinations", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	expect_warning(
-		read_trackmate(tmp),
-		"duplicate"
-	)
+  expect_warning(
+    read_trackmate(tmp),
+    "duplicate"
+  )
 })
 
 test_that("read_trackmate sets z to NA when only one unique value", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -261,17 +261,17 @@ test_that("read_trackmate sets z to NA when only one unique value", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
+  result <- read_trackmate(tmp)
 
-	expect_true(all(is.na(result$z)))
+  expect_true(all(is.na(result$z)))
 })
 
 test_that("read_trackmate removes frame column when time stamps exist", {
-	xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
 			<AllSpots>
@@ -290,11 +290,11 @@ test_that("read_trackmate removes frame column when time stamps exist", {
 			</FilteredTracks>
 		</TrackMate>'
 
-	tmp <- tempfile(fileext = ".xml")
-	writeLines(xml_content, tmp)
-	on.exit(unlink(tmp))
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
 
-	result <- read_trackmate(tmp)
+  result <- read_trackmate(tmp)
 
-	expect_false("frame" %in% names(result))
+  expect_false("frame" %in% names(result))
 })
