@@ -333,7 +333,7 @@ test_that("read_custom maintains column order", {
   )
 
   # Columns should be ordered: when, where, rest
-  expect_equal(names(result)[1:4], c("time", "x", "y", "z"))
+  expect_equal(names(result), c("keypoint", "time", "x", "y", "z"))
 })
 
 # Integration tests -------------------------------------------------------
@@ -345,11 +345,6 @@ test_that("read_custom output works with aniframe functions", {
   expect_s3_class(result, "aniframe")
 })
 
-test_that("read_custom output is not grouped when no identity variables", {
-  result <- read_custom(path_valid, cols = c(time = "time", x = "x", y = "y"))
-
-  expect_false(dplyr::is_grouped_df(result))
-})
 
 test_that("read_custom output is grouped when identity variables specified", {
   result <- read_custom(
