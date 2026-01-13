@@ -172,8 +172,8 @@ test_that("read_trackmate only includes filtered tracks", {
   result <- read_trackmate(tmp)
 
   expect_equal(nrow(result), 2)
-  expect_equal(nlevels(result$individual), 1)
-  expect_equal(as.character(unique(result$individual)), "0")
+  expect_equal(nlevels(result$track), 1)
+  expect_equal(as.character(unique(result$track)), "0")
   expect_false(any(result$x > 50))
 })
 

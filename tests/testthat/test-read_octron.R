@@ -20,7 +20,7 @@ test_that("read_octron returns an aniframe with correct structure", {
   expect_named(
     result,
     c(
-      "individual",
+      "track",
       "time",
       "label",
       "confidence",
@@ -40,7 +40,7 @@ test_that("column renaming works correctly", {
   path <- test_path("data/octron", "octron_sample.csv")
   result <- read_octron(path, keep_bbox = TRUE)
 
-  expect_true("individual" %in% names(result))
+  expect_true("track" %in% names(result))
   expect_true("time" %in% names(result))
   expect_true("x" %in% names(result))
   expect_true("y" %in% names(result))

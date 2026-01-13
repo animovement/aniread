@@ -8,7 +8,7 @@ check_rhdf5 <- function() {
       utils::install.packages(
         'rhdf5',
         repos = c(
-          'https://animovement.r-universe.dev',
+          'https://bioc.r-universe.dev',
           'https://cloud.r-project.org'
         )
       )
