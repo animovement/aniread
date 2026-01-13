@@ -102,7 +102,10 @@ test_that("Test output header names", {
   expect_no_error(ensure_output_header_names(df_sleap_single))
   expect_no_error(ensure_output_header_names(df_sleap_multi))
   expect_no_error(ensure_output_header_names(df_trex))
-  expect_no_error(ensure_output_header_names(df_trackball))
+  expect_no_error(ensure_output_header_names(
+    df_trackball,
+    expected_headers = c("keypoint", "time", "x", "y")
+  ))
 })
 
 # Check output header classes
@@ -119,7 +122,11 @@ test_that("Test output header classes", {
   expect_no_error(ensure_output_header_class(df_sleap_single))
   expect_no_error(ensure_output_header_class(df_sleap_multi))
   expect_no_error(ensure_output_header_class(df_trex))
-  expect_no_error(ensure_output_header_class(df_trackball))
+  expect_no_error(ensure_output_header_class(
+    df_trackball,
+    expected_headers = c("keypoint", "time", "x", "y"),
+    expected_header_class = c("factor", "numeric", "numeric", "numeric")
+  ))
 })
 
 test_that("Test that there aren't any NaNs created", {

@@ -63,7 +63,7 @@ read_trackmate <- function(path, slim = TRUE) {
     dplyr::select(-"spot_id")
 
   # Check for duplicates
-  dupe_count <- sum(duplicated(result[, c("individual", "frame")]))
+  dupe_count <- sum(duplicated(result[, c("track", "frame")]))
   if (dupe_count > 0) {
     cli::cli_warn(
       "Detected {dupe_count} duplicate track-frame combinations."
@@ -71,10 +71,13 @@ read_trackmate <- function(path, slim = TRUE) {
   }
 
   cli::cli_alert_success(
-    "Loaded {nrow(result)} spots from {dplyr::n_distinct(result$individual)} tracks."
+    "Loaded {nrow(result)} spots from {dplyr::n_distinct(result$track)} tracks."
   )
 
-  data <- aniframe::as_aniframe(result) |>
+  data <- aniframe::as_aniframe(
+    result,
+    variables_what = c("track", "keypoint")
+  ) |>
     aniframe::set_metadata(
       source = "trackmate",
       filename = basename(path),
@@ -173,7 +176,7 @@ build_spot_track_map <- function(track_nodes, filtered_ids) {
 
     data.frame(
       spot_id = spot_ids,
-      individual = track_ids[[i]], # This should be changed to "track" once the tidy movement syntax is implemented in aniframe
+      track = track_ids[[i]], # This should be changed to "track" once the tidy movement syntax is implemented in aniframe
       keypoint = "centroid",
       stringsAsFactors = FALSE
     )

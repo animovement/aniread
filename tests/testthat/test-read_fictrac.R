@@ -446,8 +446,8 @@ test_that("read_fictrac column selection is correct", {
 
   result <- read_fictrac(temp_file)
 
-  # Should have 6 columns: individual, keypoint, time, x, y, confidence
-  expect_equal(ncol(result), 6)
+  # Should have 4 columns: keypoint, time, x, y
+  expect_equal(ncol(result), 4)
   # expect_named(result, c("time", "x", "y"))
 
   # All other 22 columns should be dropped

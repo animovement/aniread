@@ -19,7 +19,7 @@ read_octron <- function(path, keep_bbox = FALSE) {
 
   data <- data |>
     dplyr::rename(
-      individual = "track_id",
+      track = "track_id",
       time = "frame_idx",
       x = "pos_x",
       y = "pos_y",
@@ -64,7 +64,10 @@ read_octron <- function(path, keep_bbox = FALSE) {
       dplyr::filter(!.data$keypoint %in% c("bbox_min", "bbox_max"))
   }
 
-  aniframe::as_aniframe(data) |>
+  aniframe::as_aniframe(
+    data,
+    variables_what = c("label", "track", "keypoint")
+  ) |>
     aniframe::set_metadata(
       source = "octron",
       filename = basename(path)
