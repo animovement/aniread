@@ -32,7 +32,7 @@ test_that("check_rhdf5 works and calls correct functions", {
   expect_equal(install_args$pkgs, "rhdf5")
   expect_equal(
     install_args$repos,
-    c('https://animovement.r-universe.dev', 'https://cloud.r-project.org')
+    c('https://bioc.r-universe.dev', 'https://cloud.r-project.org')
   )
 })
 
