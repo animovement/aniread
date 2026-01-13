@@ -22,8 +22,6 @@ These functions are the links between R and your movement data.
   : Read idtracker.ai data
 - [`read_lightningpose()`](http://animovement.dev/aniread/reference/read_lightningpose.md)
   : Read LightningPose data
-- [`read_movement()`](http://animovement.dev/aniread/reference/read_movement.md)
-  **\[experimental\]** : Read movement data
 - [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
   : Read Octron Segmentation Data
 - [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md)
