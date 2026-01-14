@@ -25,6 +25,7 @@ reference:
 - title: "Reader functions"
   desc: These functions are the links between R and your movement data.
   contents:
+  - read_aniframe
   - read_animalta
   - read_anipose
   - read_bonsai
