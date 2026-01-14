@@ -1,3 +1,8 @@
+# aniread 0.3.1
+
+* Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
+* Adds `read_movement` that allows you to read data from the awesome *movement* Python package.
+
 # aniread 0.3.0
 
 * Adapt to the tidy movement data ethos implemented in *aniframe* 0.4.0.

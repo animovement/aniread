@@ -1,3 +1,6 @@
+#' Read data exported from the movement Python package
+#'
+#' @export
 read_movement <- function(path) {
   # Check for rhdf5
   check_rhdf5()
