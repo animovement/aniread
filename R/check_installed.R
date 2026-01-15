@@ -51,3 +51,21 @@ check_xml2 <- function() {
     }
   )
 }
+
+#' @keywords internal
+check_c3dr <- function() {
+  # Check that c3dr is installed
+  rlang::check_installed(
+    "c3dr",
+    reason = "for using the reading C3D files,",
+    action = function(...) {
+      utils::install.packages(
+        'c3dr',
+        repos = c(
+          'https://animovement.r-universe.dev',
+          'https://cloud.r-project.org'
+        )
+      )
+    }
+  )
+}
