@@ -9,7 +9,7 @@ type: software
 license: MIT
 title: 'aniread: An R package for reading and writing movement data.'
 version: 0.3.1
-date-released: 2026-01-14
+date-released: 2026-01-16
 identifiers:
   - type: doi
     value: 10.5281/zenodo.17352843
