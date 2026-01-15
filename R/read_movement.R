@@ -48,7 +48,7 @@ read_movement <- function(path) {
     dplyr::as_tibble() |>
     dplyr::mutate(time_idx = as.integer(as.character(.data$time_idx))) |>
     tidyr::pivot_wider(names_from = "coord", values_from = "value") |>
-    dplyr::mutate(time = time[time_idx]) |>
+    dplyr::mutate(time = time[.data$time_idx]) |>
     dplyr::select("individual", "keypoint", "time", "x", "y") |>
     aniframe::as_aniframe() |>
     aniframe::set_metadata(

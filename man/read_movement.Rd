@@ -6,6 +6,19 @@
 \usage{
 read_movement(path)
 }
+\arguments{
+\item{path}{Path to an HDF5 file (\code{.nc} or \code{.h5}) exported from movement.}
+}
+\value{
+An aniframe
+}
 \description{
-Read data exported from the movement Python package
+Imports pose estimation data from netCDF/HDF5 files created by the
+\href{https://movement.neuroinformatics.dev/}{movement} Python package.
+}
+\details{
+The movement package stores pose estimation data in a specific netCDF/HDF5 structure
+with datasets for individuals, keypoints, position coordinates, confidence
+scores, and time. This function reads that structure and reshapes it into
+a tidy aniframe format.
 }
