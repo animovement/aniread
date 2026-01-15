@@ -4,17 +4,14 @@
 \alias{read_deeplabcut}
 \title{Read DeepLabCut data}
 \usage{
-read_deeplabcut(path, multianimal = NULL)
+read_deeplabcut(path)
 }
 \arguments{
 \item{path}{Path to a DeepLabCut data file}
-
-\item{multianimal}{By default, whether a file is multi-animal is detected automatically. This gives an option to ensure it. logical TRUE/FALSE.}
 }
 \value{
-a movement dataframe
+an aniframe
 }
 \description{
-Read csv files from DeepLabCut (DLC). The function recognises whether it is a
-single- or multi-animal dataset.
+Read files from DeepLabCut (DLC) in either csv or h5 format.
 }

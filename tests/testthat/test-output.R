@@ -93,12 +93,21 @@ test_that("Test output header names", {
   expect_no_error(ensure_output_header_names(df_animalta_raw))
   expect_no_error(ensure_output_header_names(df_animalta_detailed))
   expect_no_error(ensure_output_header_names(df_bonsai))
-  expect_no_error(ensure_output_header_names(df_dlc_single))
+  expect_no_error(ensure_output_header_names(
+    df_dlc_single,
+    expected_headers = c("keypoint", "time", "x", "y")
+  ))
   expect_no_error(ensure_output_header_names(df_dlc_multi))
   expect_no_error(ensure_output_header_names(df_idtracker_h5))
   expect_no_error(ensure_output_header_names(df_idtracker_csv))
-  expect_no_error(ensure_output_header_names(df_lightningpose_single))
-  expect_no_error(ensure_output_header_names(df_lightningpose_twoview))
+  expect_no_error(ensure_output_header_names(
+    df_lightningpose_single,
+    expected_headers = c("keypoint", "time", "x", "y")
+  ))
+  expect_no_error(ensure_output_header_names(
+    df_lightningpose_twoview,
+    expected_headers = c("keypoint", "time", "x", "y")
+  ))
   expect_no_error(ensure_output_header_names(df_sleap_single))
   expect_no_error(ensure_output_header_names(df_sleap_multi))
   expect_no_error(ensure_output_header_names(df_trex))
@@ -113,12 +122,24 @@ test_that("Test output header classes", {
   expect_no_error(ensure_output_header_class(df_animalta_raw))
   expect_no_error(ensure_output_header_class(df_animalta_detailed))
   expect_no_error(ensure_output_header_class(df_bonsai))
-  expect_no_error(ensure_output_header_class(df_dlc_single))
+  expect_no_error(ensure_output_header_class(
+    df_dlc_single,
+    expected_headers = c("keypoint", "time", "x", "y"),
+    expected_header_class = c("factor", "numeric", "numeric", "numeric")
+  ))
   expect_no_error(ensure_output_header_class(df_dlc_multi))
   expect_no_error(ensure_output_header_class(df_idtracker_h5))
   expect_no_error(ensure_output_header_class(df_idtracker_csv))
-  expect_no_error(ensure_output_header_class(df_lightningpose_single))
-  expect_no_error(ensure_output_header_class(df_lightningpose_twoview))
+  expect_no_error(ensure_output_header_class(
+    df_lightningpose_single,
+    expected_headers = c("keypoint", "time", "x", "y"),
+    expected_header_class = c("factor", "numeric", "numeric", "numeric")
+  ))
+  expect_no_error(ensure_output_header_class(
+    df_lightningpose_twoview,
+    expected_headers = c("keypoint", "time", "x", "y"),
+    expected_header_class = c("factor", "numeric", "numeric", "numeric")
+  ))
   expect_no_error(ensure_output_header_class(df_sleap_single))
   expect_no_error(ensure_output_header_class(df_sleap_multi))
   expect_no_error(ensure_output_header_class(df_trex))

@@ -24,6 +24,7 @@ Imports:
     dplyr,
     janitor,
     rlang,
+    stringr,
     tidyr,
     tidyselect,
     vroom
@@ -32,6 +33,7 @@ Suggests:
     knitr,
     rhdf5,
     xml2,
+    c3dr,
     testthat (>= 3.0.0),
     withr
 Additional_repositories: https://animovement.r-universe.dev, 'https://bioc.r-universe.dev'
