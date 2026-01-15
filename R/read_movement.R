@@ -1,5 +1,18 @@
 #' Read data exported from the movement Python package
 #'
+#' Imports pose estimation data from netCDF/HDF5 files created by the
+#' [movement](https://movement.neuroinformatics.dev/) Python package.
+#'
+#' @param path Path to an HDF5 file (`.nc` or `.h5`) exported from movement.
+#'
+#' @return An aniframe
+#'
+#' @details
+#' The movement package stores pose estimation data in a specific netCDF/HDF5 structure
+#' with datasets for individuals, keypoints, position coordinates, confidence
+#' scores, and time. This function reads that structure and reshapes it into
+#' a tidy aniframe format.
+#'
 #' @export
 read_movement <- function(path) {
   # Check for rhdf5
@@ -9,7 +22,7 @@ read_movement <- function(path) {
   validate_files(path, expected_suffix = c("nc", "h5"))
 
   # h5ls(path)
-  metadata <- h5readAttributes(path, "/")
+  metadata <- rhdf5::h5readAttributes(path, "/")
 
   # Temporary unit workaround until https://github.com/animovement/aniframe/issues/45 is solved
   if (metadata$time_unit == "seconds") {
@@ -21,8 +34,8 @@ read_movement <- function(path) {
   keypoints <- rhdf5::h5read(path, "keypoints")
   position <- rhdf5::h5read(path, "position")
   confidence <- rhdf5::h5read(path, "confidence")
-  space <- h5read(path, "space")
-  time <- h5read(path, "time")
+  space <- rhdf5::h5read(path, "space")
+  time <- rhdf5::h5read(path, "time")
 
   dimnames(position) <- list(
     individual = individuals,
