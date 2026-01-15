@@ -1,3 +1,17 @@
+#' Read a C3D motion capture file
+#'
+#' Reads a C3D file and returns the data as an aniframe with associated
+#' metadata including source software, units, and sampling rate.
+#'
+#' @param path Path to a `.c3d` file.
+#'
+#' @return An aniframe with columns `time`, `keypoint`, `x`, `y`, and `z`.
+#'   Metadata includes source software, filename, time/space units, and
+#'   sampling rate. Time is 0-indexed (in frames).
+#'
+#' @seealso [c3dr::c3d_read()] for lower-level C3D access.
+#'
+#' @export
 read_c3d <- function(path) {
   # Check c3dr is installed
   check_c3dr()
