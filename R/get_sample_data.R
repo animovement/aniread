@@ -123,6 +123,12 @@ get_sample_data <- function(
         filename = "deeplabcut_single-wasp.h5"
       )
     ),
+    c3d = list(
+      "example" = list(
+        url = paste0(github_base, "/c3d/example.c3d"),
+        filename = "example.c3d"
+      )
+    ),
     fictrac = list(
       "sample" = list(
         url = paste0(github_base, "/fictrac/fictrac_sample.dat"),
@@ -152,6 +158,15 @@ get_sample_data <- function(
       "mouse-twoview" = list(
         url = paste0(gin_base, "/poses/LP_mouse-twoview_AIND.predictions.csv"),
         filename = "lightningpose_mouse-twoview.csv"
+      )
+    ),
+    movement = list(
+      "two-mice_octagon" = list(
+        url = paste0(
+          github_base,
+          "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc"
+        ),
+        filename = "sleap_two-mice_octagon.nc"
       )
     ),
     sleap = list(

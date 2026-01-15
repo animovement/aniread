@@ -25,15 +25,19 @@ reference:
 - title: "Reader functions"
   desc: These functions are the links between R and your movement data.
   contents:
+  - read_aniframe
   - read_animalta
   - read_anipose
   - read_bonsai
+  - read_c3d
   - read_custom
   - read_deeplabcut
+  - read_fasttrack
   - read_fictrac
   - read_freemocap
   - read_idtracker
   - read_lightningpose
+  - read_movement
   - read_octron
   - read_sleap
   - read_trackball

@@ -1,3 +1,11 @@
+# aniread 0.3.1
+
+* Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
+* Adds `read_movement` for importing data from the awesome *movement* Python package.
+* Adds `read_c3d` for importing C3D motion capture data.
+* Adds `read_fasttrack` for importing FastTrack data.
+* Adds support for HDF5 DeepLabCut files in `read_deeplabcut`.
+
 # aniread 0.3.0
 
 * Adapt to the tidy movement data ethos implemented in *aniframe* 0.4.0.
