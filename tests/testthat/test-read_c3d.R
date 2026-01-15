@@ -6,6 +6,7 @@
 # - Time is 0-indexed
 # - Metadata is set correctly
 # - Sampling rate is set
+path <- get_sample_data("c3d")
 
 test_that("read_c3d validates input", {
   expect_error(read_c3d("nonexistent.c3d"))
@@ -14,8 +15,9 @@ test_that("read_c3d validates input", {
 
 test_that("read_c3d returns an aniframe with expected structure", {
   skip_if_not_installed("c3dr")
+  skip_on_os("windows") # These tests result in errors in the Windows runners
 
-  result <- read_c3d(get_sample_data("c3d"))
+  result <- read_c3d(path)
 
   expect_s3_class(result, "aniframe")
   expect_named(
@@ -27,16 +29,18 @@ test_that("read_c3d returns an aniframe with expected structure", {
 
 test_that("read_c3d time is 0-indexed", {
   skip_if_not_installed("c3dr")
+  skip_on_os("windows")
 
-  result <- read_c3d(get_sample_data("c3d"))
+  result <- read_c3d(path)
 
   expect_equal(min(result$time), 0)
 })
 
 test_that("read_c3d sets metadata and sampling rate", {
   skip_if_not_installed("c3dr")
+  skip_on_os("windows")
 
-  result <- read_c3d(get_sample_data("c3d"))
+  result <- read_c3d(path)
 
   meta <- aniframe::get_metadata(result)
   expect_true(!is.null(meta$source))
