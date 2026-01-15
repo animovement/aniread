@@ -160,6 +160,15 @@ get_sample_data <- function(
         filename = "lightningpose_mouse-twoview.csv"
       )
     ),
+    movement = list(
+      "two-mice_octagon" = list(
+        url = paste0(
+          github_base,
+          "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc"
+        ),
+        filename = "sleap_two-mice_octagon.nc"
+      )
+    ),
     sleap = list(
       "single-mouse_EPM" = list(
         url = paste0(gin_base, "/poses/SLEAP_single-mouse_EPM.analysis.h5"),
