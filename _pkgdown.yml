@@ -29,8 +29,10 @@ reference:
   - read_animalta
   - read_anipose
   - read_bonsai
+  - read_c3d
   - read_custom
   - read_deeplabcut
+  - read_fasttrack
   - read_fictrac
   - read_freemocap
   - read_idtracker
