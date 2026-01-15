@@ -123,6 +123,12 @@ get_sample_data <- function(
         filename = "deeplabcut_single-wasp.h5"
       )
     ),
+    c3d = list(
+      "example" = list(
+        url = paste0(github_base, "/c3d/example.c3d"),
+        filename = "example.c3d"
+      )
+    ),
     fictrac = list(
       "sample" = list(
         url = paste0(github_base, "/fictrac/fictrac_sample.dat"),
