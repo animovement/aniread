@@ -10,7 +10,7 @@ read_lightningpose(path)
 \item{path}{Path to a LightningPose data file}
 }
 \value{
-a movement dataframe
+an aniframe
 }
 \description{
 Read csv files from LightningPose (LP).
