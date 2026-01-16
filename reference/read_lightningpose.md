@@ -16,4 +16,4 @@ read_lightningpose(path)
 
 ## Value
 
-a movement dataframe
+an aniframe

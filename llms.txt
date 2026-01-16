@@ -61,16 +61,22 @@ citation("aniread")
 
 These functions are the links between R and your movement data.
 
+- [`read_aniframe()`](http://animovement.dev/aniread/reference/read_aniframe.md)
+  : Read an aniframe from a Parquet file
 - [`read_animalta()`](http://animovement.dev/aniread/reference/read_animalta.md)
   : Read AnimalTA data
 - [`read_anipose()`](http://animovement.dev/aniread/reference/read_anipose.md)
   : Read Anipose 3D pose estimation data
 - [`read_bonsai()`](http://animovement.dev/aniread/reference/read_bonsai.md)
   : Read centroid tracking data from Bonsai
+- [`read_c3d()`](http://animovement.dev/aniread/reference/read_c3d.md) :
+  Read a C3D motion capture file
 - [`read_custom()`](http://animovement.dev/aniread/reference/read_custom.md)
   : Read a custom file format
 - [`read_deeplabcut()`](http://animovement.dev/aniread/reference/read_deeplabcut.md)
   : Read DeepLabCut data
+- [`read_fasttrack()`](http://animovement.dev/aniread/reference/read_fasttrack.md)
+  : Read FastTrack tracking data
 - [`read_fictrac()`](http://animovement.dev/aniread/reference/read_fictrac.md)
   : Read projected FicTrac data
 - [`read_freemocap()`](http://animovement.dev/aniread/reference/read_freemocap.md)
@@ -79,6 +85,8 @@ These functions are the links between R and your movement data.
   : Read idtracker.ai data
 - [`read_lightningpose()`](http://animovement.dev/aniread/reference/read_lightningpose.md)
   : Read LightningPose data
+- [`read_movement()`](http://animovement.dev/aniread/reference/read_movement.md)
+  : Read data exported from the movement Python package
 - [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
   : Read Octron Segmentation Data
 - [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md)

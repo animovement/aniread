@@ -10,7 +10,7 @@
 Source:
 [`inst/CITATION`](https://github.com/animovement/aniread/blob/main/inst/CITATION)
 
-Roald-Arbøl M (2025). “aniread: An R package for reading and writing
+Roald-Arbøl M (2026). “aniread: An R package for reading and writing
 movement data.”
 [doi:10.5281/zenodo.17352843](https://doi.org/10.5281/zenodo.17352843),
 <http://animovement.dev/aniread/>.
@@ -19,8 +19,8 @@ movement data.”
       doi = {10.5281/zenodo.17352843},
       title = {aniread: An R package for reading and writing movement data},
       author = {Mikkel Roald-Arbøl},
-      year = {2025},
+      year = {2026},
       url = {http://animovement.dev/aniread/},
       abstract = {An R package for reading and writing movement data.},
-      version = {0.3.0},
+      version = {0.3.1},
     }
