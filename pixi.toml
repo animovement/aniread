@@ -1,0 +1,20 @@
+[workspace]
+channels = [
+    "https://prefix.dev/pixi-build-backends", 
+    "https://prefix.dev/animovement",
+    "https://prefix.dev/conda-forge"
+]
+name = "r-aniread"
+platforms = ["osx-arm64", "linux-64", "osx-64", "win-64"]
+preview = ["pixi-build"]
+version = "0.3.2"
+
+[dependencies]
+r-aniread = { path = "." }
+
+[package]
+name = "r-aniread"
+
+[package.build.backend]
+name = "pixi-build-r"
+version = "0.1.*"
