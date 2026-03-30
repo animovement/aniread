@@ -6,11 +6,13 @@
 # - Pivot creates three keypoints: centroid, bbox_min, bbox_max
 # - Shape descriptors (area, eccentricity, solidity, orientation) are NA for bbox rows
 # - Shape descriptors are present for centroid rows
+# - bbox_area and other descriptors are kept as centroid-only columns
 # - keep_bbox = FALSE (default) filters out bbox rows
 # - keep_bbox = TRUE keeps all keypoint rows
 # - Row count is correct for both keep_bbox settings
 # - Metadata is set correctly (source, filename)
 # - Handles invalid file path
+# - Newer format (bytetrack, no shape descriptors) is also supported
 
 test_that("read_octron returns an aniframe with correct structure", {
   path <- test_path("data/octron", "octron_sample.csv")
@@ -27,6 +29,7 @@ test_that("read_octron returns an aniframe with correct structure", {
       "keypoint",
       "x",
       "y",
+      "bbox_area",
       "area",
       "eccentricity",
       "solidity",
@@ -50,7 +53,6 @@ test_that("column renaming works correctly", {
   expect_false("pos_x" %in% names(result))
   expect_false("pos_y" %in% names(result))
   expect_false("frame_counter" %in% names(result))
-  expect_false("bbox_area" %in% names(result))
 })
 
 test_that("pivot creates three keypoints", {
@@ -122,4 +124,49 @@ test_that("metadata is set correctly", {
 
 test_that("invalid file path raises error", {
   expect_error(read_octron("nonexistent_file.csv"))
+})
+
+# Tests for newer Octron format (bytetrack, no shape descriptors, has bbox_aspect_ratio)
+test_that("read_octron handles newer format without shape descriptors", {
+  path <- test_path("data/octron", "octron_sample_bytetrack.csv")
+  result <- read_octron(path)
+
+  expect_s3_class(result, "aniframe")
+  expect_named(
+    result,
+    c(
+      "track",
+      "time",
+      "label",
+      "confidence",
+      "keypoint",
+      "x",
+      "y",
+      "bbox_area",
+      "bbox_aspect_ratio"
+    ),
+    ignore.order = TRUE
+  )
+})
+
+test_that("newer format: bbox_area and bbox_aspect_ratio are NA for bbox rows", {
+  path <- test_path("data/octron", "octron_sample_bytetrack.csv")
+  result <- read_octron(path, keep_bbox = TRUE)
+
+  centroid_rows <- result[result$keypoint == "centroid", ]
+  bbox_rows <- result[result$keypoint != "centroid", ]
+
+  expect_false(any(is.na(centroid_rows$bbox_area)))
+  expect_false(any(is.na(centroid_rows$bbox_aspect_ratio)))
+  expect_true(all(is.na(bbox_rows$bbox_area)))
+  expect_true(all(is.na(bbox_rows$bbox_aspect_ratio)))
+})
+
+test_that("newer format: row count is correct", {
+  path <- test_path("data/octron", "octron_sample_bytetrack.csv")
+
+  result_no_bbox <- read_octron(path, keep_bbox = FALSE)
+  result_with_bbox <- read_octron(path, keep_bbox = TRUE)
+
+  expect_equal(nrow(result_with_bbox), nrow(result_no_bbox) * 3)
 })
