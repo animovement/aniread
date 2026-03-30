@@ -14,6 +14,15 @@
 read_octron <- function(path, keep_bbox = FALSE) {
   validate_files(path)
 
+  header <- readLines(path, n = 6)
+  video_height <- as.numeric(
+    trimws(sub(
+      "video_height:",
+      "",
+      grep("^video_height:", header, value = TRUE)
+    ))
+  )
+
   data <- vroom::vroom(path, skip = 6, show_col_types = FALSE) |>
     suppressMessages()
 
@@ -25,13 +34,7 @@ read_octron <- function(path, keep_bbox = FALSE) {
       y = "pos_y",
       confidence = "confidence"
     ) |>
-    dplyr::mutate(
-      keypoint = "centroid",
-    ) |>
-    dplyr::select(-c("frame_counter", "bbox_area"))
-
-  data <- data |>
-    dplyr::select(-"keypoint") |>
+    dplyr::select(-dplyr::any_of("frame_counter")) |>
     dplyr::rename(
       centroid_x = "x",
       centroid_y = "y",
@@ -39,24 +42,31 @@ read_octron <- function(path, keep_bbox = FALSE) {
       bbox_min_y = "bbox_y_min",
       bbox_max_x = "bbox_x_max",
       bbox_max_y = "bbox_y_max"
-    ) |>
+    )
+
+  id_cols <- c("track", "time", "label", "confidence")
+  spatial_cols <- c(
+    "centroid_x",
+    "centroid_y",
+    "bbox_min_x",
+    "bbox_min_y",
+    "bbox_max_x",
+    "bbox_max_y"
+  )
+  descriptor_cols <- setdiff(names(data), c(id_cols, spatial_cols))
+
+  data <- data |>
     tidyr::pivot_longer(
-      cols = c(
-        "centroid_x",
-        "centroid_y",
-        "bbox_min_x",
-        "bbox_min_y",
-        "bbox_max_x",
-        "bbox_max_y"
-      ),
+      cols = dplyr::all_of(spatial_cols),
       names_to = c("keypoint", ".value"),
       names_pattern = "(.+)_(x|y)"
     ) |>
     dplyr::mutate(
       dplyr::across(
-        c("area", "eccentricity", "solidity", "orientation"),
+        dplyr::all_of(descriptor_cols),
         \(col) dplyr::if_else(.data$keypoint == "centroid", col, NA)
-      )
+      ),
+      y = video_height - .data$y
     )
 
   if (keep_bbox == FALSE) {
