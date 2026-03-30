@@ -16,7 +16,11 @@ read_octron <- function(path, keep_bbox = FALSE) {
 
   header <- readLines(path, n = 6)
   video_height <- as.numeric(
-    trimws(sub("video_height:", "", grep("^video_height:", header, value = TRUE)))
+    trimws(sub(
+      "video_height:",
+      "",
+      grep("^video_height:", header, value = TRUE)
+    ))
   )
 
   data <- vroom::vroom(path, skip = 6, show_col_types = FALSE) |>
@@ -41,7 +45,14 @@ read_octron <- function(path, keep_bbox = FALSE) {
     )
 
   id_cols <- c("track", "time", "label", "confidence")
-  spatial_cols <- c("centroid_x", "centroid_y", "bbox_min_x", "bbox_min_y", "bbox_max_x", "bbox_max_y")
+  spatial_cols <- c(
+    "centroid_x",
+    "centroid_y",
+    "bbox_min_x",
+    "bbox_min_y",
+    "bbox_max_x",
+    "bbox_max_y"
+  )
   descriptor_cols <- setdiff(names(data), c(id_cols, spatial_cols))
 
   data <- data |>
