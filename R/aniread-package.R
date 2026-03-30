@@ -6,3 +6,7 @@
 #' @importFrom rlang .data
 ## usethis namespace: end
 NULL
+
+#' @useDynLib aniread, .registration = TRUE
+#' @importFrom Rcpp evalCpp
+NULL
