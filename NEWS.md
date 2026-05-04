@@ -1,3 +1,5 @@
+# aniread 0.4.0
+
 # aniread 0.3.1
 
 * Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
