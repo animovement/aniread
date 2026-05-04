@@ -20,7 +20,9 @@ test_that("read_idtracker reads CSV with legacy `seconds` column", {
   )
 
   expect_s3_class(result, "aniframe")
-  expect_true(all(c("time", "individual", "x", "y", "confidence") %in% names(result)))
+  expect_true(all(
+    c("time", "individual", "x", "y", "confidence") %in% names(result)
+  ))
   expect_true(is.numeric(result$time))
 })
 
@@ -54,7 +56,9 @@ test_that("read_idtracker reads CSV with renamed `time` column", {
   )
 
   expect_s3_class(result, "aniframe")
-  expect_true(all(c("time", "individual", "x", "y", "confidence") %in% names(result)))
+  expect_true(all(
+    c("time", "individual", "x", "y", "confidence") %in% names(result)
+  ))
   expect_equal(sort(unique(result$time)), c(0.000, 0.036))
   expect_setequal(as.character(unique(result$individual)), c("1", "2"))
 })
