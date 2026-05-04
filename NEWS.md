@@ -1,5 +1,9 @@
 # aniread 0.4.0
 
+## New features
+
+* `read_octron()` gains a `method` argument to handle frames where Octron emitted multiple mask segments for the same track (#67). One of `"weighted"` (default; area-weighted mean of position and shape props, sum of areas), `"largest"` (single largest segment per row), or `"segments"` (one row per segment, with a new `segment` identity variable).
+
 # aniread 0.3.1
 
 * Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
