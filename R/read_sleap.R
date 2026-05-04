@@ -1,10 +1,18 @@
 #' Read SLEAP data
 #'
+#' SLEAP stores predictions in image (top-left) coordinates; the reader
+#' reflects y so the returned aniframe is in the conventional
+#' `bottom_left` origin. SLEAP's analysis h5 export does not include
+#' the source video resolution, so pass `video_height` to get an
+#' accurate flip — otherwise `max(y)` is used as a fallback.
+#'
 #' @param path A SLEAP analysis data frame in HDF5 (.h5) format
+#' @param video_height Optional numeric height of the source video frame
+#'   in pixels.
 #'
 #' @return a movement dataframe
 #' @export
-read_sleap <- function(path) {
+read_sleap <- function(path, video_height = NULL) {
   validate_files(path, expected_suffix = c("h5", "csv"))
 
   file_ext <- get_file_ext(path)
@@ -20,7 +28,8 @@ read_sleap <- function(path) {
     aniframe::set_metadata(
       source = "sleap",
       filename = basename(path)
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 
   return(data)
 }

@@ -1,12 +1,27 @@
 #' Read idtracker.ai data
 #'
+#' idtracker.ai stores trajectories in image (top-left) coordinates; the
+#' reader reflects y so the returned aniframe is in the conventional
+#' `bottom_left` origin. For h5 files the frame height is read directly
+#' from the `/height` dataset. CSV exports do not include the frame
+#' height, so pass `video_height` explicitly to get an accurate flip
+#' (otherwise `max(y)` is used as a fallback).
+#'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
 #' @param version idtracker.ai version. Currently only v6 output is implemented
+#' @param video_height Optional numeric height of the source video frame in
+#'   pixels. Overrides the value read from the h5 file when both are
+#'   available.
 #'
 #' @return a movement dataframe
 #' @export
-read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
+read_idtracker <- function(
+  path,
+  path_probabilities = NULL,
+  version = 6,
+  video_height = NULL
+) {
   # Needs to check the file extension
   # If probabilites are given, extension needs to be csv
   validate_files(path, expected_suffix = c("csv", "h5"))
@@ -19,6 +34,12 @@ read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
   } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)
+    if (is.null(video_height)) {
+      video_height <- tryCatch(
+        as.numeric(rhdf5::h5read(path, "height")),
+        error = function(e) NULL
+      )
+    }
   }
 
   # Init metadata
@@ -29,7 +50,8 @@ read_idtracker <- function(path, path_probabilities = NULL, version = 6) {
       filename = basename(path),
       unit_space = "px",
       unit_time = "frame"
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 
   return(data)
 }

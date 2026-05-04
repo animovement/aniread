@@ -4,14 +4,23 @@
 \alias{read_bonsai}
 \title{Read centroid tracking data from Bonsai}
 \usage{
-read_bonsai(path)
+read_bonsai(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to a Bonsai data file}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels.}
 }
 \value{
 a movement dataframe
 }
 \description{
-Read a Bonsai data frame
+Read a Bonsai data frame. Bonsai centroid coordinates
+come from camera/video pipelines that use image (top-left) origin;
+the reader reflects y so the returned aniframe is in the
+conventional \code{bottom_left} origin. Bonsai workflows are
+user-defined and the output CSV does not record video resolution,
+so pass \code{video_height} to get an accurate flip — otherwise \code{max(y)}
+is used as a fallback.
 }

@@ -4,10 +4,13 @@
 \alias{read_fasttrack}
 \title{Read FastTrack tracking data}
 \usage{
-read_fasttrack(path)
+read_fasttrack(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to a FastTrack tracking.txt file.}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels.}
 }
 \value{
 An aniframe
@@ -15,4 +18,9 @@ An aniframe
 \description{
 Reads a FastTrack tracking result file (.txt format) and returns an
 aniframe with keypoints for head, body, and tail positions.
+FastTrack stores positions in image (top-left) coordinates; the
+reader reflects y so the returned aniframe is in the conventional
+\code{bottom_left} origin. The tracking file does not record the source
+video resolution, so pass \code{video_height} to get an accurate flip —
+otherwise \code{max(y)} is used as a fallback.
 }

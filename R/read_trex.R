@@ -42,8 +42,13 @@
 #' @seealso
 #' - TRex software: https://trex.run
 #'
+#' @param video_height Optional numeric height of the source video frame
+#'   in the same spatial units as the tracking output (TRex defaults to
+#'   centimetres). TRex's CSV export does not record this, so without it
+#'   `max(y)` is used as a fallback when reflecting to `bottom_left`.
+#'
 #' @export
-read_trex <- function(path) {
+read_trex <- function(path, video_height = NULL) {
   # Validators
   validate_files(path, expected_suffix = "csv")
   file_ext <- get_file_ext(path)
@@ -57,7 +62,8 @@ read_trex <- function(path) {
     aniframe::set_metadata(
       source = "trex",
       filename = basename(path)
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 
   return(data)
 }

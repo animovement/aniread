@@ -4,19 +4,25 @@
 \alias{read_animalta}
 \title{Read AnimalTA data}
 \usage{
-read_animalta(path, detailed = FALSE)
+read_animalta(path, detailed = FALSE, video_height = NULL)
 }
 \arguments{
 \item{path}{An AnimalTA data frame}
 
 \item{detailed}{Animal export either raw (default) or detailed data files. We
 only have limited support for detailed data.}
+
+\item{video_height}{Optional numeric height of the source video frame in
+pixels. AnimalTA does not record this in the export, so when not
+supplied the maximum observed \code{y} is used as a fallback.}
 }
 \value{
 a movement dataframe
 }
 \description{
-Read a data frame from AnimalTA
+Read a data frame from AnimalTA. AnimalTA exports tracking
+data in image (top-left) coordinates; the reader reflects y so the
+returned aniframe is in the conventional \code{bottom_left} origin.
 }
 \references{
 \itemize{
