@@ -347,7 +347,7 @@ test_that("read_trackmate warns on duplicate track-frame combinations", {
   )
 })
 
-test_that("read_trackmate sets z to NA when only one unique value", {
+test_that("read_trackmate drops z when only one unique value", {
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -373,7 +373,13 @@ test_that("read_trackmate sets z to NA when only one unique value", {
 
   result <- read_trackmate(tmp)
 
-  expect_true(all(is.na(result$z)))
+  # When all spots share the same z, the reader drops the column and sets
+  # `coordinate_system = "cartesian_2d"`.
+  expect_false("z" %in% names(result))
+  expect_equal(
+    as.character(aniframe::get_metadata(result, "coordinate_system")),
+    "cartesian_2d"
+  )
 })
 
 test_that("read_trackmate removes frame column when time stamps exist", {
