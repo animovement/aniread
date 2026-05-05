@@ -60,6 +60,6 @@ citation("aniread")
 #>     year = {2026},
 #>     url = {http://animovement.dev/aniread/},
 #>     abstract = {An R package for reading and writing movement data.},
-#>     version = {0.3.1},
+#>     version = {0.4.0},
 #>   }
 ```
