@@ -28,8 +28,9 @@ Imports:
     tidyr,
     tidyselect,
     vroom
-Suggests: 
+Suggests:
     arrow,
+    curl,
     knitr,
     rhdf5,
     xml2,
