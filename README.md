@@ -11,6 +11,8 @@
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
 [![Codecov test
 coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread)
+[![Chat on
+Zulip](https://img.shields.io/badge/chat-Zulip-6492FE?logo=zulip&logoColor=white)](https://animovement.zulipchat.com)
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
@@ -33,13 +35,6 @@ Once you have installed the package, you can load it with:
 library("aniread")
 ```
 
-## Status
-
-> **Warning**
->
-> 🏗️ The package is currently in early development and the interface is
-> subject to change. Feel free to play around and provide feedback.
-
 ## Citation
 
 If you enjoy the package, please make sure to cite it. If you find a
@@ -51,8 +46,9 @@ To cite *aniread* in publications use:
 citation("aniread")
 #> To cite aniread in publications use:
 #> 
-#>   Roald-Arbøl M (2025). "aniread: An R package for reading and writing movement data."
-#>   doi:10.5281/zenodo.17352843 <https://doi.org/10.5281/zenodo.17352843>,
+#>   Roald-Arbøl M (2026). "aniread: An R package for reading and writing
+#>   movement data." doi:10.5281/zenodo.17352843
+#>   <https://doi.org/10.5281/zenodo.17352843>,
 #>   <http://animovement.dev/aniread/>.
 #> 
 #> A BibTeX entry for LaTeX users is
@@ -61,9 +57,9 @@ citation("aniread")
 #>     doi = {10.5281/zenodo.17352843},
 #>     title = {aniread: An R package for reading and writing movement data},
 #>     author = {Mikkel Roald-Arbøl},
-#>     year = {2025},
+#>     year = {2026},
 #>     url = {http://animovement.dev/aniread/},
 #>     abstract = {An R package for reading and writing movement data.},
-#>     version = {0.3.0},
+#>     version = {0.3.1},
 #>   }
 ```
