@@ -4,7 +4,12 @@
 \alias{read_octron}
 \title{Read Octron Segmentation Data}
 \usage{
-read_octron(path, keep_bbox = FALSE, video_height = NULL)
+read_octron(
+  path,
+  keep_bbox = FALSE,
+  video_height = NULL,
+  method = c("weighted", "largest", "segments")
+)
 }
 \arguments{
 \item{path}{Path to the Octron CSV file.}
@@ -14,6 +19,23 @@ read_octron(path, keep_bbox = FALSE, video_height = NULL)
 \item{video_height}{Optional numeric height of the source video frame
 in pixels. Overrides the value parsed from the CSV header when both
 are available.}
+
+\item{method}{Strategy for resolving frames where Octron emitted
+multiple mask segments per track. One of:
+\itemize{
+\item \code{"weighted"} (default): area-weighted mean across all
+segments per row. \code{area} becomes the sum of segment areas;
+\code{orientation} falls back to \code{"largest"} (circular quantity,
+weighted mean is undefined).
+\item \code{"largest"}: take values from the single largest segment
+per row.
+\item \code{"segments"}: expand each multi-segment row into one row
+per segment, adding a \code{segment} identity variable. Segments
+are not matched across frames, so filtering on \code{segment} is
+generally not meaningful.
+}
+When the source CSV contains no tuple-valued rows, all three
+methods produce identical numeric output.}
 }
 \value{
 An aniframe
@@ -26,4 +48,13 @@ shape descriptors. Octron stores positions in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in
 the conventional \code{bottom_left} origin. The frame height is read
 from the CSV header (\verb{video_height:}) by default.
+}
+\details{
+Newer Octron exports (>= the multi-blob handling in
+\href{https://github.com/OCTRON-tracking/OCTRON-GUI/issues/63}{OCTRON-GUI #63})
+may emit per-segment columns as tuple-strings, e.g. \code{"(120.5, 85.3)"},
+when YOLO detects multiple disconnected mask segments belonging to
+the same track in a single frame. The \code{method} argument controls
+how those rows are reduced to scalar values, or whether they are
+expanded into one row per segment.
 }

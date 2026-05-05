@@ -65,7 +65,8 @@ read_idtracker_csv <- function(path, path_probabilities, version = 6) {
     show_col_types = FALSE
   ) |>
     suppressMessages() |>
-    janitor::clean_names()
+    janitor::clean_names() |>
+    rename_idtracker_time_column()
 
   data <- data |>
     tidyr::pivot_longer(
@@ -75,11 +76,10 @@ read_idtracker_csv <- function(path, path_probabilities, version = 6) {
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = c("seconds", "individual"),
+      id_cols = c("time", "individual"),
       names_from = "coordinate",
       values_from = "val"
     ) |>
-    dplyr::rename(time = "seconds") |>
     dplyr::mutate(individual = factor(.data$individual))
 
   if (!is.null(path_probabilities)) {
@@ -111,7 +111,8 @@ read_idtracker_probabilities <- function(path) {
     show_col_types = FALSE
   ) |>
     suppressMessages() |>
-    janitor::clean_names()
+    janitor::clean_names() |>
+    rename_idtracker_time_column()
 
   data <- data |>
     tidyr::pivot_longer(
@@ -120,8 +121,17 @@ read_idtracker_probabilities <- function(path) {
       names_sep = "(?<=[A-Za-z])(?=[0-9])",
       values_to = "confidence"
     ) |>
-    dplyr::select(-"placeholder") |>
-    dplyr::rename(time = "seconds")
+    dplyr::select(-"placeholder")
+  data
+}
+
+# idtracker.ai renamed the leading time column from `seconds` to `time`
+# in newer releases. Accept either, normalising to `time`.
+#' @keywords internal
+rename_idtracker_time_column <- function(data) {
+  if ("seconds" %in% names(data) && !"time" %in% names(data)) {
+    data <- dplyr::rename(data, time = "seconds")
+  }
   data
 }
 

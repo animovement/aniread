@@ -30,6 +30,7 @@ Imports:
     vroom
 Suggests:
     arrow,
+    covr,
     curl,
     knitr,
     rhdf5,

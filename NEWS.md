@@ -11,6 +11,11 @@
 * `read_idtracker()` now reads `/height` from the trajectories h5 file by default.
 * `read_trackmate()` now reads the frame height from `Settings/ImageData/@height` in the XML by default.
 * `read_octron()` continues to read `video_height:` from the CSV header, but now also accepts a `video_height` override and stores the value in the aniframe metadata.
+* `read_octron()` gains a `method` argument to handle frames where Octron emitted multiple mask segments for the same track (#67). One of `"weighted"` (default; area-weighted mean of position and shape props, sum of areas), `"largest"` (single largest segment per row), or `"segments"` (one row per segment, with a new `segment` identity variable).
+
+## Bug fixes
+
+* `read_idtracker()` now accepts both the legacy `seconds` and the newer `time` leading column in idtracker.ai CSV exports (#60).
 
 # aniread 0.3.1
 
