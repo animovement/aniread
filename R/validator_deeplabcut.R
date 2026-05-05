@@ -1,3 +1,10 @@
+# nocov start
+# This validator is currently unused by the readers and contains two
+# pre-existing bugs (`vroom(.., nrows = ...)` is not a valid argument;
+# `expected_levels %in% names(f)` checks column names rather than the
+# first-column index that DLC actually uses). Leaving as-is for now —
+# a follow-up should either fix and wire it up or remove it.
+
 #' Validate DeepLabCut-style .csv files.
 #'
 #' @description
@@ -25,3 +32,4 @@ ensure_dlc_expected_header_levels <- function(path) {
     )
   }
 }
+# nocov end

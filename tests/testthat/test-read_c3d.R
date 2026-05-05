@@ -10,7 +10,7 @@
 # etc.) doesn't error out the whole test file — tests that need the file
 # skip individually below.
 path <- tryCatch(
-  get_sample_data("c3d", quiet = TRUE),
+  get_sample_data("c3d", cache_dir = test_cache_dir(), quiet = TRUE),
   error = function(e) NULL
 )
 

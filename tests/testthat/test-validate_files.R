@@ -90,6 +90,7 @@ test_that("Test whether files have headers", {
   )
 })
 
+
 # Full validation
 test_that("Test whether the full validation function works", {
   expect_no_error(

@@ -170,3 +170,20 @@ test_that("Test that there aren't any NaNs created", {
   expect_no_warning(ensure_output_no_nan(df_trackball))
   expect_warning(ensure_output_no_nan(df_animalta_raw_NaN))
 })
+
+test_that("ensure_output_header_names errors when expected headers are missing", {
+  bad <- dplyr::tibble(time = 1, x = 0)  # missing y, individual, etc.
+  expect_error(ensure_output_header_names(bad), "expected")
+})
+
+test_that("ensure_output_header_class errors when classes don't match", {
+  bad <- dplyr::tibble(
+    time = "1",  # character, expected numeric
+    individual = factor("a"),
+    keypoint = factor("centroid"),
+    x = 1,
+    y = 2,
+    confidence = 0.9
+  )
+  expect_error(ensure_output_header_class(bad), "Expected output headers")
+})

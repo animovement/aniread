@@ -53,6 +53,21 @@ test_that("Number of files", {
   expect_error(
     ensure_number_of_files(paths = path_correct, setup = "of_free")
   )
+  # of_fixed accepts 1 or 2 files; anything else errors.
+  expect_error(
+    ensure_number_of_files(
+      paths = c(path_correct, path_correct, path_correct),
+      setup = "of_fixed"
+    ),
+    "expected 1 or 2 files"
+  )
+})
+
+test_that("ensure_header_match errors when col_time is character on an unnamed file", {
+  expect_error(
+    ensure_header_match(path = path_correct, col_time = "time"),
+    "doesn't have named headers"
+  )
 })
 
 # Identical suffixes

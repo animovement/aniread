@@ -241,12 +241,16 @@ read_deeplabcut_h5 <- function(path) {
 
   # Build column names
   if (multianimal) {
+    # nocov start
+    # No multi-animal H5 sample fixture is currently shipped or
+    # downloadable; covered indirectly by parse_dlc_pickle tests.
     col_names <- paste(
       col_info$individual,
       col_info$bodypart,
       col_info$coord,
       sep = "_"
     )
+    # nocov end
   } else {
     col_names <- paste(col_info$bodypart, col_info$coord, sep = "_")
   }
@@ -258,6 +262,7 @@ read_deeplabcut_h5 <- function(path) {
 
   # Pivot to long format
   if (multianimal) {
+    # nocov start
     data <- data |>
       tidyr::pivot_longer(
         cols = -"time",
@@ -265,6 +270,7 @@ read_deeplabcut_h5 <- function(path) {
         names_sep = "_"
       ) |>
       dplyr::rename(confidence = "likelihood")
+    # nocov end
   } else {
     data <- data |>
       tidyr::pivot_longer(

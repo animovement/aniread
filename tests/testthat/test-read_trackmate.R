@@ -347,6 +347,43 @@ test_that("read_trackmate warns on duplicate track-frame combinations", {
   )
 })
 
+test_that("read_trackmate keeps z and sets cartesian_3d when z varies", {
+  xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
+		<TrackMate>
+			<Model spatialunits="micron" timeunits="sec"/>
+			<Settings>
+				<ImageData width="500" height="400"/>
+			</Settings>
+			<AllSpots>
+				<SpotsInFrame frame="0">
+					<Spot ID="1" POSITION_X="10.0" POSITION_Y="20.0" POSITION_Z="3.0" POSITION_T="0.0" FRAME="0"/>
+					<Spot ID="2" POSITION_X="15.0" POSITION_Y="25.0" POSITION_Z="7.0" POSITION_T="1.0" FRAME="1"/>
+				</SpotsInFrame>
+			</AllSpots>
+			<AllTracks>
+				<Track TRACK_ID="0">
+					<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>
+				</Track>
+			</AllTracks>
+			<FilteredTracks>
+				<TrackID TRACK_ID="0"/>
+			</FilteredTracks>
+		</TrackMate>'
+
+  tmp <- tempfile(fileext = ".xml")
+  writeLines(xml_content, tmp)
+  on.exit(unlink(tmp))
+
+  result <- read_trackmate(tmp)
+
+  expect_true("z" %in% names(result))
+  expect_equal(sort(unique(result$z)), c(3, 7))
+  expect_equal(
+    as.character(aniframe::get_metadata(result, "coordinate_system")),
+    "cartesian_3d"
+  )
+})
+
 test_that("read_trackmate drops z when only one unique value", {
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>

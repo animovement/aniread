@@ -125,3 +125,28 @@ test_that("writes correct column order to file", {
 
   unlink(temp_file)
 })
+
+test_that("errors when no grouping columns are present", {
+  data <- dplyr::tibble(time = c(0, 1), x = c(10, 11), y = c(5, 6))
+  temp_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_file), add = TRUE)
+  expect_error(
+    write_intracktive(data, temp_file, quiet = TRUE),
+    "No grouping columns"
+  )
+})
+
+test_that("emits a success message when not quiet", {
+  data <- aniframe::aniframe(
+    individual = c(1, 1),
+    time = c(0, 1),
+    x = c(10, 11),
+    y = c(5, 6)
+  )
+  temp_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_file), add = TRUE)
+  expect_message(
+    write_intracktive(data, temp_file, quiet = FALSE),
+    "Wrote inTRACKtive CSV"
+  )
+})
