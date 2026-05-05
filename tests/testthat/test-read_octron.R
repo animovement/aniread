@@ -308,3 +308,84 @@ test_that("read_octron(method = 'segments') still works on scalar-only files", {
   # Every row from a scalar file gets segment = 1
   expect_equal(unique(as.character(result$segment)), "1")
 })
+
+# --- Edge cases for the internal tuple resolvers ---
+
+test_that("parse_octron_column passes numeric columns through as a list", {
+  expect_equal(parse_octron_column(c(1, 2, 3)), list(1, 2, 3))
+})
+
+test_that("parse_octron_column converts NA character entries to NA_real_", {
+  result <- parse_octron_column(c("(1.0, 2.0)", NA_character_, "3.0"))
+  expect_equal(result[[1]], c(1, 2))
+  expect_true(is.na(result[[2]]))
+  expect_equal(result[[3]], 3)
+})
+
+test_that("resolve_largest returns NA when every segment value is NA", {
+  out <- resolve_largest(
+    list(c(NA_real_, NA_real_)),
+    list(c(1, 2))
+  )
+  expect_true(is.na(out))
+})
+
+test_that("resolve_largest defaults to the first segment when all areas are NA", {
+  # which.max() returns integer(0) on an all-NA vector — code falls back to idx 1.
+  out <- resolve_largest(
+    list(c(10, 20)),
+    list(c(NA_real_, NA_real_))
+  )
+  expect_equal(out, 10)
+})
+
+test_that("resolve_weighted returns NA when every segment value is NA", {
+  out <- resolve_weighted(
+    list(c(NA_real_, NA_real_)),
+    list(c(1, 2))
+  )
+  expect_true(is.na(out))
+})
+
+test_that("resolve_weighted falls back to arithmetic mean when areas sum to 0", {
+  out <- resolve_weighted(list(c(10, 20)), list(c(0, 0)))
+  expect_equal(out, 15)
+})
+
+test_that("read_octron resolves tuples when no `area` column is present", {
+  # Bytetrack-flavoured Octron exports omit the `area` column; the
+  # resolver falls back to equal weights (arithmetic mean for `weighted`,
+  # first segment for `largest`).
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(
+    c(
+      "video_name: test.mp4",
+      "frame_count: 2",
+      "frame_count_analyzed: 2",
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2025-10-04 09:06:31",
+      "frame_counter,frame_idx,track_id,label,pos_x,pos_y,bbox_area,bbox_aspect_ratio,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,confidence",
+      "0,0,1,worm,100.0,200.0,1000.0,0.5,80.0,120.0,180.0,220.0,0.9",
+      paste0(
+        "1,1,1,worm,",
+        '"(150.0, 250.0)","(300.0, 350.0)",',
+        "2000.0,0.6,140.0,260.0,290.0,360.0,0.85"
+      )
+    ),
+    path
+  )
+
+  weighted <- read_octron(path, method = "weighted")
+  largest <- read_octron(path, method = "largest")
+
+  expect_equal(nrow(weighted), 2)
+  multi_w <- weighted[weighted$time == 1, ]
+  expect_equal(multi_w$x, mean(c(150, 250)))
+  expect_equal(multi_w$y, 1000 - mean(c(300, 350)))
+
+  multi_l <- largest[largest$time == 1, ]
+  expect_equal(multi_l$x, 150)
+  expect_equal(multi_l$y, 1000 - 300)
+})

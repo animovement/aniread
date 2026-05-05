@@ -163,7 +163,10 @@ resolve_octron_segments <- function(data, method) {
   parsed_area <- if ("area" %in% names(data)) {
     parse_octron_column(data$area)
   } else {
-    rep(list(1), nrow(data))
+    # No `area` column — fall back to NA so resolve_weighted hits its
+    # arithmetic-mean branch and resolve_largest defaults to the first
+    # segment.
+    rep(list(NA_real_), nrow(data))
   }
 
   for (col in tuple_cols) {
