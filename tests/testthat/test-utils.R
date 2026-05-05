@@ -47,3 +47,56 @@ test_that("get_individual_from_path() splits on last underscore", {
     "simple"
   )
 })
+
+test_that("reflect_to_bottom_left flips y around supplied video_height", {
+  data <- dplyr::tibble(
+    individual = factor("ind1"),
+    keypoint = factor("centroid"),
+    time = 1:3,
+    x = c(1, 2, 3),
+    y = c(10, 20, 30)
+  ) |>
+    aniframe::as_aniframe()
+
+  result <- reflect_to_bottom_left(data, video_height = 100)
+  meta <- aniframe::get_metadata(result)
+
+  expect_equal(as.character(meta$origin), "bottom_left")
+  expect_equal(meta$y_height, 100)
+  expect_equal(result$y, c(90, 80, 70))
+})
+
+test_that("reflect_to_bottom_left falls back to max(y) when video_height is NULL", {
+  data <- dplyr::tibble(
+    individual = factor("ind1"),
+    keypoint = factor("centroid"),
+    time = 1:3,
+    x = c(1, 2, 3),
+    y = c(10, 20, 30)
+  ) |>
+    aniframe::as_aniframe()
+
+  result <- reflect_to_bottom_left(data, video_height = NULL)
+  meta <- aniframe::get_metadata(result)
+
+  expect_equal(as.character(meta$origin), "bottom_left")
+  expect_equal(meta$y_height, 30)
+  expect_equal(result$y, c(20, 10, 0))
+})
+
+test_that("reflect_to_bottom_left leaves origin unchanged when y is all NA", {
+  data <- dplyr::tibble(
+    individual = factor("ind1"),
+    keypoint = factor("centroid"),
+    time = 1:3,
+    x = c(1, 2, 3),
+    y = as.numeric(c(NA, NA, NA))
+  ) |>
+    aniframe::as_aniframe()
+
+  result <- reflect_to_bottom_left(data, video_height = NULL)
+  meta <- aniframe::get_metadata(result)
+
+  expect_equal(as.character(meta$origin), "top_left")
+  expect_true(all(is.na(result$y)))
+})

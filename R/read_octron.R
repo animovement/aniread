@@ -3,7 +3,10 @@
 #' Reads CSV files exported from Octron video segmentation software.
 #' The function parses the metadata header and returns tracking data
 #' as an aniframe with centroid positions, bounding box corners, and
-#' shape descriptors.
+#' shape descriptors. Octron stores positions in image (top-left)
+#' coordinates; the reader reflects y so the returned aniframe is in
+#' the conventional `bottom_left` origin. The frame height is read
+#' from the CSV header (`video_height:`) by default.
 #'
 #' Newer Octron exports (>= the multi-blob handling in
 #' [OCTRON-GUI #63](https://github.com/OCTRON-tracking/OCTRON-GUI/issues/63))
@@ -15,6 +18,9 @@
 #'
 #' @param path Path to the Octron CSV file.
 #' @param keep_bbox Keep bounding box coordinates? Default FALSE.
+#' @param video_height Optional numeric height of the source video frame
+#'   in pixels. Overrides the value parsed from the CSV header when both
+#'   are available.
 #' @param method Strategy for resolving frames where Octron emitted
 #'   multiple mask segments per track. One of:
 #'   \itemize{
@@ -38,19 +44,22 @@
 read_octron <- function(
   path,
   keep_bbox = FALSE,
+  video_height = NULL,
   method = c("weighted", "largest", "segments")
 ) {
   method <- match.arg(method)
   validate_files(path)
 
-  header <- readLines(path, n = 6)
-  video_height <- as.numeric(
-    trimws(sub(
-      "video_height:",
-      "",
-      grep("^video_height:", header, value = TRUE)
-    ))
-  )
+  if (is.null(video_height)) {
+    header <- readLines(path, n = 6)
+    video_height <- as.numeric(
+      trimws(sub(
+        "video_height:",
+        "",
+        grep("^video_height:", header, value = TRUE)
+      ))
+    )
+  }
 
   data <- vroom::vroom(path, skip = 6, show_col_types = FALSE) |>
     suppressMessages()
@@ -101,8 +110,7 @@ read_octron <- function(
       dplyr::across(
         dplyr::all_of(descriptor_cols),
         \(col) dplyr::if_else(.data$keypoint == "centroid", col, NA)
-      ),
-      y = video_height - .data$y
+      )
     )
 
   if (keep_bbox == FALSE) {
@@ -122,7 +130,8 @@ read_octron <- function(
     aniframe::set_metadata(
       source = "octron",
       filename = basename(path)
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 }
 
 

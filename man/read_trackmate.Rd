@@ -4,17 +4,24 @@
 \alias{read_trackmate}
 \title{Read TrackMate XML into an aniframe}
 \usage{
-read_trackmate(path, slim = TRUE)
+read_trackmate(path, slim = TRUE, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to the TrackMate XML file.}
 
 \item{slim}{If TRUE, return only essential columns (default TRUE).}
+
+\item{video_height}{Optional numeric height of the source frame in the
+units reported by the XML. Overrides the value parsed from
+\verb{Settings/ImageData/@height} when both are available.}
 }
 \value{
 An aniframe with columns including time, x, y, z, frame, and track_id.
 }
 \description{
 Parses a TrackMate XML file and returns spot data from filtered tracks
-as an aniframe.
+as an aniframe. TrackMate stores spot coordinates in image (top-left)
+coordinates; the reader reflects y so the returned aniframe is in the
+conventional \code{bottom_left} origin. The frame height is read from
+\verb{Settings/ImageData/@height} in the XML by default.
 }

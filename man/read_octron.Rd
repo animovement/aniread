@@ -7,6 +7,7 @@
 read_octron(
   path,
   keep_bbox = FALSE,
+  video_height = NULL,
   method = c("weighted", "largest", "segments")
 )
 }
@@ -14,6 +15,10 @@ read_octron(
 \item{path}{Path to the Octron CSV file.}
 
 \item{keep_bbox}{Keep bounding box coordinates? Default FALSE.}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels. Overrides the value parsed from the CSV header when both
+are available.}
 
 \item{method}{Strategy for resolving frames where Octron emitted
 multiple mask segments per track. One of:
@@ -39,7 +44,10 @@ An aniframe
 Reads CSV files exported from Octron video segmentation software.
 The function parses the metadata header and returns tracking data
 as an aniframe with centroid positions, bounding box corners, and
-shape descriptors.
+shape descriptors. Octron stores positions in image (top-left)
+coordinates; the reader reflects y so the returned aniframe is in
+the conventional \code{bottom_left} origin. The frame height is read
+from the CSV header (\verb{video_height:}) by default.
 }
 \details{
 Newer Octron exports (>= the multi-blob handling in

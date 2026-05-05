@@ -1,14 +1,20 @@
 #' Read TrackMate XML into an aniframe
 #'
 #' Parses a TrackMate XML file and returns spot data from filtered tracks
-#' as an aniframe.
+#' as an aniframe. TrackMate stores spot coordinates in image (top-left)
+#' coordinates; the reader reflects y so the returned aniframe is in the
+#' conventional `bottom_left` origin. The frame height is read from
+#' `Settings/ImageData/@height` in the XML by default.
 #'
 #' @param path Path to the TrackMate XML file.
 #' @param slim If TRUE, return only essential columns (default TRUE).
+#' @param video_height Optional numeric height of the source frame in the
+#'   units reported by the XML. Overrides the value parsed from
+#'   `Settings/ImageData/@height` when both are available.
 #'
 #' @return An aniframe with columns including time, x, y, z, frame, and track_id.
 #' @export
-read_trackmate <- function(path, slim = TRUE) {
+read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   # Check the file
   validate_files(path, expected_suffix = "xml")
 
@@ -41,6 +47,17 @@ read_trackmate <- function(path, slim = TRUE) {
   time_units <- xml2::xml_attr(model_node, "timeunits")
   time_units <- if (time_units == "sec") {
     "s"
+  }
+
+  # Frame height for the y-axis reflection (top_left -> bottom_left)
+  if (is.null(video_height)) {
+    image_data <- xml2::xml_find_first(xml, ".//Settings/ImageData")
+    if (!inherits(image_data, "xml_missing")) {
+      h <- suppressWarnings(as.numeric(xml2::xml_attr(image_data, "height")))
+      if (!is.na(h)) {
+        video_height <- h
+      }
+    }
   }
 
   # if (spatial_units == "pixel") {
@@ -103,6 +120,8 @@ read_trackmate <- function(path, slim = TRUE) {
     data <- data |>
       dplyr::select(-"frame")
   }
+
+  data <- reflect_to_bottom_left(data, video_height = video_height)
 
   data
 }
