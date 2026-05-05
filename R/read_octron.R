@@ -233,7 +233,9 @@ resolve_largest <- function(values_list, areas_list) {
         return(as.numeric(v))
       }
       idx <- which.max(a)
-      if (length(idx) == 0L) idx <- 1L
+      if (length(idx) == 0L) {
+        idx <- 1L
+      }
       as.numeric(v[idx])
     },
     numeric(1)
