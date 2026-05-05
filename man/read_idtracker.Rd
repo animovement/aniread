@@ -29,7 +29,7 @@ a movement dataframe
 idtracker.ai stores trajectories in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
 \code{bottom_left} origin. For h5 files the frame height is read directly
-from the \code{/height} dataset. CSV exports do not include the frame
+from the \verb{/height} dataset. CSV exports do not include the frame
 height, so pass \code{video_height} explicitly to get an accurate flip
 (otherwise \code{max(y)} is used as a fallback).
 }

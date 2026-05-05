@@ -25,5 +25,5 @@ as an aniframe with centroid positions, bounding box corners, and
 shape descriptors. Octron stores positions in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in
 the conventional \code{bottom_left} origin. The frame height is read
-from the CSV header (\code{video_height:}) by default.
+from the CSV header (\verb{video_height:}) by default.
 }
