@@ -1,5 +1,9 @@
 # aniread 0.4.0
 
+## Bug fixes
+
+* `read_idtracker()` now accepts both the legacy `seconds` and the newer `time` leading column in idtracker.ai CSV exports (#60).
+
 # aniread 0.3.1
 
 * Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
