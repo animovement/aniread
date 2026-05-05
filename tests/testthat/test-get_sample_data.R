@@ -20,6 +20,7 @@
 # - TRex returns single path for single-file dataset
 
 test_that("get_sample_data downloads data for valid sources", {
+  skip_if_no_network()
   skip_on_ci()
 
   temp_cache <- tempfile()
@@ -39,6 +40,7 @@ test_that("get_sample_data downloads data for valid sources", {
 })
 
 test_that("get_sample_data downloads data with specific dataset parameter", {
+  skip_if_no_network()
   skip_on_ci()
 
   temp_cache <- tempfile()
@@ -59,6 +61,7 @@ test_that("get_sample_data downloads data with specific dataset parameter", {
 })
 
 test_that("get_sample_data downloads small files on CI", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Only test with small, fast files on CI
@@ -75,6 +78,7 @@ test_that("get_sample_data downloads small files on CI", {
 })
 
 test_that("get_sample_data uses cached files when available", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Use a small file for this test
@@ -96,6 +100,7 @@ test_that("get_sample_data uses cached files when available", {
 })
 
 test_that("get_sample_data creates cache directory if it doesn't exist", {
+  skip_if_no_network()
   temp_cache <- file.path(tempdir(), "nested", "cache", "dir")
 
   expect_false(dir.exists(temp_cache))
@@ -147,6 +152,7 @@ test_that("get_sample_data fails when source is missing", {
 })
 
 test_that("get_sample_data returns correct file paths for sources", {
+  skip_if_no_network()
   skip_on_ci()
 
   temp_cache <- tempfile()
@@ -178,6 +184,7 @@ test_that("get_sample_data returns correct file paths for sources", {
 })
 
 test_that("get_sample_data returns path as character string", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   path <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
@@ -190,6 +197,7 @@ test_that("get_sample_data returns path as character string", {
 })
 
 test_that("different sources download different files", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Use small files
@@ -210,6 +218,7 @@ test_that("different sources download different files", {
 })
 
 test_that("get_sample_data downloads data from custom URL", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Use a real URL from the movement-data repo (small file)
@@ -245,6 +254,7 @@ test_that("get_sample_data extracts basename correctly from URL", {
 })
 
 test_that("get_sample_data caches custom URL downloads", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   custom_url <- "https://raw.githubusercontent.com/animovement/movement-data/main/data/trex/beetle.csv"
@@ -266,6 +276,7 @@ test_that("get_sample_data caches custom URL downloads", {
 })
 
 test_that("get_sample_data handles URLs with complex paths", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # URL with nested path structure (small file)
@@ -282,6 +293,7 @@ test_that("get_sample_data handles URLs with complex paths", {
 })
 
 test_that("get_sample_data distinguishes between URL and source name", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Download using source name
@@ -322,6 +334,7 @@ test_that("list_datasets with source shows datasets for that source", {
 })
 
 test_that("TRex returns vector of file paths for multi-file datasets", {
+  skip_if_no_network()
   skip_on_ci()
 
   temp_cache <- tempfile()
@@ -348,6 +361,7 @@ test_that("TRex returns vector of file paths for multi-file datasets", {
 })
 
 test_that("TRex returns single path for single-file dataset", {
+  skip_if_no_network()
   temp_cache <- tempfile()
 
   # Get the beetles dataset which is a single CSV
@@ -369,6 +383,7 @@ test_that("TRex returns single path for single-file dataset", {
 })
 
 test_that("get_sample_data handles binary files correctly", {
+  skip_if_no_network()
   skip_on_ci()
 
   temp_cache <- tempfile()
