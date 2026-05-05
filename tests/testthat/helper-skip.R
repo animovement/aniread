@@ -6,5 +6,9 @@
 
 skip_if_no_network <- function() {
   testthat::skip_on_cran()
-  testthat::skip_if_offline()
+  # `skip_if_offline()` requires the `curl` package; degrade gracefully
+  # when it isn't installed so the helper itself never hard-errors.
+  if (requireNamespace("curl", quietly = TRUE)) {
+    testthat::skip_if_offline()
+  }
 }
