@@ -6,7 +6,13 @@
 # - Time is 0-indexed
 # - Metadata is set correctly
 # - Sampling rate is set
-path <- get_sample_data("c3d")
+# Wrap the sample-data download so a failure (offline, slow GIN server,
+# etc.) doesn't error out the whole test file — tests that need the file
+# skip individually below.
+path <- tryCatch(
+  get_sample_data("c3d", quiet = TRUE),
+  error = function(e) NULL
+)
 
 test_that("read_c3d validates input", {
   expect_error(read_c3d("nonexistent.c3d"))
@@ -16,6 +22,7 @@ test_that("read_c3d validates input", {
 test_that("read_c3d returns an aniframe with expected structure", {
   skip_if_not_installed("c3dr")
   skip_on_os("windows") # These tests result in errors in the Windows runners
+  skip_if(is.null(path), "c3d sample download unavailable")
 
   result <- read_c3d(path)
 
@@ -30,6 +37,7 @@ test_that("read_c3d returns an aniframe with expected structure", {
 test_that("read_c3d time is 0-indexed", {
   skip_if_not_installed("c3dr")
   skip_on_os("windows")
+  skip_if(is.null(path), "c3d sample download unavailable")
 
   result <- read_c3d(path)
 
@@ -39,6 +47,7 @@ test_that("read_c3d time is 0-indexed", {
 test_that("read_c3d sets metadata and sampling rate", {
   skip_if_not_installed("c3dr")
   skip_on_os("windows")
+  skip_if(is.null(path), "c3d sample download unavailable")
 
   result <- read_c3d(path)
 
