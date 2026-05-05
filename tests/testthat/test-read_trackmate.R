@@ -9,7 +9,11 @@
 # - Unit conversion (pixel -> px, sec -> s)
 # - Output is an aniframe with correct structure
 # - Metadata is set correctly
-# - Z column set to NA when only one unique value
+# - Reflects to bottom_left and records `y_height` from the XML
+# - `video_height` argument overrides ImageData/@height
+# - Falls back to max(y) when ImageData is missing
+# - Keeps z and sets cartesian_3d when z varies
+# - Drops z when only one unique value (sets cartesian_2d)
 # - Frame column removed when time stamps exist
 
 test_that("read_trackmate errors on non-existent file", {

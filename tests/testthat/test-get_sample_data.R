@@ -1,6 +1,7 @@
 # Tests for get_sample_data():
 # - Downloads data for valid predefined sources
 # - Downloads data with specific dataset parameter
+# - Downloads small files on CI
 # - Uses cached files when available
 # - Creates cache directory if it doesn't exist
 # - Fails with informative error for unsupported source
@@ -16,8 +17,16 @@
 # - Distinguishes between URL and source name
 # - list_datasets without source shows all sources
 # - list_datasets with source shows datasets for that source
-# - TRex returns vector of file paths for multi-file datasets
+# - list_datasets with an unsupported source errors
+# - Emits "Downloading ..." message when not quiet (default dataset)
+# - Emits "Downloading ... custom URL" message when not quiet (URL input)
+# - Emits "Downloading ... <dataset>" message for non-default datasets
+# - Errors with "Failed to download" on a bad URL
+# - TRex returns vector of file paths for multi-file datasets (covers
+#   the zip-already-extracted cache-hit path on the second call)
+# - TRex zip download emits "Extracting" message when not quiet
 # - TRex returns single path for single-file dataset
+# - Handles binary files correctly
 
 test_that("get_sample_data downloads data for valid sources", {
   skip_if_no_network()

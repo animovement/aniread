@@ -13,6 +13,18 @@
 # - Metadata is set correctly (source, filename)
 # - Handles invalid file path
 # - Newer format (bytetrack, no shape descriptors) is also supported
+# - Reflects to bottom_left using header `video_height`
+# - `video_height` argument overrides the CSV header value
+# - method = "weighted" area-weights multi-segment rows
+# - method = "largest" picks the largest segment
+# - method = "segments" expands tuples into separate rows
+# - method defaults to "weighted"
+# - Rejects unknown `method` values
+# - Scalar-only files are identical across methods
+# - method = "segments" still works on scalar-only files
+# - Internal resolvers (parse_octron_column / resolve_largest /
+#   resolve_weighted) handle their NA / empty / sum-zero edge cases
+# - Resolves tuples when no `area` column is present (bytetrack-flavoured)
 
 test_that("read_octron returns an aniframe with correct structure", {
   path <- test_path("data/octron", "octron_sample.csv")

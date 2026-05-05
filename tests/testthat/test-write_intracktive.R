@@ -5,6 +5,8 @@
 # - Excludes z column when absent
 # - Renames time to t
 # - Writes correct column order to file
+# - Errors when no grouping columns are present
+# - Emits a "Wrote inTRACKtive CSV" message when not quiet
 
 test_that("creates track_id from all grouping columns", {
   data <- aniframe::aniframe(
