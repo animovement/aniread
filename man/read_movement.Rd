@@ -4,10 +4,15 @@
 \alias{read_movement}
 \title{Read data exported from the movement Python package}
 \usage{
-read_movement(path)
+read_movement(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to an HDF5 file (\code{.nc} or \code{.h5}) exported from movement.}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels. movement does not currently store this in the netCDF
+attributes, so without it \code{max(y)} is used as a fallback when
+reflecting to \code{bottom_left}.}
 }
 \value{
 An aniframe
@@ -20,5 +25,7 @@ Imports pose estimation data from netCDF/HDF5 files created by the
 The movement package stores pose estimation data in a specific netCDF/HDF5 structure
 with datasets for individuals, keypoints, position coordinates, confidence
 scores, and time. This function reads that structure and reshapes it into
-a tidy aniframe format.
+a tidy aniframe format. The underlying tracking software outputs
+image (top-left) coordinates, so the reader reflects y to
+\code{bottom_left} before returning.
 }

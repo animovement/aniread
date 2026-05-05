@@ -1,11 +1,16 @@
 #' @title Read AnimalTA data
 #' @name read_animalta
 #'
-#' @description Read a data frame from AnimalTA
+#' @description Read a data frame from AnimalTA. AnimalTA exports tracking
+#' data in image (top-left) coordinates; the reader reflects y so the
+#' returned aniframe is in the conventional `bottom_left` origin.
 #'
 #' @param path An AnimalTA data frame
 #' @param detailed Animal export either raw (default) or detailed data files. We
 #'   only have limited support for detailed data.
+#' @param video_height Optional numeric height of the source video frame in
+#'   pixels. AnimalTA does not record this in the export, so when not
+#'   supplied the maximum observed `y` is used as a fallback.
 #'
 #' @return a movement dataframe
 #'
@@ -15,7 +20,7 @@
 #' *Methods in Ecology and Evolution*, 14, 1699–1707. \doi{0.1111/2041-210X.14115}.
 #'
 #' @export
-read_animalta <- function(path, detailed = FALSE) {
+read_animalta <- function(path, detailed = FALSE, video_height = NULL) {
   # Inspect headers
   if (detailed == TRUE) {
     validate_files(
@@ -47,7 +52,8 @@ read_animalta <- function(path, detailed = FALSE) {
     aniframe::set_metadata(
       source = "animalta",
       filename = basename(path)
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 
   return(data)
 }

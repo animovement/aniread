@@ -22,6 +22,7 @@ install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'htt
 [![aniread status
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
 [![Codecov test coverage](https://codecov.io/gh/animovement/aniread/graph/badge.svg)](https://app.codecov.io/gh/animovement/aniread)
+[![Chat on Zulip](https://img.shields.io/badge/chat-Zulip-6492FE?logo=zulip&logoColor=white)](https://animovement.zulipchat.com)
 <!-- badges: end -->
 
 *An R package for reading and writing movement data*
@@ -41,11 +42,6 @@ Once you have installed the package, you can load it with:
 ```{r, eval=FALSE}
 library("aniread")
 ```
-
-## Status
-> **Warning**
->
-> 🏗️ The package is currently in early development and the interface is subject to change. Feel free to play around and provide feedback.
 
 
 ## Citation {#citation}

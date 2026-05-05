@@ -9,8 +9,13 @@
 # - parse_dlc_pickle(): pickle string parsing for single/multi-animal
 
 # --- Setup ---
-# Download H5 sample data once at the start
-h5_path <- get_sample_data("deeplabcut")
+# Download H5 sample data once at the start. Wrap so a failed download
+# (offline, slow GIN server, etc.) doesn't error out the whole test file
+# — tests that need the file skip individually below.
+h5_path <- tryCatch(
+  get_sample_data("deeplabcut", cache_dir = test_cache_dir(), quiet = TRUE),
+  error = function(e) NULL
+)
 
 # --- Fixtures ---
 fixture_path <- function(filename) {
@@ -57,6 +62,7 @@ test_that("read_deeplabcut dispatches to CSV reader for .csv files", {
 
 test_that("read_deeplabcut dispatches to H5 reader for .h5 files", {
   skip_if_not_installed("rhdf5")
+  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
 
   result <- read_deeplabcut(h5_path)
 
@@ -145,6 +151,7 @@ test_that("read_deeplabcut_csv_multi parses coordinates as numeric", {
 
 test_that("read_deeplabcut_h5 returns expected columns for single-animal", {
   skip_if_not_installed("rhdf5")
+  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
 
   result <- read_deeplabcut_h5(h5_path)
   expected_cols <- c("time", "keypoint", "x", "y", "confidence")
@@ -154,6 +161,7 @@ test_that("read_deeplabcut_h5 returns expected columns for single-animal", {
 
 test_that("read_deeplabcut_h5 parses coordinates as numeric", {
   skip_if_not_installed("rhdf5")
+  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
 
   result <- read_deeplabcut_h5(h5_path)
 
@@ -217,6 +225,7 @@ test_that("parse_dlc_pickle returns tibble with expected columns (multi)", {
 
 test_that("single-animal CSV and H5 produce consistent column names", {
   skip_if_not_installed("rhdf5")
+  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
 
   csv_result <- read_deeplabcut(fixture_path("mouse_single.csv"))
   h5_result <- read_deeplabcut(h5_path)

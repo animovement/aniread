@@ -1,7 +1,7 @@
 Package: aniread
 Type: Package
 Title: An R package for reading and writing movement data
-Version: 0.3.2
+Version: 0.4.0
 Authors@R: 
     person(
       "Mikkel", 
@@ -19,7 +19,7 @@ LazyData: true
 Depends:
     R (>= 4.1.0)
 Imports: 
-    aniframe,
+    aniframe (>= 0.5.0),
     cli,
     dplyr,
     janitor,
@@ -28,8 +28,10 @@ Imports:
     tidyr,
     tidyselect,
     vroom
-Suggests: 
+Suggests:
     arrow,
+    covr,
+    curl,
     knitr,
     rhdf5,
     xml2,

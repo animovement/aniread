@@ -5,6 +5,8 @@
 # - Excludes z column when absent
 # - Renames time to t
 # - Writes correct column order to file
+# - Errors when no grouping columns are present
+# - Emits a "Wrote inTRACKtive CSV" message when not quiet
 
 test_that("creates track_id from all grouping columns", {
   data <- aniframe::aniframe(
@@ -124,4 +126,29 @@ test_that("writes correct column order to file", {
   expect_equal(names(result), c("track_id", "t", "x", "y", "z"))
 
   unlink(temp_file)
+})
+
+test_that("errors when no grouping columns are present", {
+  data <- dplyr::tibble(time = c(0, 1), x = c(10, 11), y = c(5, 6))
+  temp_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_file), add = TRUE)
+  expect_error(
+    write_intracktive(data, temp_file, quiet = TRUE),
+    "No grouping columns"
+  )
+})
+
+test_that("emits a success message when not quiet", {
+  data <- aniframe::aniframe(
+    individual = c(1, 1),
+    time = c(0, 1),
+    x = c(10, 11),
+    y = c(5, 6)
+  )
+  temp_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(temp_file), add = TRUE)
+  expect_message(
+    write_intracktive(data, temp_file, quiet = FALSE),
+    "Wrote inTRACKtive CSV"
+  )
 })

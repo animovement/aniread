@@ -2,13 +2,20 @@
 #'
 #' Reads a FastTrack tracking result file (.txt format) and returns an
 #' aniframe with keypoints for head, body, and tail positions.
+#' FastTrack stores positions in image (top-left) coordinates; the
+#' reader reflects y so the returned aniframe is in the conventional
+#' `bottom_left` origin. The tracking file does not record the source
+#' video resolution, so pass `video_height` to get an accurate flip —
+#' otherwise `max(y)` is used as a fallback.
 #'
 #' @param path Path to a FastTrack tracking.txt file.
+#' @param video_height Optional numeric height of the source video frame
+#'   in pixels.
 #'
 #' @return An aniframe
 #'
 #' @export
-read_fasttrack <- function(path) {
+read_fasttrack <- function(path, video_height = NULL) {
   # Validate file
   validate_files(path)
 
@@ -89,7 +96,8 @@ read_fasttrack <- function(path) {
     aniframe::set_metadata(
       source = "fasttrack",
       filename = basename(path)
-    )
+    ) |>
+    reflect_to_bottom_left(video_height = video_height)
 
   data
 }

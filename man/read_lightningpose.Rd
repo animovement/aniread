@@ -4,14 +4,19 @@
 \alias{read_lightningpose}
 \title{Read LightningPose data}
 \usage{
-read_lightningpose(path)
+read_lightningpose(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to a LightningPose data file}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels. Falls back to \code{max(y)} when not supplied.}
 }
 \value{
 an aniframe
 }
 \description{
-Read csv files from LightningPose (LP).
+Read csv files from LightningPose (LP). Like DeepLabCut, the source
+is in image (top-left) coordinates and the reader reflects y to
+\code{bottom_left}.
 }

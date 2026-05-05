@@ -4,14 +4,21 @@
 \alias{read_sleap}
 \title{Read SLEAP data}
 \usage{
-read_sleap(path)
+read_sleap(path, video_height = NULL)
 }
 \arguments{
 \item{path}{A SLEAP analysis data frame in HDF5 (.h5) format}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels.}
 }
 \value{
 a movement dataframe
 }
 \description{
-Read SLEAP data
+SLEAP stores predictions in image (top-left) coordinates; the reader
+reflects y so the returned aniframe is in the conventional
+\code{bottom_left} origin. SLEAP's analysis h5 export does not include
+the source video resolution, so pass \code{video_height} to get an
+accurate flip — otherwise \code{max(y)} is used as a fallback.
 }

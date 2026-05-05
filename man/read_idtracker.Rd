@@ -4,7 +4,12 @@
 \alias{read_idtracker}
 \title{Read idtracker.ai data}
 \usage{
-read_idtracker(path, path_probabilities = NULL, version = 6)
+read_idtracker(
+  path,
+  path_probabilities = NULL,
+  version = 6,
+  video_height = NULL
+)
 }
 \arguments{
 \item{path}{Path to an idtracker.ai data frame}
@@ -12,10 +17,19 @@ read_idtracker(path, path_probabilities = NULL, version = 6)
 \item{path_probabilities}{Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.}
 
 \item{version}{idtracker.ai version. Currently only v6 output is implemented}
+
+\item{video_height}{Optional numeric height of the source video frame in
+pixels. Overrides the value read from the h5 file when both are
+available.}
 }
 \value{
 a movement dataframe
 }
 \description{
-Read idtracker.ai data
+idtracker.ai stores trajectories in image (top-left) coordinates; the
+reader reflects y so the returned aniframe is in the conventional
+\code{bottom_left} origin. For h5 files the frame height is read directly
+from the \verb{/height} dataset. CSV exports do not include the frame
+height, so pass \code{video_height} explicitly to get an accurate flip
+(otherwise \code{max(y)} is used as a fallback).
 }

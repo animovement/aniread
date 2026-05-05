@@ -4,14 +4,23 @@
 \alias{read_deeplabcut}
 \title{Read DeepLabCut data}
 \usage{
-read_deeplabcut(path)
+read_deeplabcut(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Path to a DeepLabCut data file}
+
+\item{video_height}{Optional numeric height of the source video frame
+in pixels.}
 }
 \value{
 an aniframe
 }
 \description{
 Read files from DeepLabCut (DLC) in either csv or h5 format.
+DeepLabCut stores predictions in image (top-left) coordinates; the
+reader reflects y so the returned aniframe is in the conventional
+\code{bottom_left} origin. DLC's csv/h5 exports do not contain the source
+video resolution (it lives in the project's \code{config.yaml}), so pass
+\code{video_height} to get an accurate flip — otherwise \code{max(y)} is used
+as a fallback.
 }

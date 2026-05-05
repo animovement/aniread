@@ -8,8 +8,8 @@ message: 'To cite package "aniread" in publications use:'
 type: software
 license: MIT
 title: 'aniread: An R package for reading and writing movement data.'
-version: 0.3.1
-date-released: 2026-01-16
+version: 0.4.0
+date-released: 2026-05-06
 identifiers:
   - type: doi
     value: 10.5281/zenodo.17352843

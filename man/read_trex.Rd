@@ -4,7 +4,7 @@
 \alias{read_trex}
 \title{Read TRex Movement Tracking Data}
 \usage{
-read_trex(path)
+read_trex(path, video_height = NULL)
 }
 \arguments{
 \item{path}{Character string specifying the path to a TRex CSV file.
@@ -14,6 +14,11 @@ The file should contain columns for:
 \item x and y coordinates for tracked points (e.g., x_head, y_head)
 \item x and y coordinates for centroid (x_number_wcentroid_cm, y_number_wcentroid_cm)
 }}
+
+\item{video_height}{Optional numeric height of the source video frame
+in the same spatial units as the tracking output (TRex defaults to
+centimetres). TRex's CSV export does not record this, so without it
+\code{max(y)} is used as a fallback when reflecting to \code{bottom_left}.}
 }
 \value{
 A data frame containing movement data with the following columns:

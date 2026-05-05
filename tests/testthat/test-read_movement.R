@@ -7,14 +7,22 @@
 # - Errors on invalid file path
 # - Errors on wrong file extension
 
-path <- get_sample_data("movement")
+# Wrap the sample-data download so a failure (offline, slow GIN server,
+# etc.) doesn't error out the whole test file — tests that need the file
+# skip individually below.
+path <- tryCatch(
+  get_sample_data("movement", cache_dir = test_cache_dir(), quiet = TRUE),
+  error = function(e) NULL
+)
 
 test_that("read_movement returns an aniframe", {
+  skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
   expect_s3_class(result, "aniframe")
 })
 
 test_that("read_movement has required columns", {
+  skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
   expect_true(all(
     c("individual", "keypoint", "time", "x", "y") %in% names(result)
@@ -22,6 +30,7 @@ test_that("read_movement has required columns", {
 })
 
 test_that("read_movement column types are correct", {
+  skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
   expect_type(result$time, "double")
   expect_type(result$x, "double")
@@ -29,6 +38,7 @@ test_that("read_movement column types are correct", {
 })
 
 test_that("read_movement populates metadata", {
+  skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
   meta <- aniframe::get_metadata(result)
 
