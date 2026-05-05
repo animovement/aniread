@@ -172,13 +172,13 @@ test_that("Test that there aren't any NaNs created", {
 })
 
 test_that("ensure_output_header_names errors when expected headers are missing", {
-  bad <- dplyr::tibble(time = 1, x = 0)  # missing y, individual, etc.
+  bad <- dplyr::tibble(time = 1, x = 0) # missing y, individual, etc.
   expect_error(ensure_output_header_names(bad), "expected")
 })
 
 test_that("ensure_output_header_class errors when classes don't match", {
   bad <- dplyr::tibble(
-    time = "1",  # character, expected numeric
+    time = "1", # character, expected numeric
     individual = factor("a"),
     keypoint = factor("centroid"),
     x = 1,
