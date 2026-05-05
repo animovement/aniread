@@ -163,12 +163,17 @@ read_opticalflow <- function(path, col_time, col_dx, col_dy, quiet = TRUE) {
         time = .data$time - min(.data$time)
       )
   } else if (is.character(data$time)) {
+    # nocov start
+    # vroom auto-parses ISO datetime strings to POSIXct, so this branch is
+    # only reachable for non-ISO timestamp strings. Hard to exercise from
+    # a test fixture.
     start_datetime <- min(as.POSIXct(data$time))
     data <- data |>
       dplyr::mutate(
         time = as.numeric(as.POSIXct(.data$time)),
         time = .data$time - min(.data$time)
       )
+    # nocov end
   } else {
     # Numeric timestamps - no real datetime available
     start_datetime <- NA

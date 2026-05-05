@@ -2,6 +2,8 @@
 # - get_file_ext(): basic extensions, multiple dots, no extension
 # - convert_nan_to_na(): NaN conversion, mixed types, no NaN values
 # - get_individual_from_path(): single underscore, multiple underscores, no underscore
+# - reflect_to_bottom_left(): flip with supplied `video_height`,
+#   fallback to max(y), no-op when y is all NA
 
 test_that("get_file_ext() extracts file extensions correctly", {
   expect_equal(get_file_ext("file.csv"), "csv")

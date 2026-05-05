@@ -390,11 +390,15 @@ get_sample_data <- function(
 
   # Verify the file was actually downloaded and has content
   if (!file.exists(data_path) || file.info(data_path)$size == 0) {
+    # nocov start
+    # Defensive — `download.file` exiting cleanly with a missing/empty
+    # destination is a server-side oddity that's hard to fixture in tests.
     cli::cli_abort(c(
       "Download appeared to succeed but file is missing or empty.",
       "i" = "This may be a temporary issue with the data repository.",
       "i" = "URL attempted: {.url {file_url}}"
     ))
+    # nocov end
   }
 
   # Handle zip file extraction

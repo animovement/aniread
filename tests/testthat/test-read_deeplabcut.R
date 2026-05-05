@@ -13,7 +13,7 @@
 # (offline, slow GIN server, etc.) doesn't error out the whole test file
 # — tests that need the file skip individually below.
 h5_path <- tryCatch(
-  get_sample_data("deeplabcut", quiet = TRUE),
+  get_sample_data("deeplabcut", cache_dir = test_cache_dir(), quiet = TRUE),
   error = function(e) NULL
 )
 

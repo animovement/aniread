@@ -117,7 +117,7 @@ ensure_file_has_headers <- function(path) {
     suppressMessages()
   has_headers <- ncol(df) > 1
   if (has_headers != TRUE) {
-    cli::cli_abort("Expected file headers(es), but found none.")
+    cli::cli_abort("Expected file headers(es), but found none.") # nocov
   }
   # return(has_headers)
 }
