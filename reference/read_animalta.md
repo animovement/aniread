@@ -1,11 +1,13 @@
 # Read AnimalTA data
 
-Read a data frame from AnimalTA
+Read a data frame from AnimalTA. AnimalTA exports tracking data in image
+(top-left) coordinates; the reader reflects y so the returned aniframe
+is in the conventional `bottom_left` origin.
 
 ## Usage
 
 ``` r
-read_animalta(path, detailed = FALSE)
+read_animalta(path, detailed = FALSE, video_height = NULL)
 ```
 
 ## Arguments
@@ -18,6 +20,12 @@ read_animalta(path, detailed = FALSE)
 
   Animal export either raw (default) or detailed data files. We only
   have limited support for detailed data.
+
+- video_height:
+
+  Optional numeric height of the source video frame in pixels. AnimalTA
+  does not record this in the export, so when not supplied the maximum
+  observed `y` is used as a fallback.
 
 ## Value
 

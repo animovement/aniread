@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,6 +20,7 @@
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/animovement/aniread/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://animovement.zulipchat.com" aria-label="Chat on Zulip"><span class="fa fa-comments"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch"><li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
@@ -38,6 +39,32 @@
       <small>Source: <a href="https://github.com/animovement/aniread/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="aniread-040">aniread 0.4.0<a class="anchor" aria-label="anchor" href="#aniread-040"></a></h2>
+<div class="section level3">
+<h3 id="breaking-changes-0-4-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-4-0"></a></h3>
+<ul><li>Readers whose source data uses image (top-left) origin now reflect <code>y</code> so the returned aniframe is in the conventional <code>bottom_left</code> origin. This fixes plots being upside-down without manual reorientation. Affects <code><a href="../reference/read_animalta.html">read_animalta()</a></code>, <code><a href="../reference/read_bonsai.html">read_bonsai()</a></code>, <code><a href="../reference/read_deeplabcut.html">read_deeplabcut()</a></code>, <code><a href="../reference/read_fasttrack.html">read_fasttrack()</a></code>, <code><a href="../reference/read_idtracker.html">read_idtracker()</a></code>, <code><a href="../reference/read_lightningpose.html">read_lightningpose()</a></code>, <code><a href="../reference/read_movement.html">read_movement()</a></code>, <code><a href="../reference/read_octron.html">read_octron()</a></code>, <code><a href="../reference/read_sleap.html">read_sleap()</a></code>, <code><a href="../reference/read_trackmate.html">read_trackmate()</a></code>, and <code><a href="../reference/read_trex.html">read_trex()</a></code> (<a href="https://github.com/animovement/aniread/issues/61" class="external-link">#61</a>).</li>
+<li>
+<code>aniframe (&gt;= 0.5.0)</code> is now required, since the reflection uses the new <code>set_origin()</code> / <code>set_y_height()</code> API.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-0-4-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-0"></a></h3>
+<ul><li>All affected readers gain an optional <code>video_height</code> argument for supplying the source frame height when the format does not record it (DeepLabCut, LightningPose, SLEAP, AnimalTA, Bonsai, FastTrack, TRex, idtracker.ai CSV, movement netCDF). When omitted, the reader falls back to source-extracted values where available, and finally to <code>max(y)</code>.</li>
+<li>
+<code><a href="../reference/read_idtracker.html">read_idtracker()</a></code> now reads <code>/height</code> from the trajectories h5 file by default.</li>
+<li>
+<code><a href="../reference/read_trackmate.html">read_trackmate()</a></code> now reads the frame height from <code>Settings/ImageData/@height</code> in the XML by default.</li>
+<li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> continues to read <code>video_height:</code> from the CSV header, but now also accepts a <code>video_height</code> override and stores the value in the aniframe metadata.</li>
+<li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> gains a <code>method</code> argument to handle frames where Octron emitted multiple mask segments for the same track (<a href="https://github.com/animovement/aniread/issues/67" class="external-link">#67</a>). One of <code>"weighted"</code> (default; area-weighted mean of position and shape props, sum of areas), <code>"largest"</code> (single largest segment per row), or <code>"segments"</code> (one row per segment, with a new <code>segment</code> identity variable).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-4-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/read_idtracker.html">read_idtracker()</a></code> now accepts both the legacy <code>seconds</code> and the newer <code>time</code> leading column in idtracker.ai CSV exports (<a href="https://github.com/animovement/aniread/issues/60" class="external-link">#60</a>).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.1" id="aniread-031">aniread 0.3.1<a class="anchor" aria-label="anchor" href="#aniread-031"></a></h2>
 <ul><li>Adds <code>read_aniframe</code> that allows you to read your saved aniframes (in <code>.parquet</code> format) back into R!</li>

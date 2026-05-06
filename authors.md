@@ -12,7 +12,7 @@ Source:
 
 Roald-Arbøl M (2026). “aniread: An R package for reading and writing
 movement data.”
-[doi:10.5281/zenodo.17352843](https://doi.org/10.5281/zenodo.17352843),
+[doi:10.5281/zenodo.17352843](https://doi.org/10.5281/zenodo.17352843).
 <http://animovement.dev/aniread/>.
 
     @Misc{aniread,
@@ -22,5 +22,5 @@ movement data.”
       year = {2026},
       url = {http://animovement.dev/aniread/},
       abstract = {An R package for reading and writing movement data.},
-      version = {0.3.1},
+      version = {0.4.0},
     }

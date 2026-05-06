@@ -8,7 +8,7 @@ processes these files into a standardized movement data format.
 ## Usage
 
 ``` r
-read_trex(path)
+read_trex(path, video_height = NULL)
 ```
 
 ## Arguments
@@ -24,6 +24,13 @@ read_trex(path)
 
   - x and y coordinates for centroid (x_number_wcentroid_cm,
     y_number_wcentroid_cm)
+
+- video_height:
+
+  Optional numeric height of the source video frame in the same spatial
+  units as the tracking output (TRex defaults to centimetres). TRex's
+  CSV export does not record this, so without it `max(y)` is used as a
+  fallback when reflecting to `bottom_left`.
 
 ## Value
 

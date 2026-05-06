@@ -11,21 +11,16 @@ trackballs.
 You can install the development version of *aniread* with:
 
 ``` r
+
 install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 Once you have installed the package, you can load it with:
 
 ``` r
+
 library("aniread")
 ```
-
-## Status
-
-> **Warning**
->
-> 🏗️ The package is currently in early development and the interface is
-> subject to change. Feel free to play around and provide feedback.
 
 ## Citation
 
@@ -35,11 +30,13 @@ bug, feel free to open an issue.
 To cite *aniread* in publications use:
 
 ``` r
+
 citation("aniread")
 #> To cite aniread in publications use:
 #> 
-#>   Roald-Arbøl M (2025). "aniread: An R package for reading and writing movement data."
-#>   doi:10.5281/zenodo.17352843 <https://doi.org/10.5281/zenodo.17352843>,
+#>   Roald-Arbøl M (2026). "aniread: An R package for reading and writing
+#>   movement data." doi:10.5281/zenodo.17352843
+#>   <https://doi.org/10.5281/zenodo.17352843>,
 #>   <http://animovement.dev/aniread/>.
 #> 
 #> A BibTeX entry for LaTeX users is
@@ -48,9 +45,9 @@ citation("aniread")
 #>     doi = {10.5281/zenodo.17352843},
 #>     title = {aniread: An R package for reading and writing movement data},
 #>     author = {Mikkel Roald-Arbøl},
-#>     year = {2025},
+#>     year = {2026},
 #>     url = {http://animovement.dev/aniread/},
 #>     abstract = {An R package for reading and writing movement data.},
-#>     version = {0.3.0},
+#>     version = {0.4.0},
 #>   }
 ```
