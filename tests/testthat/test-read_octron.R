@@ -675,7 +675,7 @@ test_that("resolve_largest's per-row align path keeps already-matching rows inta
   # lengths so `align_to_length(x, length(x))` short-circuits.
   out <- resolve_largest(
     list(c(10, 20), c(30, 40, 50)),
-    list(c(1, 2),    c(7))
+    list(c(1, 2), c(7))
   )
   # Row 1: weighted by areas (1,2) -> max area is idx 2 -> value 20
   # Row 2: areas padded to (7, NA, NA); only idx 1 is non-NA -> value 30
@@ -689,14 +689,21 @@ test_that("resolve_octron_segments mismatch warning truncates >10 affected rows"
   # 2-segment area column.
   path <- tempfile(fileext = ".csv")
   on.exit(unlink(path), add = TRUE)
-  rows <- vapply(seq_len(12L) - 1L, function(i) {
-    paste0(
-      i, ",", i, ',1,worm,0.9,',
-      '"(100, 200, 300)","(100, 200, 300)",',
-      '1000,80,120,180,220,',
-      '"(800, 200)","(0.4, 0.6)","(0.85, 0.9)","(-0.3, 0.5)"'
-    )
-  }, character(1))
+  rows <- vapply(
+    seq_len(12L) - 1L,
+    function(i) {
+      paste0(
+        i,
+        ",",
+        i,
+        ',1,worm,0.9,',
+        '"(100, 200, 300)","(100, 200, 300)",',
+        '1000,80,120,180,220,',
+        '"(800, 200)","(0.4, 0.6)","(0.85, 0.9)","(-0.3, 0.5)"'
+      )
+    },
+    character(1)
+  )
   writeLines(
     c(
       "video_name: t.mp4",
