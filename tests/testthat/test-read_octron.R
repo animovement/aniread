@@ -25,6 +25,17 @@
 # - Internal resolvers (parse_octron_column / resolve_largest /
 #   resolve_weighted) handle their NA / empty / sum-zero edge cases
 # - Resolves tuples when no `area` column is present (bytetrack-flavoured)
+# - parse_octron_column handles whitespace, length-3 tuples, mixed
+#   scalar/tuple in the same column, all in a single vectorised pass
+# - resolve_weighted warns once per call and falls back to the arithmetic
+#   mean when a row's value/area segment counts disagree (replaces R's
+#   silent recycling warning)
+# - `properties` argument selects which scikit-image / Octron region
+#   properties to read; "all" matches the original behaviour, NULL skips
+#   them entirely, a character vector picks a subset, and unknown names
+#   warn instead of erroring
+# - method = "weighted" auto-includes `area` when the user omitted it
+#   (with an info note) since the weighted mean is undefined otherwise
 
 test_that("read_octron returns an aniframe with correct structure", {
   path <- test_path("data/octron", "octron_sample.csv")
@@ -424,4 +435,248 @@ test_that("read_octron resolves tuples when no `area` column is present", {
   multi_l <- largest[largest$time == 1, ]
   expect_equal(multi_l$x, 150)
   expect_equal(multi_l$y, 1000 - 300)
+})
+
+# --- Vectorised parser / resolver coverage ---
+
+test_that("parse_octron_column trims whitespace and handles length-3 tuples", {
+  result <- parse_octron_column(c("( 1 , 2 , 3 )", "(4.5)", " 7.0 "))
+  expect_equal(result[[1]], c(1, 2, 3))
+  expect_equal(result[[2]], 4.5)
+  expect_equal(result[[3]], 7)
+})
+
+test_that("parse_octron_column handles a mix of scalar, tuple, and NA in one call", {
+  col <- c("1.0", "(2.0, 3.0)", NA_character_, "(4.0, 5.0, 6.0)", "7.0")
+  result <- parse_octron_column(col)
+  expect_length(result, 5)
+  expect_equal(result[[1]], 1)
+  expect_equal(result[[2]], c(2, 3))
+  expect_true(is.na(result[[3]]) && length(result[[3]]) == 1L)
+  expect_equal(result[[4]], c(4, 5, 6))
+  expect_equal(result[[5]], 7)
+})
+
+test_that("parse_octron_column returns an empty list for an empty input", {
+  expect_equal(parse_octron_column(character(0)), list())
+})
+
+test_that("resolve_weighted warns once and falls back to mean on segment-count mismatch", {
+  # Row 1: matched, weighted average = 12.
+  # Row 2: 3 values vs 2 areas -> mismatch -> mean(5,6,7) = 6.
+  # Row 3: matched scalar -> 100.
+  expect_warning(
+    out <- resolve_weighted(
+      list(c(10, 20), c(5, 6, 7), 100),
+      list(c(800, 200), c(8, 9), 50)
+    ),
+    "differing segment counts"
+  )
+  expect_equal(out, c(12, 6, 100))
+})
+
+test_that("resolve_weighted does not warn when all rows have matching segment counts", {
+  expect_no_warning(
+    out <- resolve_weighted(
+      list(c(10, 20), 5),
+      list(c(800, 200), 1)
+    )
+  )
+  expect_equal(out, c(12, 5))
+})
+
+test_that("resolve_largest realigns when value/area segment counts disagree", {
+  # Areas longer than values: extra areas are ignored.
+  expect_equal(
+    resolve_largest(list(c(10, 20)), list(c(1, 2, 3))),
+    20
+  )
+  # Areas shorter than values: missing areas are NA, so the surviving
+  # non-NA area wins (idx 1).
+  expect_equal(
+    resolve_largest(list(c(10, 20, 30)), list(1)),
+    10
+  )
+})
+
+test_that("resolve_weighted preserves per-row NA handling on partial NAs", {
+  # sum(c(NA, 20) * c(800, 200), na.rm = TRUE) / sum(c(800, 200)) = 4
+  expect_equal(
+    resolve_weighted(list(c(NA, 20)), list(c(800, 200))),
+    4
+  )
+})
+
+test_that("read_octron warns and falls back to mean on a segment-count mismatch", {
+  # Row 1 (frame 1) has area with 2 segments but pos_x/pos_y/eccentricity
+  # with 3 segments — exactly the case that previously emitted opaque
+  # `longer object length is not a multiple of shorter object length`
+  # warnings from the implicit `v * a` recycling.
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(
+    c(
+      "video_name: test_mismatch.mp4",
+      "frame_count: 2",
+      "frame_count_analyzed: 2",
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2026-05-07 00:00:00",
+      "frame_counter,frame_idx,track_id,label,confidence,pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,area,eccentricity,solidity,orientation",
+      "0,0,1,worm,0.9,100.0,200.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4",
+      paste0(
+        '1,1,1,worm,0.85,',
+        # 3 segments for pos_x / pos_y / eccentricity, but only 2 for area:
+        '"(100.0, 200.0, 300.0)","(100.0, 200.0, 300.0)",',
+        '"(2000.0, 1000.0)",',
+        '"(120.0, 180.0)","(180.0, 220.0)","(220.0, 280.0)","(280.0, 320.0)",',
+        '"(800.0, 200.0)","(0.4, 0.6, 0.8)","(0.85, 0.9)","(-0.3, 0.5)"'
+      )
+    ),
+    path
+  )
+
+  warns <- character()
+  result <- withCallingHandlers(
+    read_octron(path, method = "weighted"),
+    warning = function(w) {
+      warns <<- c(warns, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  # The user's bug: pre-fix, `v * a` recycling produced opaque
+  # `longer object length is not a multiple of shorter` warnings.
+  # Post-fix: a single summarised "differing segment counts" warning
+  # per affected column, with a clean fallback to the arithmetic mean.
+  expect_true(any(grepl("differing segment counts", warns)))
+  expect_false(any(grepl("longer object length", warns)))
+
+  multi <- result[result$time == 1, ]
+  # mismatched columns fall back to the arithmetic mean of values:
+  expect_equal(multi$x, mean(c(100, 200, 300)))
+  # y is reflected: video_height (1000) - resolved_y
+  expect_equal(multi$y, 1000 - mean(c(100, 200, 300)))
+  expect_equal(multi$eccentricity, mean(c(0.4, 0.6, 0.8)))
+  # `solidity` (2 segments) still matches `area` (2 segments) so it stays
+  # on the weighted-average path: (0.85*800 + 0.9*200) / 1000 = 0.86.
+  expect_equal(multi$solidity, 0.86)
+  # `area` always sums under method = "weighted":
+  expect_equal(multi$area, 1000)
+})
+
+# --- `properties` argument ---
+
+test_that("read_octron `properties = 'all'` matches the prior default", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  default <- read_octron(path)
+  explicit <- read_octron(path, properties = "all")
+  expect_equal(default, explicit)
+})
+
+test_that("read_octron `properties = NULL` drops every region property", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  # method = "largest" so we don't trigger the `area`-auto-include branch.
+  result <- read_octron(path, method = "largest", properties = NULL)
+  expect_named(
+    result,
+    c("track", "time", "label", "confidence", "keypoint", "x", "y"),
+    ignore.order = TRUE
+  )
+})
+
+test_that("read_octron `properties = c(...)` reads only the listed columns", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  result <- read_octron(
+    path,
+    method = "largest",
+    properties = c("area", "orientation")
+  )
+  expect_named(
+    result,
+    c(
+      "track", "time", "label", "confidence", "keypoint", "x", "y",
+      "area", "orientation"
+    ),
+    ignore.order = TRUE
+  )
+})
+
+test_that("read_octron warns on unknown `properties` and ignores them", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  expect_warning(
+    result <- read_octron(
+      path,
+      method = "largest",
+      properties = c("area", "not_a_real_property")
+    ),
+    "Unknown"
+  )
+  expect_true("area" %in% names(result))
+  expect_false("not_a_real_property" %in% names(result))
+})
+
+test_that("read_octron rejects non-character `properties`", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  expect_error(read_octron(path, properties = 1L))
+  expect_error(read_octron(path, properties = TRUE))
+})
+
+test_that("read_octron auto-includes `area` for method = 'weighted'", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  expect_message(
+    result <- read_octron(
+      path,
+      method = "weighted",
+      properties = c("eccentricity")
+    ),
+    "Including.*area"
+  )
+  expect_true("area" %in% names(result))
+  expect_true("eccentricity" %in% names(result))
+})
+
+test_that("read_octron does not auto-include `area` when method = 'largest'", {
+  path <- test_path("data/octron", "octron_sample.csv")
+  expect_no_message(
+    result <- read_octron(
+      path,
+      method = "largest",
+      properties = c("eccentricity")
+    )
+  )
+  expect_false("area" %in% names(result))
+  expect_true("eccentricity" %in% names(result))
+})
+
+test_that("read_octron normalises hyphens to underscores in property names", {
+  # Octron emits scikit-image property expansions like `moments_hu-0`.
+  # We rename those to `moments_hu_0` so they're addressable as bare
+  # identifiers in the returned aniframe.
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(
+    c(
+      "video_name: t.mp4",
+      "frame_count: 1",
+      "frame_count_analyzed: 1",
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2026",
+      paste0(
+        "frame_counter,frame_idx,track_id,label,confidence,",
+        "pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,",
+        "moments_hu-0,moments_hu-1,moments_hu-2"
+      ),
+      "0,0,1,worm,0.9,100,200,1000,80,120,180,220,0.1,0.2,0.3"
+    ),
+    path
+  )
+  result <- read_octron(path, method = "largest")
+  expect_true("moments_hu_0" %in% names(result))
+  expect_true("moments_hu_1" %in% names(result))
+  expect_false(any(grepl("-", names(result))))
+  # And the user can request them by their underscored names:
+  picked <- read_octron(path, method = "largest", properties = "moments_hu_0")
+  expect_true("moments_hu_0" %in% names(picked))
+  expect_false("moments_hu_1" %in% names(picked))
 })

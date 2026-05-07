@@ -1,3 +1,18 @@
+# aniread 0.4.1
+
+## New features
+
+* `read_octron()` gains a `properties` argument for picking which region-property columns to read (`"all"` by default; pass a character vector for a subset or `NULL` to skip them). `area` is auto-included when `method = "weighted"`.
+* `read_octron()` normalises hyphens to underscores in column names (`moments_hu-0` → `moments_hu_0`).
+
+## Performance
+
+* `read_octron()` is now substantially faster on large multi-segment files, especially when only a few `properties` are requested.
+
+## Bug fixes
+
+* `read_octron(method = "weighted")` no longer silently recycles `v * a` when a row's value and area columns have different segment counts; it falls back to the arithmetic mean for those rows and emits a single warning naming the affected `frame_idx` values.
+
 # aniread 0.4.0
 
 ## Breaking changes
