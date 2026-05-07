@@ -8,7 +8,8 @@ numeric vectors (one per row).}
 parse_octron_column(col)
 }
 \description{
-Parse a column of mixed scalars and tuple-strings into a list of
-numeric vectors (one per row).
+Vectorised: tuple entries are stripped of parentheses and split on \verb{,}
+in one shot, then converted with \code{as.numeric} (which trims whitespace).
+Scalar entries are converted in bulk. NA entries map to \code{NA_real_}.
 }
 \keyword{internal}

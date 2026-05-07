@@ -2,13 +2,16 @@
 % Please edit documentation in R/read_octron.R
 \name{resolve_weighted}
 \alias{resolve_weighted}
-\title{Compute the area-weighted mean across segments per row.
-Falls back to the arithmetic mean when areas are absent or sum to 0.}
+\title{Compute the area-weighted mean across segments per row.}
 \usage{
-resolve_weighted(values_list, areas_list)
+resolve_weighted(values_list, areas_list, .warn_mismatch = TRUE)
 }
 \description{
-Compute the area-weighted mean across segments per row.
-Falls back to the arithmetic mean when areas are absent or sum to 0.
+Vectorised via \code{rowsum}. Rows whose \code{values_list} and \code{areas_list}
+have different segment counts trigger a single summarised warning and
+fall back to the arithmetic mean of the value vector — protecting
+callers from the silent recycling that would otherwise occur in
+\code{v * a}. Falls back to the arithmetic mean when areas are absent or
+sum to 0.
 }
 \keyword{internal}
