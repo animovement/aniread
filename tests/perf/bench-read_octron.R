@@ -25,17 +25,61 @@ bench_read_octron <- function(n_rows = 100000L, multi_frac = 0.5) {
   is_multi <- runif(n_rows) < multi_frac
 
   tup2 <- function(a, b) sprintf('"(%s, %s)"', a, b)
-  pos_x <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  pos_y <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  bbox_area <- ifelse(is_multi, tup2(runif(n_rows, 1000, 5000), runif(n_rows, 1000, 5000)), as.character(runif(n_rows, 1000, 5000)))
-  bxmin <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  bxmax <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  bymin <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  bymax <- ifelse(is_multi, tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)), as.character(runif(n_rows, 0, 1000)))
-  area <- ifelse(is_multi, tup2(runif(n_rows, 100, 1000), runif(n_rows, 100, 1000)), as.character(runif(n_rows, 100, 1000)))
-  ecc <- ifelse(is_multi, tup2(runif(n_rows), runif(n_rows)), as.character(runif(n_rows)))
-  sol <- ifelse(is_multi, tup2(runif(n_rows), runif(n_rows)), as.character(runif(n_rows)))
-  ori <- ifelse(is_multi, tup2(runif(n_rows, -1, 1), runif(n_rows, -1, 1)), as.character(runif(n_rows, -1, 1)))
+  pos_x <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  pos_y <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  bbox_area <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 1000, 5000), runif(n_rows, 1000, 5000)),
+    as.character(runif(n_rows, 1000, 5000))
+  )
+  bxmin <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  bxmax <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  bymin <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  bymax <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 0, 1000), runif(n_rows, 0, 1000)),
+    as.character(runif(n_rows, 0, 1000))
+  )
+  area <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, 100, 1000), runif(n_rows, 100, 1000)),
+    as.character(runif(n_rows, 100, 1000))
+  )
+  ecc <- ifelse(
+    is_multi,
+    tup2(runif(n_rows), runif(n_rows)),
+    as.character(runif(n_rows))
+  )
+  sol <- ifelse(
+    is_multi,
+    tup2(runif(n_rows), runif(n_rows)),
+    as.character(runif(n_rows))
+  )
+  ori <- ifelse(
+    is_multi,
+    tup2(runif(n_rows, -1, 1), runif(n_rows, -1, 1)),
+    as.character(runif(n_rows, -1, 1))
+  )
 
   rows <- paste(
     seq_len(n_rows) - 1L,
@@ -43,9 +87,17 @@ bench_read_octron <- function(n_rows = 100000L, multi_frac = 0.5) {
     1L,
     "worm",
     runif(n_rows, 0.5, 1),
-    pos_x, pos_y, bbox_area,
-    bxmin, bxmax, bymin, bymax,
-    area, ecc, sol, ori,
+    pos_x,
+    pos_y,
+    bbox_area,
+    bxmin,
+    bxmax,
+    bymin,
+    bymax,
+    area,
+    ecc,
+    sol,
+    ori,
     sep = ","
   )
 
@@ -63,14 +115,22 @@ bench_read_octron <- function(n_rows = 100000L, multi_frac = 0.5) {
     path
   )
 
-  message(sprintf("Synthetic CSV: %d rows (%d multi-segment) at %s",
-                  n_rows, sum(is_multi), path))
+  message(sprintf(
+    "Synthetic CSV: %d rows (%d multi-segment) at %s",
+    n_rows,
+    sum(is_multi),
+    path
+  ))
 
   for (method in c("weighted", "largest", "segments")) {
     elapsed <- system.time(
       result <- read_octron(path, method = method)
     )["elapsed"]
-    message(sprintf("  %-9s  %.2fs   (%d output rows)",
-                    method, elapsed, nrow(result)))
+    message(sprintf(
+      "  %-9s  %.2fs   (%d output rows)",
+      method,
+      elapsed,
+      nrow(result)
+    ))
   }
 }

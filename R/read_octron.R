@@ -261,9 +261,11 @@ octron_columns_to_read <- function(path, keep_bbox, method, properties) {
   # `method = "weighted"` weights every other property by `area`, so
   # silently dropping it would change the math. Re-add it and tell the
   # caller why it appeared in the output.
-  if (method == "weighted" &&
-    "area" %in% property_cols_available &&
-    !"area" %in% properties_to_read) {
+  if (
+    method == "weighted" &&
+      "area" %in% property_cols_available &&
+      !"area" %in% properties_to_read
+  ) {
     cli::cli_inform(c(
       i = "Including {.field area} (used as weights for {.code method = \"weighted\"})."
     ))
@@ -358,7 +360,10 @@ resolve_octron_segments <- function(data, method) {
     # Report frame_idx values when available so the user can inspect the
     # offending frames directly; fall back to row indices otherwise.
     locator <- if ("time" %in% names(data)) {
-      paste0("frame_idx ", paste(utils::head(data$time[rows], 10L), collapse = ", "))
+      paste0(
+        "frame_idx ",
+        paste(utils::head(data$time[rows], 10L), collapse = ", ")
+      )
     } else {
       paste0("row ", paste(utils::head(rows, 10L), collapse = ", "))
     }

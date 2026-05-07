@@ -594,8 +594,15 @@ test_that("read_octron `properties = c(...)` reads only the listed columns", {
   expect_named(
     result,
     c(
-      "track", "time", "label", "confidence", "keypoint", "x", "y",
-      "area", "orientation"
+      "track",
+      "time",
+      "label",
+      "confidence",
+      "keypoint",
+      "x",
+      "y",
+      "area",
+      "orientation"
     ),
     ignore.order = TRUE
   )
