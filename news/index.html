@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,9 +36,29 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/animovement/aniread/blob/v0.4.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/animovement/aniread/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.1" id="aniread-041">aniread 0.4.1<a class="anchor" aria-label="anchor" href="#aniread-041"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-4-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-1"></a></h3>
+<ul><li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> gains a <code>properties</code> argument for picking which region-property columns to read (<code>"all"</code> by default; pass a character vector for a subset or <code>NULL</code> to skip them). <code>area</code> is auto-included when <code>method = "weighted"</code>.</li>
+<li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> normalises hyphens to underscores in column names (<code>moments_hu-0</code> → <code>moments_hu_0</code>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="performance-0-4-1">Performance<a class="anchor" aria-label="anchor" href="#performance-0-4-1"></a></h3>
+<ul><li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> is now substantially faster on large multi-segment files, especially when only a few <code>properties</code> are requested.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-4-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-1"></a></h3>
+<ul><li>
+<code>read_octron(method = "weighted")</code> no longer silently recycles <code>v * a</code> when a row’s value and area columns have different segment counts; it falls back to the arithmetic mean for those rows and emits a single warning naming the affected <code>frame_idx</code> values.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="aniread-040">aniread 0.4.0<a class="anchor" aria-label="anchor" href="#aniread-040"></a></h2>
 <div class="section level3">

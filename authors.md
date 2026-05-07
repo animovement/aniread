@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/animovement/aniread/blob/v0.4.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/animovement/aniread/blob/main/inst/CITATION)
 
 Roald-Arbøl M (2026). “aniread: An R package for reading and writing
 movement data.”
@@ -22,5 +22,5 @@ movement data.”
       year = {2026},
       url = {http://animovement.dev/aniread/},
       abstract = {An R package for reading and writing movement data.},
-      version = {0.4.0},
+      version = {0.4.1},
     }

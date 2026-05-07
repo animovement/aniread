@@ -15,7 +15,8 @@ read_octron(
   path,
   keep_bbox = FALSE,
   video_height = NULL,
-  method = c("weighted", "largest", "segments")
+  method = c("weighted", "largest", "segments"),
+  properties = "all"
 )
 ```
 
@@ -52,6 +53,28 @@ read_octron(
 
   When the source CSV contains no tuple-valued rows, all three methods
   produce identical numeric output.
+
+- properties:
+
+  Which scikit-image / Octron region-property columns to read. Newer
+  Octron exports include dozens of per-segment shape, intensity and
+  moment descriptors that can dominate read time on tuple-heavy files.
+  One of:
+
+  - `"all"` (default): read every property column found in the file.
+    Backwards-compatible with prior `read_octron()` behaviour.
+
+  - a character vector of column names, e.g. `c("area", "orientation")`:
+    read only the listed properties. Unknown names are warned about and
+    ignored.
+
+  - `NULL` or `character(0)`: skip all property columns; the result
+    contains only id columns and the centroid (and bbox when
+    `keep_bbox = TRUE`).
+
+  When `method = "weighted"` and `area` exists in the file but is absent
+  from this argument, it is added automatically (the area-weighted mean
+  has no meaning otherwise) and an info message is emitted.
 
 ## Value
 

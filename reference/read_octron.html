@@ -19,7 +19,7 @@ from the CSV header (video_height:) by default."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@ from the CSV header (video_height:) by default."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Read Octron Segmentation Data</h1>
-      <small class="dont-index">Source: <a href="https://github.com/animovement/aniread/blob/v0.4.0/R/read_octron.R" class="external-link"><code>R/read_octron.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/animovement/aniread/blob/main/R/read_octron.R" class="external-link"><code>R/read_octron.R</code></a></small>
       <div class="d-none name"><code>read_octron.Rd</code></div>
     </div>
 
@@ -68,7 +68,8 @@ from the CSV header (<code>video_height:</code>) by default.</p>
 <span>  <span class="va">path</span>,</span>
 <span>  keep_bbox <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  video_height <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weighted"</span>, <span class="st">"largest"</span>, <span class="st">"segments"</span><span class="op">)</span></span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"weighted"</span>, <span class="st">"largest"</span>, <span class="st">"segments"</span><span class="op">)</span>,</span>
+<span>  properties <span class="op">=</span> <span class="st">"all"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,6 +105,24 @@ are not matched across frames, so filtering on <code>segment</code> is
 generally not meaningful.</p></li>
 </ul><p>When the source CSV contains no tuple-valued rows, all three
 methods produce identical numeric output.</p></dd>
+
+
+<dt id="arg-properties">properties<a class="anchor" aria-label="anchor" href="#arg-properties"></a></dt>
+<dd><p>Which scikit-image / Octron region-property columns
+to read. Newer Octron exports include dozens of per-segment shape,
+intensity and moment descriptors that can dominate read time on
+tuple-heavy files. One of:</p><ul><li><p><code>"all"</code> (default): read every property column found in the
+file. Backwards-compatible with prior <code>read_octron()</code> behaviour.</p></li>
+<li><p>a character vector of column names, e.g.
+<code>c("area", "orientation")</code>: read only the listed properties.
+Unknown names are warned about and ignored.</p></li>
+<li><p><code>NULL</code> or <code>character(0)</code>: skip all property columns; the
+result contains only id columns and the centroid (and bbox
+when <code>keep_bbox = TRUE</code>).</p></li>
+</ul><p>When <code>method = "weighted"</code> and <code>area</code> exists in the file but is
+absent from this argument, it is added automatically (the
+area-weighted mean has no meaning otherwise) and an info message
+is emitted.</p></dd>
 
 </dl></div>
     <div class="section level2">
