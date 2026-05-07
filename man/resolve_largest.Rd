@@ -7,6 +7,8 @@
 resolve_largest(values_list, areas_list)
 }
 \description{
-Pick the value of the segment with the largest area per row.
+Vectorised. When a row's \code{areas_list} length differs from its
+\code{values_list} length, the area vector is padded with \code{NA} (or
+truncated) to align — so out-of-range indices can never be picked.
 }
 \keyword{internal}
