@@ -655,6 +655,97 @@ test_that("read_octron does not auto-include `area` when method = 'largest'", {
   expect_true("eccentricity" %in% names(result))
 })
 
+test_that("internal resolvers handle zero-length and all-empty inputs", {
+  # n == 0 (early-return paths)
+  expect_equal(resolve_largest(list(), list()), numeric(0))
+  expect_equal(resolve_weighted(list(), list()), numeric(0))
+  expect_equal(resolve_area_sum(list()), numeric(0))
+
+  # n > 0 but every row is length-0 (the second early-return paths,
+  # before any flattening/`rowsum` work happens)
+  empty <- list(numeric(0), numeric(0))
+  expect_equal(resolve_largest(empty, empty), c(NA_real_, NA_real_))
+  expect_equal(resolve_weighted(empty, empty), c(NA_real_, NA_real_))
+  expect_equal(resolve_area_sum(empty), c(0, 0))
+})
+
+test_that("resolve_largest's per-row align path keeps already-matching rows intact", {
+  # Forces the `identical(v_lens, a_lens)` branch to be FALSE so the
+  # Map(align_to_length, ...) fan-out runs, but row 1 still has matching
+  # lengths so `align_to_length(x, length(x))` short-circuits.
+  out <- resolve_largest(
+    list(c(10, 20), c(30, 40, 50)),
+    list(c(1, 2),    c(7))
+  )
+  # Row 1: weighted by areas (1,2) -> max area is idx 2 -> value 20
+  # Row 2: areas padded to (7, NA, NA); only idx 1 is non-NA -> value 30
+  expect_equal(out, c(20, 30))
+})
+
+test_that("resolve_octron_segments mismatch warning truncates >10 affected rows", {
+  # Pre-compose 12 rows worth of values_list / areas_list with mismatches
+  # and call `resolve_octron_segments` indirectly via `read_octron` using
+  # a fixture whose 12 frames each have a 3-segment value column but a
+  # 2-segment area column.
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  rows <- vapply(seq_len(12L) - 1L, function(i) {
+    paste0(
+      i, ",", i, ',1,worm,0.9,',
+      '"(100, 200, 300)","(100, 200, 300)",',
+      '1000,80,120,180,220,',
+      '"(800, 200)","(0.4, 0.6)","(0.85, 0.9)","(-0.3, 0.5)"'
+    )
+  }, character(1))
+  writeLines(
+    c(
+      "video_name: t.mp4",
+      "frame_count: 12",
+      "frame_count_analyzed: 12",
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2026",
+      "frame_counter,frame_idx,track_id,label,confidence,pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,area,eccentricity,solidity,orientation",
+      rows
+    ),
+    path
+  )
+
+  warns <- character()
+  withCallingHandlers(
+    read_octron(path),
+    warning = function(w) {
+      warns <<- c(warns, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  # The locator should mention the first 10 frame_idx values plus an
+  # ellipsis, NOT the last two.
+  affected_warn <- warns[grepl("differing segment counts", warns)]
+  expect_length(affected_warn, 1L)
+  expect_match(affected_warn, "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, \\.\\.\\.")
+})
+
+test_that("resolve_octron_segments warning falls back to row indices when `time` is absent", {
+  # Direct call with a synthetic data frame that has tuple columns but
+  # no `time` column — exercises the `else` branch in the locator
+  # construction.
+  data <- data.frame(
+    track = 1L,
+    label = "x",
+    confidence = 0.9,
+    centroid_x = "(1, 2, 3)",
+    centroid_y = "(1, 2, 3)",
+    area = "(10, 20)",
+    stringsAsFactors = FALSE
+  )
+  expect_warning(
+    out <- resolve_octron_segments(data, method = "weighted"),
+    "row 1"
+  )
+  expect_true(is.numeric(out$centroid_x))
+})
+
 test_that("read_octron normalises hyphens to underscores in property names", {
   # Octron emits scikit-image property expansions like `moments_hu-0`.
   # We rename those to `moments_hu_0` so they're addressable as bare
