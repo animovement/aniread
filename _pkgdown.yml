@@ -50,6 +50,13 @@ reference:
   - read_trackmate
   - read_trex
 
+- title: "Event-data readers"
+  desc: >
+    Readers for behavioural-event data — these import into an
+    `aniframe::anievent()`.
+  contents:
+  - read_boris
+
 - title: "Writer functions"
   desc: These functions are allow you to save your data.
   contents:
