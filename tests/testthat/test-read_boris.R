@@ -225,7 +225,12 @@ test_that("auto-detection rejects unrecognised files clearly", {
 
 test_that("read_boris rejects files with wrong suffix", {
   expect_error(
-    read_boris(test_path("data", "boris", "time_budget", "test_time_budget1.json")),
+    read_boris(test_path(
+      "data",
+      "boris",
+      "time_budget",
+      "test_time_budget1.json"
+    )),
     "suffix"
   )
 })
@@ -277,19 +282,54 @@ test_that("validator surfaces overlapping same-channel bouts as a warning", {
   # should trigger the aniframe::validate_anievent warning (not error).
   path <- write_tsv_fixture(c(
     paste(
-      "Observation id", "Observation date", "Description", "Media file",
-      "Total length", "FPS", "Subject", "Behavior", "Behavioral category",
-      "Modifiers", "Behavior type", "Start (s)", "Stop (s)", "Duration (s)",
+      "Observation id",
+      "Observation date",
+      "Description",
+      "Media file",
+      "Total length",
+      "FPS",
+      "Subject",
+      "Behavior",
+      "Behavioral category",
+      "Modifiers",
+      "Behavior type",
+      "Start (s)",
+      "Stop (s)",
+      "Duration (s)",
       sep = "\t"
     ),
     paste(
-      "obs1", "2024-01-15 12:00:00", "", "video.mp4", "30.0", "30.0",
-      "A", "walk", "", "", "STATE", "1.0", "5.0", "4.0",
+      "obs1",
+      "2024-01-15 12:00:00",
+      "",
+      "video.mp4",
+      "30.0",
+      "30.0",
+      "A",
+      "walk",
+      "",
+      "",
+      "STATE",
+      "1.0",
+      "5.0",
+      "4.0",
       sep = "\t"
     ),
     paste(
-      "obs1", "2024-01-15 12:00:00", "", "video.mp4", "30.0", "30.0",
-      "A", "walk", "", "", "STATE", "3.0", "8.0", "5.0",
+      "obs1",
+      "2024-01-15 12:00:00",
+      "",
+      "video.mp4",
+      "30.0",
+      "30.0",
+      "A",
+      "walk",
+      "",
+      "",
+      "STATE",
+      "3.0",
+      "8.0",
+      "5.0",
       sep = "\t"
     )
   ))

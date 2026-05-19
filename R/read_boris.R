@@ -181,18 +181,26 @@ is_empty_row <- function(lines, delim) {
 parse_tabular_header_block <- function(header_block, delim) {
   meta <- list()
   for (line in header_block) {
-    if (!nzchar(line)) next
+    if (!nzchar(line)) {
+      next
+    }
     parts <- strsplit(line, delim, fixed = TRUE)[[1]]
     parts <- parts[nzchar(parts)]
-    if (length(parts) < 2) next
+    if (length(parts) < 2) {
+      next
+    }
     key <- parts[[1]]
     value <- parts[[2]]
-    if (key %in% c("variable", "independent variables")) next
+    if (key %in% c("variable", "independent variables")) {
+      next
+    }
     # Player #1, Player #2, ... are media-file slot names in the BORIS
     # UI — redundant with the per-row `Media file path` column in the
     # data table, so we drop them rather than emit awkwardly-cleaned
     # `player_number_1` columns.
-    if (grepl("^Player #", key)) next
+    if (grepl("^Player #", key)) {
+      next
+    }
     meta[[key]] <- value
   }
   meta
@@ -245,7 +253,9 @@ pair_tabular_events <- function(events) {
     sep = "\r"
   )
 
-  events <- events[order(events$.group_key, events$time, events$.row_idx), ,
+  events <- events[
+    order(events$.group_key, events$time, events$.row_idx),
+    ,
     drop = FALSE
   ]
 
@@ -388,13 +398,17 @@ parse_boris_modifiers <- function(data) {
     mods <- lapply(seq_len(nrow(mod_matrix)), function(i) {
       clean_modifier_tokens(mod_matrix[i, ])
     })
-    for (col in mod_cols) data[[col]] <- NULL
+    for (col in mod_cols) {
+      data[[col]] <- NULL
+    }
     data$modifiers <- mods
   } else if ("Modifiers" %in% names(data) || "modifiers" %in% names(data)) {
     col <- if ("Modifiers" %in% names(data)) "Modifiers" else "modifiers"
     raw <- data[[col]]
     mods <- lapply(raw, function(cell) {
-      if (is.na(cell) || !nzchar(cell)) return(character())
+      if (is.na(cell) || !nzchar(cell)) {
+        return(character())
+      }
       tokens <- unlist(strsplit(as.character(cell), "|", fixed = TRUE))
       clean_modifier_tokens(tokens)
     })
@@ -406,7 +420,9 @@ parse_boris_modifiers <- function(data) {
 
 #' @keywords internal
 clean_modifier_tokens <- function(tokens) {
-  if (length(tokens) == 0) return(character())
+  if (length(tokens) == 0) {
+    return(character())
+  }
   tokens <- trimws(as.character(tokens))
   tokens <- tokens[!is.na(tokens) & nzchar(tokens) & tokens != "None"]
   tokens
@@ -523,7 +539,9 @@ classify_boris_channels <- function(data) {
 
 #' @keywords internal
 extract_boris_fps <- function(data) {
-  if (!"fps" %in% names(data)) return(NULL)
+  if (!"fps" %in% names(data)) {
+    return(NULL)
+  }
   vals <- unique(suppressWarnings(as.numeric(data$fps)))
   vals <- vals[!is.na(vals)]
   if (length(vals) == 1) vals else NULL
