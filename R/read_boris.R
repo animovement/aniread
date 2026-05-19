@@ -79,9 +79,13 @@ read_boris <- function(
 detect_boris_format <- function(path) {
   delim <- boris_delim(path)
   lines <- readLines(path, n = 30, warn = FALSE)
+  # nocov start — validate_files() already rejects empty files; this
+  # guard catches the pathological case of a one-line whitespace-only
+  # file that gets past the size check.
   if (length(lines) == 0 || !nzchar(lines[[1]])) {
     cli::cli_abort("BORIS file appears empty: {.path {path}}")
   }
+  # nocov end
   first_cols <- strsplit(lines[[1]], delim, fixed = TRUE)[[1]]
   if (any(c("Subject", "Behavior") %in% first_cols)) {
     return("aggregated")
@@ -163,11 +167,15 @@ read_boris_tabular <- function(path) {
 #' @keywords internal
 find_tabular_split <- function(lines) {
   data_header <- which(grepl("^Time(\t|,)", lines))
+  # nocov start — unreachable through read_boris(): detect_boris_format()
+  # only routes a file here when it has already seen a `Time<delim>...`
+  # row in the first 30 lines.
   if (length(data_header) == 0) {
     cli::cli_abort(
       "Could not locate the data-table header (a line starting with `Time`) in the tabular BORIS export."
     )
   }
+  # nocov end
   data_header[[1]]
 }
 
@@ -220,6 +228,8 @@ broadcast_tabular_metadata <- function(events, meta) {
 
 #' @keywords internal
 pair_tabular_events <- function(events) {
+  # nocov start — both columns are required by the tabular format and
+  # the file would have failed format detection without them.
   if (!"status" %in% names(events)) {
     cli::cli_abort(
       "Tabular BORIS export is missing the {.field Status} column."
@@ -230,6 +240,7 @@ pair_tabular_events <- function(events) {
       "Tabular BORIS export is missing the {.field Time} column."
     )
   }
+  # nocov end
 
   events$time <- as.numeric(events$time)
   events$.row_idx <- seq_len(nrow(events))
@@ -302,15 +313,19 @@ pair_tabular_events <- function(events) {
   }
 
   if (length(unmatched_starts) > 0) {
+    n <- length(unmatched_starts)
+    rows <- sort(unmatched_starts)
     cli::cli_warn(c(
-      "Dropped {length(unmatched_starts)} unmatched {.val START} event{?s} (no following {.val STOP}).",
-      "i" = "Input row{?s}: {sort(unmatched_starts)}"
+      "Dropped {n} unmatched {.val START} event{?s} (no following {.val STOP}).",
+      "i" = "Input row{cli::qty(n)}{?s}: {rows}"
     ))
   }
   if (length(unmatched_stops) > 0) {
+    n <- length(unmatched_stops)
+    rows <- sort(unmatched_stops)
     cli::cli_warn(c(
-      "Dropped {length(unmatched_stops)} unmatched {.val STOP} event{?s} (no preceding {.val START}).",
-      "i" = "Input row{?s}: {sort(unmatched_stops)}"
+      "Dropped {n} unmatched {.val STOP} event{?s} (no preceding {.val START}).",
+      "i" = "Input row{cli::qty(n)}{?s}: {rows}"
     ))
   }
 
@@ -420,9 +435,13 @@ parse_boris_modifiers <- function(data) {
 
 #' @keywords internal
 clean_modifier_tokens <- function(tokens) {
+  # nocov start — call sites always pass a non-empty vector; this is
+  # belt-and-braces in case a future modifier layout sneaks an empty
+  # row through.
   if (length(tokens) == 0) {
     return(character())
   }
+  # nocov end
   tokens <- trimws(as.character(tokens))
   tokens <- tokens[!is.na(tokens) & nzchar(tokens) & tokens != "None"]
   tokens
@@ -515,9 +534,13 @@ choose_unit_time <- function(data, requested) {
 
 #' @keywords internal
 classify_boris_channels <- function(data) {
+  # nocov start — `channel` is always set by finalise_boris() before
+  # this is called, and `behavior_type` is present on every supported
+  # BORIS export shape.
   if (!"behavior_type" %in% names(data) || !"channel" %in% names(data)) {
     return(list(state = character(), point = character()))
   }
+  # nocov end
   by_channel <- split(
     as.character(data$behavior_type),
     as.character(data$channel)

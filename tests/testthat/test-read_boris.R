@@ -276,6 +276,85 @@ test_that("tabular reader warns about unmatched STOP events", {
   expect_equal(nrow(ae), 1)
 })
 
+test_that("tabular reader emits POINT events with start == stop", {
+  path <- write_tsv_fixture(c(
+    "Observation id\tobs1",
+    "",
+    "Time\tSubject\tBehavior\tStatus",
+    "1.0\tA\tx\tPOINT",
+    "2.5\tA\tx\tSTART",
+    "4.0\tA\tx\tSTOP"
+  ))
+  ae <- read_boris(path, format = "tabular")
+  expect_equal(nrow(ae), 2)
+  point_row <- ae[ae$start == ae$stop, ]
+  expect_equal(nrow(point_row), 1)
+  expect_equal(point_row$start, 1.0)
+})
+
+test_that("tabular reader keeps modifiers in the pairing fingerprint", {
+  # Two START/STOP pairs for the same subject+behaviour, distinguished
+  # only by their modifiers — they must pair correctly (`a` with `a`,
+  # `b` with `b`), not cross-pair on time order.
+  path <- write_tsv_fixture(c(
+    "Observation id\tobs1",
+    "",
+    "Time\tSubject\tBehavior\tModifiers\tStatus",
+    "1.0\tA\tx\ta\tSTART",
+    "2.0\tA\tx\tb\tSTART",
+    "5.0\tA\tx\ta\tSTOP",
+    "6.0\tA\tx\tb\tSTOP"
+  ))
+  ae <- read_boris(path, format = "tabular")
+  expect_equal(nrow(ae), 2)
+  # The bout with modifier `a` should have duration 4 (1→5); `b` 4 (2→6).
+  for (i in seq_len(nrow(ae))) {
+    expect_equal(ae$stop[i] - ae$start[i], 4)
+  }
+  mod_strings <- vapply(ae$modifiers, paste, collapse = ",", FUN.VALUE = "")
+  expect_setequal(mod_strings, c("a", "b"))
+})
+
+test_that("tabular reader returns an empty anievent when all events are unmatched", {
+  path <- write_tsv_fixture(c(
+    "Observation id\tobs1",
+    "",
+    "Time\tSubject\tBehavior\tStatus",
+    "1.0\tA\tx\tSTART",
+    "2.0\tB\ty\tSTART"
+  ))
+  expect_warning(
+    ae <- read_boris(path, format = "tabular"),
+    "unmatched.*START"
+  )
+  expect_equal(nrow(ae), 0)
+})
+
+test_that("multiple distinct FPS values drop sampling_rate to NA", {
+  # Two observations within a single aggregated file, each at a
+  # different FPS — there's no single value to record on the anievent.
+  path <- write_tsv_fixture(c(
+    paste(
+      "Observation id", "Observation date", "Description", "Media file",
+      "Total length", "FPS", "Subject", "Behavior", "Behavioral category",
+      "Modifiers", "Behavior type", "Start (s)", "Stop (s)", "Duration (s)",
+      sep = "\t"
+    ),
+    paste(
+      "obsA", "2024-01-15 12:00:00", "", "a.mp4", "30.0", "25.0",
+      "A", "x", "", "", "STATE", "1.0", "5.0", "4.0",
+      sep = "\t"
+    ),
+    paste(
+      "obsB", "2024-01-15 13:00:00", "", "b.mp4", "30.0", "50.0",
+      "A", "x", "", "", "STATE", "10.0", "15.0", "5.0",
+      sep = "\t"
+    )
+  ))
+  ae <- read_boris(path)
+  expect_true(is.na(aniframe::get_metadata(ae, "sampling_rate")))
+})
+
 test_that("validator surfaces overlapping same-channel bouts as a warning", {
   # Two bouts of the same behaviour on the same subject overlap in
   # time — channels are conventionally mutually exclusive, so this
