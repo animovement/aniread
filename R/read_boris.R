@@ -120,8 +120,11 @@ read_boris_aggregated <- function(path) {
   attributes(raw)$spec <- NULL
   attributes(raw)$problems <- NULL
 
-  raw <- standardise_boris_columns(raw)
+  # Parse modifiers first — the multi-column form (`Modifier #1`,
+  # `Modifier #2`, ...) needs the original names before janitor
+  # rewrites them into something like `modifier_number_1`.
   raw <- parse_boris_modifiers(raw)
+  raw <- standardise_boris_columns(raw)
   raw
 }
 
@@ -152,8 +155,8 @@ read_boris_tabular <- function(path) {
   attributes(events)$problems <- NULL
 
   events <- broadcast_tabular_metadata(events, meta)
-  events <- standardise_boris_columns(events)
   events <- parse_boris_modifiers(events)
+  events <- standardise_boris_columns(events)
   pair_tabular_events(events)
 }
 
