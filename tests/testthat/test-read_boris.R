@@ -235,6 +235,70 @@ test_that("flat tabular CSV propagates singular Image index into frame start/sto
   expect_equal(ae$stop, c(3000, 0, 9000, 6300))
 })
 
+test_that("flat tabular CSV does not warn on state-vs-point overlap", {
+  # The fixture has Awake (STATE, 0-100) and Wake Modifiers (POINT,
+  # 0-0) in the same channel ("Active phase") at the same time.
+  # POINT events are conceptually independent and downstream verbs
+  # (`add_events()`, plotting) handle them separately — the overlap
+  # check should ignore them.
+  expect_no_warning(
+    read_boris(tab_path("flat_dslr_subject.csv"))
+  )
+})
+
+
+# Trailing whitespace -----------------------------------------------------
+
+test_that("BORIS behaviour names get trimmed of trailing whitespace", {
+  # Some BORIS exports emit behaviour names padded with trailing spaces
+  # (this varies by version). The reader should strip them so factor
+  # levels are clean.
+  path <- withr::local_tempfile(fileext = ".tsv")
+  writeLines(
+    c(
+      paste(
+        "Observation id",
+        "Observation date",
+        "Description",
+        "Media file",
+        "Total length",
+        "FPS",
+        "Subject",
+        "Behavior",
+        "Behavioral category",
+        "Modifiers",
+        "Behavior type",
+        "Start (s)",
+        "Stop (s)",
+        "Duration (s)",
+        sep = "\t"
+      ),
+      paste(
+        "obs1",
+        "2024-01-15 12:00:00",
+        "",
+        "video.mp4",
+        "30.0",
+        "30.0",
+        "subj1 ",
+        "walking ",
+        "locomotion ",
+        "",
+        "STATE",
+        "1.0",
+        "5.0",
+        "4.0",
+        sep = "\t"
+      )
+    ),
+    path
+  )
+  ae <- read_boris(path)
+  expect_identical(as.character(ae$value), "walking")
+  expect_identical(as.character(ae$subject), "subj1")
+  expect_identical(ae$channel, "locomotion")
+})
+
 
 # Format dispatch ---------------------------------------------------------
 

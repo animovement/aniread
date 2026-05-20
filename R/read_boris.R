@@ -561,14 +561,23 @@ finalise_boris <- function(data, path, unit_time) {
   data$media_duration <- NULL
   data$coding_duration <- NULL
 
+  # BORIS often emits behaviour / subject / category strings with
+  # trailing whitespace — strip it here so downstream factor levels
+  # don't carry it.
+  for (col in c("subject", "behavior", "behavioral_category")) {
+    if (col %in% names(data)) {
+      data[[col]] <- trimws(as.character(data[[col]]))
+    }
+  }
+
   if ("behavioral_category" %in% names(data)) {
-    cat_vec <- as.character(data$behavioral_category)
+    cat_vec <- data$behavioral_category
     cat_vec[is.na(cat_vec) | !nzchar(cat_vec)] <- NA_character_
     data$channel <- ifelse(is.na(cat_vec), "behavior", cat_vec)
   } else {
     data$channel <- "behavior"
   }
-  data$value <- as.character(data$behavior)
+  data$value <- data$behavior
 
   variables_event <- classify_boris_channels(data)
 
@@ -595,7 +604,13 @@ finalise_boris <- function(data, path, unit_time) {
     ae <- aniframe::set_metadata(ae, sampling_rate = fps)
   }
 
-  aniframe::validate_anievent(ae)
+  # Validate state-state overlaps only. Point events (start == stop)
+  # are conventionally allowed to overlap with state bouts of the same
+  # channel — BORIS uses them as instant markers inside a containing
+  # state phase. (Will be moved into aniframe's validator itself —
+  # see animovement/aniframe#72 follow-up.)
+  state_only <- ae[ae$start != ae$stop, , drop = FALSE]
+  aniframe::validate_anievent(state_only)
   ae
 }
 
