@@ -87,18 +87,29 @@ detect_boris_format <- function(path) {
   }
   # nocov end
   first_cols <- strsplit(lines[[1]], delim, fixed = TRUE)[[1]]
-  if (any(c("Subject", "Behavior") %in% first_cols)) {
+  has_subject_or_behavior <- any(c("Subject", "Behavior") %in% first_cols)
+  has_paired_times <- any(c("Start (s)", "Stop (s)") %in% first_cols)
+  has_transition_time <- "Time" %in% first_cols
+
+  # Aggregated export: one row per bout, carries paired Start/Stop columns.
+  if (has_subject_or_behavior && has_paired_times) {
     return("aggregated")
   }
-  # Tabular: header block first, then a `Time<delim>...<delim>Status` row.
+  # Newer tabular export: flat header from row 1, one row per transition
+  # (`Behavior type` column then holds START / STOP / POINT).
+  if (has_subject_or_behavior && has_transition_time) {
+    return("tabular")
+  }
+  # Older tabular export: 2-column key/value header block, then a
+  # `Time<delim>...<delim>Status` row.
   has_tabular_marker <- any(grepl("^Time(\t|,)", lines))
   if (has_tabular_marker) {
     return("tabular")
   }
   cli::cli_abort(c(
     "Could not detect BORIS export format from {.path {basename(path)}}.",
-    "i" = "Aggregated exports must have a header row containing {.val Subject} / {.val Behavior}.",
-    "i" = "Tabular exports must contain a {.val Time ... Status} row.",
+    "i" = "Aggregated exports must have a header row containing {.val Subject} / {.val Behavior} plus {.val Start (s)} / {.val Stop (s)}.",
+    "i" = "Tabular exports either have a flat header (with a {.val Time} column) or a 2-column key/value header block followed by a {.val Time ... Status} row.",
     "i" = "If you have a headerless export, re-export from BORIS with headers enabled."
   ))
 }
@@ -135,8 +146,57 @@ read_boris_aggregated <- function(path) {
 
 # ---- Tabular events ----
 
+#' Read a tabular BORIS export
+#'
+#' Dispatches between the two flavours BORIS produces:
+#'
+#' * **Flat header** (newer): row 1 is a full data header containing
+#'   `Subject` / `Behavior` plus all observation-level metadata
+#'   broadcast as repeating per-row columns. The transition status
+#'   (`START` / `STOP` / `POINT`) lives in the `Behavior type` column.
+#' * **Header-block** (older): rows 1..N are a 2-column key/value
+#'   block of observation metadata, a blank-ish separator follows,
+#'   then a `Time<delim>...<delim>Status` data header.
+#'
 #' @keywords internal
 read_boris_tabular <- function(path) {
+  delim <- boris_delim(path)
+  first_line <- readLines(path, n = 1, warn = FALSE)
+  first_cols <- strsplit(first_line, delim, fixed = TRUE)[[1]]
+  if (any(c("Subject", "Behavior") %in% first_cols)) {
+    return(read_boris_tabular_flat(path))
+  }
+  read_boris_tabular_header_block(path)
+}
+
+#' @keywords internal
+read_boris_tabular_flat <- function(path) {
+  delim <- boris_delim(path)
+  raw <- vroom::vroom(
+    path,
+    delim = delim,
+    show_col_types = FALSE,
+    .name_repair = "minimal"
+  ) |>
+    suppressMessages()
+  attributes(raw)$spec <- NULL
+  attributes(raw)$problems <- NULL
+
+  raw <- parse_boris_modifiers(raw)
+  raw <- standardise_boris_columns(raw)
+  # The flat tabular export reuses the `Behavior type` column to hold
+  # the START / STOP / POINT transition status (instead of STATE /
+  # POINT as in aggregated). Rename it to `status` so the rest of the
+  # pairing pipeline doesn't need to know which export it came from.
+  if ("behavior_type" %in% names(raw)) {
+    raw$status <- raw$behavior_type
+    raw$behavior_type <- NULL
+  }
+  pair_tabular_events(raw)
+}
+
+#' @keywords internal
+read_boris_tabular_header_block <- function(path) {
   delim <- boris_delim(path)
   lines <- readLines(path, warn = FALSE)
   split_idx <- find_tabular_split(lines)
@@ -270,6 +330,8 @@ pair_tabular_events <- function(events) {
     drop = FALSE
   ]
 
+  has_image_index <- "image_index" %in% names(events)
+
   start_buf <- list()
   bouts <- vector("list", nrow(events))
   n_bouts <- 0L
@@ -285,6 +347,10 @@ pair_tabular_events <- function(events) {
       row$start_s <- events$time[i]
       row$stop_s <- events$time[i]
       row$behavior_type <- "POINT"
+      if (has_image_index) {
+        row$image_index_start <- events$image_index[i]
+        row$image_index_stop <- events$image_index[i]
+      }
       n_bouts <- n_bouts + 1L
       bouts[[n_bouts]] <- row
     } else if (identical(status, "START")) {
@@ -297,6 +363,10 @@ pair_tabular_events <- function(events) {
         row$start_s <- events$time[start_i]
         row$stop_s <- events$time[i]
         row$behavior_type <- "STATE"
+        if (has_image_index) {
+          row$image_index_start <- events$image_index[start_i]
+          row$image_index_stop <- events$image_index[i]
+        }
         n_bouts <- n_bouts + 1L
         bouts[[n_bouts]] <- row
       } else {
@@ -342,6 +412,7 @@ pair_tabular_events <- function(events) {
   out$.group_key <- NULL
   out$time <- NULL
   out$status <- NULL
+  out$image_index <- NULL
   out
 }
 
@@ -360,6 +431,7 @@ boris_column_renames <- function() {
     "Coding duration" = "coding_duration",
     "Total duration" = "total_duration",
     "Total length" = "total_length",
+    "Observation duration" = "total_duration",
     "Media duration (s)" = "media_duration",
     "FPS" = "fps",
     "FPS (frame/s)" = "fps",
@@ -376,8 +448,10 @@ boris_column_renames <- function() {
     "Media file path" = "media_file",
     "Image index start" = "image_index_start",
     "Image index stop" = "image_index_stop",
+    "Image index" = "image_index",
     "Image file path start" = "image_file_path_start",
     "Image file path stop" = "image_file_path_stop",
+    "Image file path" = "image_file_path",
     "Comment start" = "comment_start",
     "Comment stop" = "comment_stop",
     "Comment" = "comment",
@@ -442,7 +516,15 @@ clean_modifier_tokens <- function(tokens) {
     return(character())
   }
   # nocov end
-  tokens <- trimws(as.character(tokens))
+  # BORIS multi-select modifiers within a single column slot are
+  # comma-separated (e.g. a `Modifier #1` cell of `"Leg,Pedipalps"`
+  # is two distinct modifier values). Split before trimming so we
+  # treat each value separately downstream.
+  tokens <- unlist(
+    strsplit(as.character(tokens), ",", fixed = TRUE),
+    use.names = FALSE
+  )
+  tokens <- trimws(tokens)
   tokens <- tokens[!is.na(tokens) & nzchar(tokens) & tokens != "None"]
   tokens
 }
@@ -469,11 +551,15 @@ finalise_boris <- function(data, path, unit_time) {
   data$image_index_start <- NULL
   data$image_index_stop <- NULL
   data$duration_s <- NULL
-  # FPS is captured in metadata$sampling_rate; total_length has no
-  # current metadata home (see animovement/aniframe#73) — drop both
-  # to avoid redundancy / dishonest data columns.
+  # FPS is captured in metadata$sampling_rate; total_length /
+  # total_duration / media_duration / coding_duration have no current
+  # metadata home (see animovement/aniframe#73) — drop them to avoid
+  # redundancy / dishonest data columns.
   data$fps <- NULL
   data$total_length <- NULL
+  data$total_duration <- NULL
+  data$media_duration <- NULL
+  data$coding_duration <- NULL
 
   if ("behavioral_category" %in% names(data)) {
     cat_vec <- as.character(data$behavioral_category)

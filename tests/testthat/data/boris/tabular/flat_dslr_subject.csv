@@ -1,0 +1,7 @@
+Observation id,Observation date,Description,Observation duration,Observation type,Source,Time offset (s),Media duration (s),FPS,Subject,Behavior,Behavioral category,Modifier #1,Behavior type,Time,Media file name,Image index,Image file path,Comment
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,Awake,Active phase,,START,0.000,video.mp4,0,NA,
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,Wake Modifiers,Active phase,"Locomotion,Cleaning",POINT,0.000,video.mp4,0,NA,
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,Awake,Active phase,,STOP,100.000,video.mp4,3000,NA,
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,REM,Asleep,,START,200.000,video.mp4,6000,NA,
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,Twitch,Sign of REM-like sleep,"Leg,Pedipalps",POINT,210.000,video.mp4,6300,NA,
+obs_flat_1,2026-04-29 15:04:00.465,,30000.0,Media file(s),player #1:video.mp4,0.0,30000.0,30.000,DSLR1,REM,Asleep,,STOP,300.000,video.mp4,9000,NA,

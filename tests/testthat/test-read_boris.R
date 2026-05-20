@@ -194,6 +194,48 @@ test_that("tabular reader drops Player #N header keys", {
 })
 
 
+# Newer flat tabular path -------------------------------------------------
+
+test_that("flat tabular CSV (no header block) pairs START/STOP correctly", {
+  # The newer BORIS tabular export has Subject/Behavior in row 1 with
+  # all observation metadata broadcast as repeating columns; the
+  # transition status lives in the `Behavior type` column.
+  ae <- read_boris(tab_path("flat_dslr_subject.csv"))
+
+  expect_s3_class(ae, "anievent")
+  # 4 rows: Awake (STATE), Wake Modifiers (POINT), REM (STATE), Twitch (POINT)
+  expect_equal(nrow(ae), 4)
+  expect_equal(ae$start, c(0, 0, 200, 210))
+  expect_equal(ae$stop, c(100, 0, 300, 210))
+})
+
+test_that("flat tabular CSV splits comma-separated modifiers per cell", {
+  ae <- read_boris(tab_path("flat_dslr_subject.csv"))
+  expect_identical(ae$modifiers[[1]], character()) # Awake has none
+  expect_identical(ae$modifiers[[2]], c("Locomotion", "Cleaning"))
+  expect_identical(ae$modifiers[[3]], character()) # REM has none
+  expect_identical(ae$modifiers[[4]], c("Leg", "Pedipalps"))
+})
+
+test_that("flat tabular CSV maps Behavioral category onto channel", {
+  ae <- read_boris(tab_path("flat_dslr_subject.csv"))
+  expect_setequal(
+    unique(ae$channel),
+    c("Active phase", "Asleep", "Sign of REM-like sleep")
+  )
+})
+
+test_that("flat tabular CSV propagates singular Image index into frame start/stop", {
+  ae <- read_boris(tab_path("flat_dslr_subject.csv"), unit_time = "frame")
+  expect_identical(
+    as.character(aniframe::get_metadata(ae, "unit_time")),
+    "frame"
+  )
+  expect_equal(ae$start, c(0, 0, 6000, 6300))
+  expect_equal(ae$stop, c(3000, 0, 9000, 6300))
+})
+
+
 # Format dispatch ---------------------------------------------------------
 
 test_that("explicit format = 'aggregated' bypasses auto-detection", {
