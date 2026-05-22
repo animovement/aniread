@@ -23,8 +23,8 @@ anievent with an aniframe to keep frame-aligned semantics.}
 }
 \value{
 An \code{\link[aniframe:anievent]{aniframe::anievent()}} with metadata fields \code{source},
-\code{filename}, \code{unit_time}, \code{sampling_rate} (when FPS is a single
-numeric in the export), and \code{variables_event} populated.
+\code{filename}, \code{unit_time}, and \code{sampling_rate} (when FPS is a
+single numeric in the export) populated.
 }
 \description{
 Read behavioural events from a
@@ -49,13 +49,16 @@ need to convert between frames and seconds.
 
 Channels: each row's \code{channel} is the value of BORIS's
 \verb{Behavioral category} column when populated, falling back to the
-literal \code{"behavior"} otherwise; \code{value} is the behaviour name.
-Channels are conventionally mutually exclusive within a subject
-— \code{\link[aniframe:validate_anievent]{aniframe::validate_anievent()}} is called at the end of
-reading and warns (rather than errors) when bouts overlap.
-Modifiers travel via the optional \code{modifiers} list-column; both
-single-column pipe-separated (\code{a|b|None}) and multi-column
-(\code{Modifier #1}, \code{Modifier #2}, ...) layouts are accepted.
+literal \code{"behavior"} otherwise; \code{label} is the behaviour name,
+and \code{type} is \code{"state"} or \code{"point"} mapped from BORIS's
+\verb{Behavior type} column. Overlap between bouts of the same channel
+is permitted on the \code{anievent} side — \code{\link[aniframe:add_events]{aniframe::add_events()}}
+resolves it by splitting into numbered sub-columns when
+converting to an \code{aniframe}. Modifiers travel via the optional
+\code{modifiers} list-column; the multi-column (\code{Modifier #1},
+\code{Modifier #2}, ...) layout, the legacy pipe-separated
+single-column (\code{a|b|None}) layout, and comma-separated values
+within a single slot are all accepted.
 }
 \references{
 \itemize{

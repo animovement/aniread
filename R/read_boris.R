@@ -22,13 +22,16 @@
 #'
 #'   Channels: each row's `channel` is the value of BORIS's
 #'   `Behavioral category` column when populated, falling back to the
-#'   literal `"behavior"` otherwise; `value` is the behaviour name.
-#'   Channels are conventionally mutually exclusive within a subject
-#'   — [aniframe::validate_anievent()] is called at the end of
-#'   reading and warns (rather than errors) when bouts overlap.
-#'   Modifiers travel via the optional `modifiers` list-column; both
-#'   single-column pipe-separated (`a|b|None`) and multi-column
-#'   (`Modifier #1`, `Modifier #2`, ...) layouts are accepted.
+#'   literal `"behavior"` otherwise; `label` is the behaviour name,
+#'   and `type` is `"state"` or `"point"` mapped from BORIS's
+#'   `Behavior type` column. Overlap between bouts of the same channel
+#'   is permitted on the `anievent` side — [aniframe::add_events()]
+#'   resolves it by splitting into numbered sub-columns when
+#'   converting to an `aniframe`. Modifiers travel via the optional
+#'   `modifiers` list-column; the multi-column (`Modifier #1`,
+#'   `Modifier #2`, ...) layout, the legacy pipe-separated
+#'   single-column (`a|b|None`) layout, and comma-separated values
+#'   within a single slot are all accepted.
 #'
 #' @param path Path to a BORIS export (`.tsv` or `.csv`).
 #' @param format One of `"auto"`, `"aggregated"`, `"tabular"`. The
@@ -39,8 +42,8 @@
 #'   anievent with an aniframe to keep frame-aligned semantics.
 #'
 #' @return An [aniframe::anievent()] with metadata fields `source`,
-#'   `filename`, `unit_time`, `sampling_rate` (when FPS is a single
-#'   numeric in the export), and `variables_event` populated.
+#'   `filename`, `unit_time`, and `sampling_rate` (when FPS is a
+#'   single numeric in the export) populated.
 #'
 #' @references
 #' - Friard, O., & Gamba, M. (2016). BORIS: a free, versatile open-source
@@ -577,9 +580,18 @@ finalise_boris <- function(data, path, unit_time) {
   } else {
     data$channel <- "behavior"
   }
-  data$value <- data$behavior
+  data$label <- data$behavior
 
-  variables_event <- classify_boris_channels(data)
+  # Map BORIS's `Behavior type` (uppercase STATE / POINT) onto the
+  # aniframe contract (lowercase state / point). When the column is
+  # absent (some exports), let aniframe auto-derive `type` per
+  # (channel, label) group from bout duration.
+  if ("behavior_type" %in% names(data)) {
+    bt <- as.character(data$behavior_type)
+    bt[bt == "STATE"] <- "state"
+    bt[bt == "POINT"] <- "point"
+    data$type <- bt
+  }
 
   data$behavior <- NULL
   data$behavioral_category <- NULL
@@ -592,7 +604,6 @@ finalise_boris <- function(data, path, unit_time) {
     source = "boris",
     filename = basename(path),
     unit_time = unit_time,
-    variables_event = variables_event,
     # Spatial fields are inherited from the shared metadata substrate
     # but don't apply to event data. Set what we can to neutral values
     # (`none` / `unknown`); the rest stay at the aniframe default
@@ -604,12 +615,13 @@ finalise_boris <- function(data, path, unit_time) {
     ae <- aniframe::set_metadata(ae, sampling_rate = fps)
   }
 
-  # Validate state-state overlaps only. Point events (start == stop)
-  # are conventionally allowed to overlap with state bouts of the same
-  # channel — BORIS uses them as instant markers inside a containing
-  # state phase. (Will be moved into aniframe's validator itself —
-  # see animovement/aniframe#72 follow-up.)
-  state_only <- ae[ae$start != ae$stop, , drop = FALSE]
+  # Overlap checks: aniframe's `validate_anievent()` is intentionally
+  # lenient on the anievent side (it warns; `add_events()` resolves by
+  # splitting into numbered sub-columns on the aniframe side). Point
+  # events legitimately coexist with a containing state bout in BORIS,
+  # though, so filter to durative bouts before the call so only true
+  # state-state overlaps surface.
+  state_only <- ae[ae$type == "state", , drop = FALSE]
   aniframe::validate_anievent(state_only)
   ae
 }
@@ -631,34 +643,6 @@ choose_unit_time <- function(data, requested) {
     return("frame")
   }
   "s"
-}
-
-#' @keywords internal
-classify_boris_channels <- function(data) {
-  # nocov start — `channel` is always set by finalise_boris() before
-  # this is called, and `behavior_type` is present on every supported
-  # BORIS export shape.
-  if (!"behavior_type" %in% names(data) || !"channel" %in% names(data)) {
-    return(list(state = character(), point = character()))
-  }
-  # nocov end
-  by_channel <- split(
-    as.character(data$behavior_type),
-    as.character(data$channel)
-  )
-  state_channels <- character()
-  point_channels <- character()
-  for (ch in names(by_channel)) {
-    types <- by_channel[[ch]]
-    has_state <- any(types == "STATE", na.rm = TRUE)
-    has_point <- any(types == "POINT", na.rm = TRUE)
-    if (has_point && !has_state) {
-      point_channels <- c(point_channels, ch)
-    } else {
-      state_channels <- c(state_channels, ch)
-    }
-  }
-  list(state = state_channels, point = point_channels)
 }
 
 #' @keywords internal

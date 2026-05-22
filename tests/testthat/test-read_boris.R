@@ -9,7 +9,7 @@
 # - unit_time selection (`"s"` vs `"frame"`) and fallback
 # - modifier parsing (single-column pipe / multi-column `#N`)
 # - channel mapping (Behavioral category → `"behavior"` fallback)
-# - state-vs-point classification into variables_event metadata
+# - state-vs-point classification onto per-row `type` column
 # - metadata fields populated correctly
 # - data columns dropped when redundant with metadata
 # - error path for unrecognised / headerless files
@@ -37,7 +37,7 @@ test_that("aggregated TSV reads into an anievent with expected shape", {
     c("No focal subject", "subject1", "subject2")
   )
   expect_setequal(unique(ae$channel), "behavior")
-  expect_setequal(as.character(unique(ae$value)), c("s", "p"))
+  expect_setequal(as.character(unique(ae$label)), c("s", "p"))
 })
 
 test_that("aggregated TSV populates metadata source/filename/unit_time", {
@@ -76,14 +76,16 @@ test_that("aggregated TSV preserves media_file as a data column", {
   )
 })
 
-test_that("state/point classification routes channels into variables_event", {
+test_that("state/point classification lands on the per-row `type` column", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
-  ve <- aniframe::get_metadata(ae, "variables_event")
-
-  # The fixture's "behavior" channel carries both STATE and POINT bouts;
-  # mixed channels route to `state` per our convention.
-  expect_identical(ve$state, "behavior")
-  expect_identical(ve$point, character())
+  # The fixture's "behavior" channel has BORIS STATE rows (label `s`)
+  # and POINT rows (label `p`) — these should be tagged per row.
+  expect_true("type" %in% names(ae))
+  expect_identical(levels(ae$type), c("state", "point"))
+  s_rows <- ae$label == "s"
+  p_rows <- ae$label == "p"
+  expect_true(all(ae$type[s_rows] == "state"))
+  expect_true(all(ae$type[p_rows] == "point"))
 })
 
 
@@ -116,17 +118,18 @@ test_that("legacy single-column Modifiers (pipe-separated) parses + filters None
 test_that("Behavioral category populates channel when set; falls back otherwise", {
   ae <- read_boris(agg_synth_path("modifiers_pipe_separated.tsv"))
   # walking + resting carry category "locomotion"; chirp carries "vocalisation".
-  walking_row <- which(as.character(ae$value) == "walking")
-  chirp_rows <- which(as.character(ae$value) == "chirp")
+  walking_row <- which(as.character(ae$label) == "walking")
+  chirp_rows <- which(as.character(ae$label) == "chirp")
   expect_identical(ae$channel[walking_row], "locomotion")
   expect_identical(unique(ae$channel[chirp_rows]), "vocalisation")
 })
 
-test_that("classify routes pure-POINT channels to variables_event$point", {
+test_that("type is `state` for durative bouts and `point` for instants", {
   ae <- read_boris(agg_synth_path("modifiers_pipe_separated.tsv"))
-  ve <- aniframe::get_metadata(ae, "variables_event")
-  expect_identical(ve$state, "locomotion")
-  expect_identical(ve$point, "vocalisation")
+  walking_row <- which(as.character(ae$label) == "walking")
+  chirp_rows <- which(as.character(ae$label) == "chirp")
+  expect_identical(as.character(ae$type[walking_row]), "state")
+  expect_true(all(as.character(ae$type[chirp_rows]) == "point"))
 })
 
 
@@ -294,7 +297,7 @@ test_that("BORIS behaviour names get trimmed of trailing whitespace", {
     path
   )
   ae <- read_boris(path)
-  expect_identical(as.character(ae$value), "walking")
+  expect_identical(as.character(ae$label), "walking")
   expect_identical(as.character(ae$subject), "subj1")
   expect_identical(ae$channel, "locomotion")
 })
