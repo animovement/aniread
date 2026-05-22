@@ -597,6 +597,8 @@ finalise_boris <- function(data, path, unit_time) {
   data$behavioral_category <- NULL
   data$behavior_type <- NULL
 
+  data <- drop_uninformative_boris_columns(data)
+
   ae <- aniframe::anievent(data)
 
   ae <- aniframe::set_metadata(
@@ -643,6 +645,50 @@ choose_unit_time <- function(data, requested) {
     return("frame")
   }
   "s"
+}
+
+#' Drop columns that carry no per-row information
+#'
+#' Trims a handful of BORIS-administrative columns when they're
+#' trivially uniform across the export — keeps the resulting
+#' anievent compact for the common single-observation case while
+#' still preserving these columns when they actually vary (e.g.
+#' across observations stacked into a single file).
+#'
+#' @keywords internal
+drop_uninformative_boris_columns <- function(data) {
+  drops <- character()
+
+  na_only <- c(
+    "description",
+    "comment",
+    "comment_start",
+    "comment_stop",
+    "image_file_path",
+    "image_file_path_start",
+    "image_file_path_stop"
+  )
+  for (col in intersect(na_only, names(data))) {
+    if (all(is.na(data[[col]]))) {
+      drops <- c(drops, col)
+    }
+  }
+
+  if ("time_offset" %in% names(data)) {
+    vals <- suppressWarnings(as.numeric(data$time_offset))
+    if (all(is.na(vals) | vals == 0)) {
+      drops <- c(drops, "time_offset")
+    }
+  }
+
+  constant_only <- c("observation_type", "source_media")
+  for (col in intersect(constant_only, names(data))) {
+    if (length(unique(data[[col]])) <= 1) {
+      drops <- c(drops, col)
+    }
+  }
+
+  data[, setdiff(names(data), drops), drop = FALSE]
 }
 
 #' @keywords internal

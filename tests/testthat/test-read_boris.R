@@ -67,6 +67,101 @@ test_that("aggregated TSV drops fps and total_length columns from data", {
   expect_false("total_length" %in% names(ae))
 })
 
+test_that("trivially uniform admin columns are dropped from the result", {
+  # `comment_start` / `comment_stop` are all-NA in this fixture; the
+  # newer columns (observation_type / source_media / time_offset /
+  # image_file_path*) aren't present in this older export so should
+  # not appear on the output either. `description` IS populated in
+  # this fixture and should be preserved.
+  ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
+  for (col in c(
+    "comment",
+    "comment_start",
+    "comment_stop",
+    "image_file_path",
+    "image_file_path_start",
+    "image_file_path_stop",
+    "time_offset",
+    "observation_type",
+    "source_media"
+  )) {
+    expect_false(col %in% names(ae), info = paste("column kept:", col))
+  }
+  expect_true("description" %in% names(ae))
+})
+
+test_that("admin columns are preserved when they carry per-row signal", {
+  # Construct a fixture where two rows have different observation_type
+  # and a non-zero time_offset — these columns should survive.
+  path <- withr::local_tempfile(fileext = ".tsv")
+  writeLines(
+    c(
+      paste(
+        "Observation id",
+        "Observation date",
+        "Description",
+        "Observation type",
+        "Source",
+        "Time offset (s)",
+        "Media duration (s)",
+        "FPS",
+        "Subject",
+        "Behavior",
+        "Behavioral category",
+        "Modifiers",
+        "Behavior type",
+        "Start (s)",
+        "Stop (s)",
+        "Duration (s)",
+        sep = "\t"
+      ),
+      paste(
+        "obs1",
+        "2024-01-15 12:00:00",
+        "",
+        "MEDIA",
+        "video1.mp4",
+        "0.5",
+        "30.0",
+        "30.0",
+        "A",
+        "walk",
+        "loco",
+        "",
+        "STATE",
+        "1.0",
+        "5.0",
+        "4.0",
+        sep = "\t"
+      ),
+      paste(
+        "obs2",
+        "2024-01-15 13:00:00",
+        "",
+        "LIVE",
+        "n/a",
+        "0.5",
+        "30.0",
+        "30.0",
+        "A",
+        "walk",
+        "loco",
+        "",
+        "STATE",
+        "10.0",
+        "15.0",
+        "5.0",
+        sep = "\t"
+      )
+    ),
+    path
+  )
+  ae <- read_boris(path)
+  # observation_type varies → kept; time_offset is non-zero → kept.
+  expect_true("observation_type" %in% names(ae))
+  expect_true("time_offset" %in% names(ae))
+})
+
 test_that("aggregated TSV preserves media_file as a data column", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
   expect_true("media_file" %in% names(ae))
