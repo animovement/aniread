@@ -75,9 +75,7 @@ ensure_file_exists_when_expected <- function(path, expected_permission) {
 #' @inheritParams validate_files
 #' @keywords internal
 ensure_file_has_access_permissions <- function(path, expected_permission) {
-  if (
-    expected_permission %in% c("r", "rw") && !is_file_readable(path)
-  ) {
+  if (expected_permission %in% c("r", "rw") && !is_file_readable(path)) {
     cli::cli_abort(
       "Unable to read file: {path}. Make sure that you have read permissions."
     )

@@ -73,6 +73,14 @@ test_that("is_file_readable detects readable and unreadable files", {
   expect_false(is_file_readable(path_wrong))
 })
 
+test_that("is_file_readable falls back to opening when file.access lies", {
+  # Simulate the Windows network/UNC false negative: file.access() reports
+  # the file as unreadable even though it can be opened and read.
+  local_mocked_bindings(file.access = function(...) -1L, .package = "base")
+  expect_true(is_file_readable(path_correct))
+  expect_false(is_file_readable(path_wrong))
+})
+
 # Suffix
 test_that("Test whether files have the expected suffix", {
   expect_no_error(
