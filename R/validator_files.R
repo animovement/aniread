@@ -76,7 +76,7 @@ ensure_file_exists_when_expected <- function(path, expected_permission) {
 #' @keywords internal
 ensure_file_has_access_permissions <- function(path, expected_permission) {
   if (
-    expected_permission %in% c("r", "rw") & file.access(path, mode = 4) == -1
+    expected_permission %in% c("r", "rw") && !is_file_readable(path)
   ) {
     cli::cli_abort(
       "Unable to read file: {path}. Make sure that you have read permissions."
@@ -88,6 +88,34 @@ ensure_file_has_access_permissions <- function(path, expected_permission) {
       "Unable to write to file: {path}. Make sure that you have write permissions."
     )
   }
+}
+
+#' Check whether a file is readable.
+#' @description Check whether a file is readable. `file.access()` reports false
+#'   negatives on network (UNC) paths on Windows, so when it claims the file is
+#'   unreadable we fall back to a non-destructive attempt to open and read a
+#'   single byte.
+#' @inheritParams validate_files
+#' @keywords internal
+is_file_readable <- function(path) {
+  if (file.access(path, mode = 4) == 0) {
+    return(TRUE)
+  }
+  con <- tryCatch(
+    suppressWarnings(file(path, "rb")),
+    error = function(e) NULL
+  )
+  if (is.null(con)) {
+    return(FALSE)
+  }
+  on.exit(close(con))
+  tryCatch(
+    {
+      readBin(con, "raw", n = 1L)
+      TRUE
+    },
+    error = function(e) FALSE
+  )
 }
 
 #' Ensure that the file has one of the expected suffix(es).

@@ -67,6 +67,12 @@ test_that("Test whether the appropriate permissions are granted", {
   )
 })
 
+# Readability (incl. fallback used for network/UNC paths)
+test_that("is_file_readable detects readable and unreadable files", {
+  expect_true(is_file_readable(path_correct))
+  expect_false(is_file_readable(path_wrong))
+})
+
 # Suffix
 test_that("Test whether files have the expected suffix", {
   expect_no_error(
