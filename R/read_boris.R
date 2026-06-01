@@ -12,8 +12,8 @@
 #'   BORIS export. With `unit_time = "frame"` the reader uses the
 #'   `Image index start` / `Image index stop` columns instead; frames
 #'   stay aligned with rows of a host [aniframe::aniframe()], which
-#'   makes [aniframe::add_events()] safe against effective-FPS drift
-#'   when the export is paired with movement data. If `"frame"` is
+#'   keeps event timing robust against effective-FPS drift when the
+#'   export is paired with movement data. If `"frame"` is
 #'   requested but the export carries no image-index columns, the
 #'   reader falls back to `"s"` with an informational message. FPS is
 #'   recorded as `sampling_rate` metadata without rescaling the
@@ -25,9 +25,9 @@
 #'   literal `"behavior"` otherwise; `label` is the behaviour name,
 #'   and `type` is `"state"` or `"point"` mapped from BORIS's
 #'   `Behavior type` column. Overlap between bouts of the same channel
-#'   is permitted on the `anievent` side — [aniframe::add_events()]
-#'   resolves it by splitting into numbered sub-columns when
-#'   converting to an `aniframe`. Modifiers travel via the optional
+#'   is permitted on the `anievent` side; [aniframe::validate_anievent()]
+#'   flags overlapping state bouts with a warning rather than rejecting
+#'   them. Modifiers travel via the optional
 #'   `modifiers` list-column; the multi-column (`Modifier #1`,
 #'   `Modifier #2`, ...) layout, the legacy pipe-separated
 #'   single-column (`a|b|None`) layout, and comma-separated values
@@ -618,11 +618,11 @@ finalise_boris <- function(data, path, unit_time) {
   }
 
   # Overlap checks: aniframe's `validate_anievent()` is intentionally
-  # lenient on the anievent side (it warns; `add_events()` resolves by
-  # splitting into numbered sub-columns on the aniframe side). Point
-  # events legitimately coexist with a containing state bout in BORIS,
-  # though, so filter to durative bouts before the call so only true
-  # state-state overlaps surface.
+  # lenient on the anievent side — it warns on overlapping bouts within
+  # a channel rather than rejecting them. Point events legitimately
+  # coexist with a containing state bout in BORIS, though, so filter to
+  # durative bouts before the call so only true state-state overlaps
+  # surface.
   state_only <- ae[ae$type == "state", , drop = FALSE]
   aniframe::validate_anievent(state_only)
   ae

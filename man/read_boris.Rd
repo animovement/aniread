@@ -39,8 +39,8 @@ Time units come from the columns BORIS provides. The default
 BORIS export. With \code{unit_time = "frame"} the reader uses the
 \verb{Image index start} / \verb{Image index stop} columns instead; frames
 stay aligned with rows of a host \code{\link[aniframe:aniframe]{aniframe::aniframe()}}, which
-makes \code{\link[aniframe:add_events]{aniframe::add_events()}} safe against effective-FPS drift
-when the export is paired with movement data. If \code{"frame"} is
+keeps event timing robust against effective-FPS drift when the
+export is paired with movement data. If \code{"frame"} is
 requested but the export carries no image-index columns, the
 reader falls back to \code{"s"} with an informational message. FPS is
 recorded as \code{sampling_rate} metadata without rescaling the
@@ -52,9 +52,9 @@ Channels: each row's \code{channel} is the value of BORIS's
 literal \code{"behavior"} otherwise; \code{label} is the behaviour name,
 and \code{type} is \code{"state"} or \code{"point"} mapped from BORIS's
 \verb{Behavior type} column. Overlap between bouts of the same channel
-is permitted on the \code{anievent} side — \code{\link[aniframe:add_events]{aniframe::add_events()}}
-resolves it by splitting into numbered sub-columns when
-converting to an \code{aniframe}. Modifiers travel via the optional
+is permitted on the \code{anievent} side; \code{\link[aniframe:validate_anievent]{aniframe::validate_anievent()}}
+flags overlapping state bouts with a warning rather than rejecting
+them. Modifiers travel via the optional
 \code{modifiers} list-column; the multi-column (\code{Modifier #1},
 \code{Modifier #2}, ...) layout, the legacy pipe-separated
 single-column (\code{a|b|None}) layout, and comma-separated values
