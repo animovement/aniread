@@ -1,5 +1,47 @@
 # Changelog
 
+## aniread 0.5.0 (development version)
+
+### New features
+
+- [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md)
+  imports behavioural events from a [BORIS](https://www.boris.unito.it/)
+  export into an
+  [`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html).
+  Supports the two flat-text BORIS exports — **aggregated events** (one
+  row per bout) and **tabular events** (one row per START / STOP / POINT
+  transition; paired into bouts by the reader) — and auto-detects the
+  format from the file’s first row. Channels are taken from BORIS’s
+  `Behavioral category` when populated, falling back to the literal
+  `"behavior"`; modifiers travel via the `modifiers` list-column in both
+  the newer multi-column
+  (`Modifier `[`#1`](https://github.com/animovement/aniread/issues/1),
+  `Modifier `[`#2`](https://github.com/animovement/aniread/issues/2), …)
+  and the legacy single-column pipe-separated layouts. State-vs-point
+  classification is recorded in `metadata$variables_event`.
+  `unit_time = "s"` (default) reads `Start (s)` / `Stop (s)`; pass
+  `unit_time = "frame"` to use the image-index columns instead, which
+  keeps event timestamps row-aligned with a host aniframe (and falls
+  back to seconds when no image-index columns are present). FPS is
+  recorded as `sampling_rate` metadata without rescaling timestamps.
+  Closes [\#76](https://github.com/animovement/aniread/issues/76).
+
+### Bug fixes
+
+- File validation no longer rejects readable files on Windows network
+  (UNC) shares.
+  [`file.access()`](https://rdrr.io/r/base/file.access.html) returns
+  false negatives for read permission on such paths; the read check now
+  falls back to a non-destructive open attempt when
+  [`file.access()`](https://rdrr.io/r/base/file.access.html) reports no
+  access.
+
+### Dependencies
+
+- `aniframe (>= 0.6.0)` is now required, since
+  [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md)
+  produces an `anievent` object — a new class added in aniframe 0.6.0.
+
 ## aniread 0.4.1
 
 ### New features

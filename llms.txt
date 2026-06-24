@@ -95,6 +95,14 @@ These functions are the links between R and your movement data.
 - [`read_trex()`](http://animovement.dev/aniread/reference/read_trex.md)
   : Read TRex Movement Tracking Data
 
+## Event-data readers
+
+Readers for behavioural-event data — these import into an
+[`aniframe::anievent()`](http://animovement.dev/aniframe/reference/anievent.md).
+
+- [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md)
+  : Read events from a BORIS export
+
 ## Writer functions
 
 These functions are allow you to save your data.

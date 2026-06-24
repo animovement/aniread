@@ -9,6 +9,7 @@
 <url><loc>http://animovement.dev/aniread/reference/calibrate_trackball.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/detect_octron_tuple_cols.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/does_file_have_expected_headers.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/drop_uninformative_boris_columns.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_dlc_expected_header_levels.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_file_exists_when_expected.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_file_has_access_permissions.html</loc></url>
@@ -21,6 +22,7 @@
 <url><loc>http://animovement.dev/aniread/reference/get_sample_data.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/index.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/is_empty_file.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/is_file_readable.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/join_trackball_files.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_dlc_pickle.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_octron_column.html</loc></url>
@@ -28,6 +30,8 @@
 <url><loc>http://animovement.dev/aniread/reference/read_animalta.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_anipose.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_bonsai.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/read_boris.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/read_boris_tabular.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_c3d.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_custom.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_deeplabcut.html</loc></url>
