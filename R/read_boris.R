@@ -82,7 +82,7 @@ read_boris <- function(
 detect_boris_format <- function(path) {
   delim <- boris_delim(path)
   lines <- readLines(path, n = 30, warn = FALSE)
-  # nocov start — validate_files() already rejects empty files; this
+  # nocov start - validate_files() already rejects empty files; this
   # guard catches the pathological case of a one-line whitespace-only
   # file that gets past the size check.
   if (length(lines) == 0 || !nzchar(lines[[1]])) {
@@ -138,7 +138,7 @@ read_boris_aggregated <- function(path) {
   attributes(raw)$spec <- NULL
   attributes(raw)$problems <- NULL
 
-  # Parse modifiers first — the multi-column form (`Modifier #1`,
+  # Parse modifiers first - the multi-column form (`Modifier #1`,
   # `Modifier #2`, ...) needs the original names before janitor
   # rewrites them into something like `modifier_number_1`.
   raw <- parse_boris_modifiers(raw)
@@ -230,7 +230,7 @@ read_boris_tabular_header_block <- function(path) {
 #' @keywords internal
 find_tabular_split <- function(lines) {
   data_header <- which(grepl("^Time(\t|,)", lines))
-  # nocov start — unreachable through read_boris(): detect_boris_format()
+  # nocov start - unreachable through read_boris(): detect_boris_format()
   # only routes a file here when it has already seen a `Time<delim>...`
   # row in the first 30 lines.
   if (length(data_header) == 0) {
@@ -266,7 +266,7 @@ parse_tabular_header_block <- function(header_block, delim) {
       next
     }
     # Player #1, Player #2, ... are media-file slot names in the BORIS
-    # UI — redundant with the per-row `Media file path` column in the
+    # UI - redundant with the per-row `Media file path` column in the
     # data table, so we drop them rather than emit awkwardly-cleaned
     # `player_number_1` columns.
     if (grepl("^Player #", key)) {
@@ -291,7 +291,7 @@ broadcast_tabular_metadata <- function(events, meta) {
 
 #' @keywords internal
 pair_tabular_events <- function(events) {
-  # nocov start — both columns are required by the tabular format and
+  # nocov start - both columns are required by the tabular format and
   # the file would have failed format detection without them.
   if (!"status" %in% names(events)) {
     cli::cli_abort(
@@ -512,7 +512,7 @@ parse_boris_modifiers <- function(data) {
 
 #' @keywords internal
 clean_modifier_tokens <- function(tokens) {
-  # nocov start — call sites always pass a non-empty vector; this is
+  # nocov start - call sites always pass a non-empty vector; this is
   # belt-and-braces in case a future modifier layout sneaks an empty
   # row through.
   if (length(tokens) == 0) {
@@ -539,15 +539,24 @@ clean_modifier_tokens <- function(tokens) {
 finalise_boris <- function(data, path, unit_time) {
   unit_time <- choose_unit_time(data, unit_time)
 
+  # Capture FPS before dropping the column - also needed for the
+  # frame-fallback calculation below.
+  fps <- extract_boris_fps(data)
+
   if (unit_time == "frame") {
-    data$start <- as.numeric(data$image_index_start)
-    data$stop <- as.numeric(data$image_index_stop)
+    frames <- backcalculate_boris_frames(
+      start = as.numeric(data$image_index_start),
+      stop = as.numeric(data$image_index_stop),
+      start_s = as.numeric(data$start_s),
+      stop_s = as.numeric(data$stop_s),
+      fps = fps
+    )
+    data$start <- frames$start
+    data$stop <- frames$stop
   } else {
     data$start <- as.numeric(data$start_s)
     data$stop <- as.numeric(data$stop_s)
   }
-  # Capture FPS before dropping the column.
-  fps <- extract_boris_fps(data)
 
   data$start_s <- NULL
   data$stop_s <- NULL
@@ -556,7 +565,7 @@ finalise_boris <- function(data, path, unit_time) {
   data$duration_s <- NULL
   # FPS is captured in metadata$sampling_rate; total_length /
   # total_duration / media_duration / coding_duration have no current
-  # metadata home (see animovement/aniframe#73) — drop them to avoid
+  # metadata home (see animovement/aniframe#73) - drop them to avoid
   # redundancy / dishonest data columns.
   data$fps <- NULL
   data$total_length <- NULL
@@ -565,7 +574,7 @@ finalise_boris <- function(data, path, unit_time) {
   data$coding_duration <- NULL
 
   # BORIS often emits behaviour / subject / category strings with
-  # trailing whitespace — strip it here so downstream factor levels
+  # trailing whitespace - strip it here so downstream factor levels
   # don't carry it.
   for (col in c("subject", "behavior", "behavioral_category")) {
     if (col %in% names(data)) {
@@ -618,7 +627,7 @@ finalise_boris <- function(data, path, unit_time) {
   }
 
   # Overlap checks: aniframe's `validate_anievent()` is intentionally
-  # lenient on the anievent side — it warns on overlapping bouts within
+  # lenient on the anievent side - it warns on overlapping bouts within
   # a channel rather than rejecting them. Point events legitimately
   # coexist with a containing state bout in BORIS, though, so filter to
   # durative bouts before the call so only true state-state overlaps
@@ -626,6 +635,46 @@ finalise_boris <- function(data, path, unit_time) {
   state_only <- ae[ae$type == "state", , drop = FALSE]
   aniframe::validate_anievent(state_only)
   ae
+}
+
+#' Recover frame numbers from timestamps when the image index is bad
+#'
+#' Some BORIS exports emit a bogus image index on boundary frames - e.g.
+#' a STOP recorded on the very last frame of the video carries
+#' `Image index stop = 1` while its `Stop (s)` is the true end time. That
+#' makes the frame-based `stop` smaller than `start`, which fails
+#' aniframe's non-negative-interval invariant even though the
+#' second-based timestamps are perfectly consistent.
+#'
+#' BORIS derives `Time` from `frame / fps`, so when fps is known the true
+#' frame number is `round(Time * fps)`. We only rewrite the rows whose
+#' frame interval is negative *and* whose second interval is
+#' non-negative, leaving every other row on the verbatim image-index
+#' values (which keeps the documented frame-alignment guarantee intact).
+#'
+#' @return A list with `start` and `stop` numeric vectors.
+#' @keywords internal
+backcalculate_boris_frames <- function(start, stop, start_s, stop_s, fps) {
+  if (is.null(fps)) {
+    return(list(start = start, stop = stop))
+  }
+  bad <- !is.na(start) &
+    !is.na(stop) &
+    stop < start &
+    !is.na(start_s) &
+    !is.na(stop_s) &
+    stop_s >= start_s
+  if (!any(bad)) {
+    return(list(start = start, stop = stop))
+  }
+  start[bad] <- round(start_s[bad] * fps)
+  stop[bad] <- round(stop_s[bad] * fps)
+  n <- sum(bad)
+  cli::cli_inform(c(
+    "i" = "Recalculated {n} BORIS frame interval{?s} from {.field Time} and fps ({fps}).",
+    "i" = "The export's image-index column was inconsistent (stop frame < start frame); recovered via {.code round(time_s * fps)}."
+  ))
+  list(start = start, stop = stop)
 }
 
 #' @keywords internal
@@ -650,7 +699,7 @@ choose_unit_time <- function(data, requested) {
 #' Drop columns that carry no per-row information
 #'
 #' Trims a handful of BORIS-administrative columns when they're
-#' trivially uniform across the export — keeps the resulting
+#' trivially uniform across the export - keeps the resulting
 #' anievent compact for the common single-observation case while
 #' still preserving these columns when they actually vary (e.g.
 #' across observations stacked into a single file).

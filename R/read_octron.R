@@ -75,16 +75,13 @@ read_octron <- function(
     )
   }
 
+  header <- readLines(path, n = 6)
   if (is.null(video_height)) {
-    header <- readLines(path, n = 6)
-    video_height <- as.numeric(
-      trimws(sub(
-        "video_height:",
-        "",
-        grep("^video_height:", header, value = TRUE)
-      ))
-    )
+    video_height <- parse_octron_header_value(header, "video_height")
   }
+  # Number of frames Octron actually analysed - used to reinstate frames
+  # that carry no detection as all-NA rows (#80).
+  frame_count <- parse_octron_header_value(header, "frame_count_analyzed")
 
   keep_cols <- octron_columns_to_read(
     path = path,
@@ -94,7 +91,7 @@ read_octron <- function(
   )
 
   # `altrep = FALSE` returns plain character vectors instead of ALTREP
-  # proxies. Octron files are tuple-heavy (~60 character columns × 1.85M
+  # proxies. Octron files are tuple-heavy (~60 character columns x 1.85M
   # rows on the user's file), and every operation in the parser pipeline
   # (`is.na`, `startsWith`, `substring`, `as.numeric`) pays a per-element
   # ALTREP dispatch cost. Disabling it cuts end-to-end read time by
@@ -108,15 +105,15 @@ read_octron <- function(
     col_select = dplyr::all_of(keep_cols)
   ) |>
     suppressMessages()
-  # Strip vroom-specific attributes — `problems` is an externalptr that
+  # Strip vroom-specific attributes - `problems` is an externalptr that
   # makes two reads of the same file inequal under `expect_equal`, and
   # neither is meaningful in the final aniframe. Previously these were
   # implicitly dropped when the data flowed through `pivot_longer`.
   attr(data, "problems") <- NULL
   attr(data, "spec") <- NULL
 
-  # Octron uses scikit-image's expanded names verbatim — `moments_hu-0`,
-  # `weighted_centroid-0-0` etc. — which contain hyphens. R conventions
+  # Octron uses scikit-image's expanded names verbatim - `moments_hu-0`,
+  # `weighted_centroid-0-0` etc. - which contain hyphens. R conventions
   # (and aniframe) prefer underscores, so swap them in the output so
   # callers can refer to columns as bare identifiers.
   names(data) <- gsub("-", "_", names(data), fixed = TRUE)
@@ -142,6 +139,13 @@ read_octron <- function(
   # Resolve multi-segment (tuple-valued) rows into scalar columns or
   # explode them into per-segment rows.
   data <- resolve_octron_segments(data, method)
+
+  # Octron omits any frame in which nothing was detected, so a gap in
+  # `frame_idx` means "no observation", not "frame absent from the video".
+  # Reinstate the missing frames as all-NA rows across the full
+  # track x frame grid (#80) so downstream code sees a rectangular,
+  # gap-free time axis.
+  data <- complete_octron_frames(data, frame_count)
 
   id_cols <- c("track", "time", "label", "confidence")
   if (method == "segments") {
@@ -203,6 +207,72 @@ read_octron <- function(
 # Internal helpers for handling Octron's tuple-valued multi-segment rows.
 # ---------------------------------------------------------------------------
 
+#' Parse a single `key: value` line from an Octron CSV header
+#'
+#' Returns the numeric value following `key:` in the metadata header, or
+#' `NA_real_` when the key is absent.
+#' @keywords internal
+#' @noRd
+parse_octron_header_value <- function(header, key) {
+  line <- grep(paste0("^", key, ":"), header, value = TRUE)
+  if (length(line) == 0) {
+    return(NA_real_)
+  }
+  as.numeric(trimws(sub(paste0(key, ":"), "", line[[1]], fixed = TRUE)))
+}
+
+#' Reinstate frames with no detection as all-NA rows
+#'
+#' Completes the full `track` x `frame` grid so that every analysed frame
+#' appears for every track. Frames Octron dropped (because nothing was
+#' detected) come back as rows that are NA in every measurement column.
+#' The per-track class `label` is carried onto the reinstated rows so a
+#' track keeps a consistent identity rather than gaining NA identity
+#' values.
+#'
+#' The frame range runs from 0 to `frame_count - 1` (the analysed-frame
+#' count from the CSV header). When the header lacks that field the
+#' observed `time` range is used instead. Frames present in the data but
+#' beyond `frame_count` are preserved.
+#' @keywords internal
+complete_octron_frames <- function(data, frame_count) {
+  if (nrow(data) == 0L) {
+    return(data)
+  }
+
+  data$time <- as.numeric(data$time)
+  observed_max <- max(data$time, na.rm = TRUE)
+  if (is.na(frame_count) || frame_count <= 0) {
+    frame_count <- observed_max + 1L
+  }
+
+  # Union with any observed frames past the header count so we never drop
+  # real data to a stale/short header.
+  full_time <- sort(union(
+    seq.int(0L, frame_count - 1L),
+    data$time[!is.na(data$time)]
+  ))
+
+  grid <- expand.grid(
+    track = unique(data$track),
+    time = full_time,
+    KEEP.OUT.ATTRS = FALSE,
+    stringsAsFactors = FALSE
+  )
+
+  out <- dplyr::left_join(grid, data, by = c("track", "time"))
+
+  # Keep the per-track `label` consistent on the reinstated rows.
+  if ("label" %in% names(out)) {
+    known <- data[!is.na(data$label), c("track", "label"), drop = FALSE]
+    known <- known[!duplicated(known$track), , drop = FALSE]
+    filled <- known$label[match(out$track, known$track)]
+    out$label <- dplyr::coalesce(out$label, filled)
+  }
+
+  out[order(out$track, out$time), , drop = FALSE]
+}
+
 #' Decide which columns to read from an Octron CSV
 #'
 #' Probes the file for its column header, categorises the columns into
@@ -210,7 +280,7 @@ read_octron <- function(
 #' `properties` request against the available property columns. The
 #' returned vector is suitable for passing to `vroom::vroom(col_select)`.
 #'
-#' Octron writes scikit-image's expanded property names verbatim — e.g.
+#' Octron writes scikit-image's expanded property names verbatim - e.g.
 #' `moments_hu-0`. Matching is done in *clean* (underscored) form so the
 #' user-facing API matches what they'll see in the output, but the
 #' returned vector uses the original on-disk names so vroom can find
@@ -316,7 +386,7 @@ resolve_octron_segments <- function(data, method) {
 
   # Track per-row mismatch across all value columns so we can emit a
   # SINGLE summarised warning per file (rather than one per affected
-  # column — for the user's 60-tuple-column file that meant ~26 dupes).
+  # column - for the user's 60-tuple-column file that meant ~26 dupes).
   any_mismatch <- if (has_area) logical(length(parsed_area)) else NULL
 
   for (col in tuple_cols) {
@@ -384,7 +454,7 @@ resolve_octron_segments <- function(data, method) {
 #'
 #' Walks each character column once with a fast `is.na` + `startsWith`
 #' bulk pass and stops at the first hit. Avoids `stats::na.omit`, which
-#' allocates a `na.action` attribute over every NA index — measurable on
+#' allocates a `na.action` attribute over every NA index - measurable on
 #' a 1.85M-row file with ~60 character columns.
 #' @keywords internal
 detect_octron_tuple_cols <- function(data) {
@@ -425,7 +495,7 @@ parse_octron_column <- function(col) {
     # surrounding whitespace internally so no separate `trimws` pass is
     # needed. The bulk-as.numeric / .mapply re-list trick *looks*
     # tempting but loses to `lapply(parts, as.numeric)` on real Octron
-    # data once the per-row segment count is small (≤ ~5) — `as.numeric`
+    # data once the per-row segment count is small (<= ~5) - `as.numeric`
     # is .Internal so its per-call cost is below the `unlist` + slicing
     # overhead at this batch size.
     tcol <- col[is_tuple]
@@ -449,7 +519,7 @@ parse_octron_column <- function(col) {
 #'
 #' Vectorised. When a row's `areas_list` length differs from its
 #' `values_list` length, the area vector is padded with `NA` (or
-#' truncated) to align — so out-of-range indices can never be picked.
+#' truncated) to align - so out-of-range indices can never be picked.
 #' @keywords internal
 resolve_largest <- function(values_list, areas_list) {
   n <- length(values_list)
@@ -499,7 +569,7 @@ resolve_largest <- function(values_list, areas_list) {
 #'
 #' Vectorised via `rowsum`. Rows whose `values_list` and `areas_list`
 #' have different segment counts trigger a single summarised warning and
-#' fall back to the arithmetic mean of the value vector — protecting
+#' fall back to the arithmetic mean of the value vector - protecting
 #' callers from the silent recycling that would otherwise occur in
 #' `v * a`. Falls back to the arithmetic mean when areas are absent or
 #' sum to 0.
