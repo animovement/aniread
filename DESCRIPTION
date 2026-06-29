@@ -40,6 +40,7 @@ Suggests:
     withr
 Additional_repositories: https://animovement.r-universe.dev, 'https://bioc.r-universe.dev'
 Config/testthat/edition: 3
+Config/Needs/website: animovement/animovementtemplate
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.0.0

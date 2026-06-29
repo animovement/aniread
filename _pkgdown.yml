@@ -2,30 +2,11 @@ url: http://animovement.dev/aniread/
 home:
   title: "aniread – An R package for reading and writing movement data"
 
-authors:
-  - name: "Mikkel Roald‑Arbøl"
-    href: "https://roald-arboel.com"
-
+# Shared navbar (incl. the animovement dropdown + Zulip), theme, and author
+# details are inherited from animovementtemplate.
 template:
   bootstrap: 5
-  light-switch: true
-
-navbar:
-  structure:
-    left:
-      - intro
-      - reference
-      - news
-    right:
-      - search
-      - github
-      - zulip
-      - lightswitch
-  components:
-    zulip:
-      icon: fa-comments
-      href: https://animovement.zulipchat.com
-      aria-label: Chat on Zulip
+  package: animovementtemplate
 
 reference:
 - title: "Reader functions"
