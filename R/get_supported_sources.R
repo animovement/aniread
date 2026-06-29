@@ -3,7 +3,7 @@
 #' Returns the tracking / event software that `aniread` supports, paired
 #' with the reader function for each and the file suffix(es) it accepts.
 #' This lets downstream packages discover the supported formats
-#' programmatically instead of hard-coding the list — mirroring
+#' programmatically instead of hard-coding the list - mirroring
 #' `movement`'s `get_supported_source_software()`.
 #'
 #' Suffixes are returned without a leading dot (e.g. `"csv"`, `"h5"`),
@@ -17,7 +17,7 @@
 #'   \describe{
 #'     \item{`source`}{Character. The source software / format name.}
 #'     \item{`reader`}{Character. The `aniread` function that reads it.}
-#'     \item{`suffix`}{List column of character vectors — the file
+#'     \item{`suffix`}{List column of character vectors - the file
 #'       suffix(es) the reader accepts.}
 #'   }
 #'
