@@ -2,13 +2,13 @@
 
 ## Authors
 
-- **Mikkel Roald-Arbøl**. Author, maintainer.
-  [](https://orcid.org/0000-0002-9998-0058)
+- **[Mikkel Roald-Arbøl](https://roald-arboel.com)**. Author,
+  maintainer. [](https://orcid.org/0000-0002-9998-0058)
 
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/animovement/aniread/blob/v0.5.0/inst/CITATION)
+[`inst/CITATION`](https://github.com/animovement/aniread/blob/main/inst/CITATION)
 
 Roald-Arbøl M (2026). “aniread: An R package for reading and writing
 movement data.”
