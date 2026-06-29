@@ -419,9 +419,7 @@ test_that("explicit format = 'tabular' bypasses auto-detection", {
 test_that("auto-detection rejects unrecognised files clearly", {
   expect_error(
     read_boris(
-      agg_path(
-        "test_export_aggregated_events_test_full_with_trailing_spaces_in_modifiers.tsv"
-      )
+      agg_path("test_trailing_spaces_modifiers.tsv")
     ),
     "Could not detect BORIS export format"
   )
