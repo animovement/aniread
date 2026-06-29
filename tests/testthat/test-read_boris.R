@@ -656,3 +656,97 @@ test_that("validator surfaces overlapping same-channel bouts as a warning", {
     "overlap"
   )
 })
+
+
+# Frame fallback (#81) ----------------------------------------------------
+
+test_that("unit_time = 'frame' back-calculates a bad image index from time x fps", {
+  # The STOP lands on the last video frame but its image index is recorded
+  # as 1, so the frame-based stop (1) is below the frame-based start (2)
+  # even though the second-based timestamps are consistent. With FPS known
+  # the reader recovers the frames as round(time_s * fps).
+  path <- write_tsv_fixture(c(
+    paste(
+      "Observation id",
+      "Subject",
+      "Behavior",
+      "Behavior type",
+      "FPS (frame/s)",
+      "Start (s)",
+      "Stop (s)",
+      "Image index start",
+      "Image index stop",
+      sep = "\t"
+    ),
+    paste(
+      "obs1",
+      "A",
+      "walk",
+      "STATE",
+      "2",
+      "1.0",
+      "100.0",
+      "2",
+      "1",
+      sep = "\t"
+    )
+  ))
+
+  expect_message(
+    ae <- read_boris(path, unit_time = "frame"),
+    "Recalculated"
+  )
+  expect_identical(
+    as.character(aniframe::get_metadata(ae, "unit_time")),
+    "frame"
+  )
+  expect_equal(ae$start, 2)
+  expect_equal(ae$stop, 200)
+})
+
+test_that("unit_time = 'frame' leaves consistent image indices untouched", {
+  path <- write_tsv_fixture(c(
+    paste(
+      "Observation id",
+      "Subject",
+      "Behavior",
+      "Behavior type",
+      "FPS (frame/s)",
+      "Start (s)",
+      "Stop (s)",
+      "Image index start",
+      "Image index stop",
+      sep = "\t"
+    ),
+    paste(
+      "obs1",
+      "A",
+      "walk",
+      "STATE",
+      "2",
+      "1.0",
+      "5.0",
+      "2",
+      "10",
+      sep = "\t"
+    )
+  ))
+
+  expect_no_message(ae <- read_boris(path, unit_time = "frame"))
+  expect_equal(ae$start, 2)
+  expect_equal(ae$stop, 10)
+})
+
+test_that("backcalculate_boris_frames is a no-op when fps is unknown", {
+  # Without an FPS we cannot recover frames from timestamps, so even a
+  # negative frame interval is left untouched (it surfaces downstream).
+  res <- backcalculate_boris_frames(
+    start = c(2, 5),
+    stop = c(1, 10),
+    start_s = c(1.0, 2.5),
+    stop_s = c(0.5, 5.0),
+    fps = NULL
+  )
+  expect_equal(res$start, c(2, 5))
+  expect_equal(res$stop, c(1, 10))
+})

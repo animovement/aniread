@@ -539,15 +539,24 @@ clean_modifier_tokens <- function(tokens) {
 finalise_boris <- function(data, path, unit_time) {
   unit_time <- choose_unit_time(data, unit_time)
 
+  # Capture FPS before dropping the column — also needed for the
+  # frame-fallback calculation below.
+  fps <- extract_boris_fps(data)
+
   if (unit_time == "frame") {
-    data$start <- as.numeric(data$image_index_start)
-    data$stop <- as.numeric(data$image_index_stop)
+    frames <- backcalculate_boris_frames(
+      start = as.numeric(data$image_index_start),
+      stop = as.numeric(data$image_index_stop),
+      start_s = as.numeric(data$start_s),
+      stop_s = as.numeric(data$stop_s),
+      fps = fps
+    )
+    data$start <- frames$start
+    data$stop <- frames$stop
   } else {
     data$start <- as.numeric(data$start_s)
     data$stop <- as.numeric(data$stop_s)
   }
-  # Capture FPS before dropping the column.
-  fps <- extract_boris_fps(data)
 
   data$start_s <- NULL
   data$stop_s <- NULL
@@ -626,6 +635,46 @@ finalise_boris <- function(data, path, unit_time) {
   state_only <- ae[ae$type == "state", , drop = FALSE]
   aniframe::validate_anievent(state_only)
   ae
+}
+
+#' Recover frame numbers from timestamps when the image index is bad
+#'
+#' Some BORIS exports emit a bogus image index on boundary frames — e.g.
+#' a STOP recorded on the very last frame of the video carries
+#' `Image index stop = 1` while its `Stop (s)` is the true end time. That
+#' makes the frame-based `stop` smaller than `start`, which fails
+#' aniframe's non-negative-interval invariant even though the
+#' second-based timestamps are perfectly consistent.
+#'
+#' BORIS derives `Time` from `frame / fps`, so when fps is known the true
+#' frame number is `round(Time * fps)`. We only rewrite the rows whose
+#' frame interval is negative *and* whose second interval is
+#' non-negative, leaving every other row on the verbatim image-index
+#' values (which keeps the documented frame-alignment guarantee intact).
+#'
+#' @return A list with `start` and `stop` numeric vectors.
+#' @keywords internal
+backcalculate_boris_frames <- function(start, stop, start_s, stop_s, fps) {
+  if (is.null(fps)) {
+    return(list(start = start, stop = stop))
+  }
+  bad <- !is.na(start) &
+    !is.na(stop) &
+    stop < start &
+    !is.na(start_s) &
+    !is.na(stop_s) &
+    stop_s >= start_s
+  if (!any(bad)) {
+    return(list(start = start, stop = stop))
+  }
+  start[bad] <- round(start_s[bad] * fps)
+  stop[bad] <- round(stop_s[bad] * fps)
+  n <- sum(bad)
+  cli::cli_inform(c(
+    "i" = "Recalculated {n} BORIS frame interval{?s} from {.field Time} × fps ({fps}).",
+    "i" = "The export's image-index column was inconsistent (stop frame < start frame); recovered via {.code round(time_s * fps)}."
+  ))
+  list(start = start, stop = stop)
 }
 
 #' @keywords internal

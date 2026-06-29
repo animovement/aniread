@@ -2,6 +2,7 @@
 
 export(calibrate_trackball)
 export(get_sample_data)
+export(get_supported_sources)
 export(read_aniframe)
 export(read_animalta)
 export(read_anipose)

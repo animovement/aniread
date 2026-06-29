@@ -65,5 +65,6 @@ reference:
 
 - title: Miscellaneous
   contents:
+  - get_supported_sources
   - get_sample_data
   - calibrate_trackball

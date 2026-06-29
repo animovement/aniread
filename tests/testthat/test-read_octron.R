@@ -785,3 +785,142 @@ test_that("read_octron normalises hyphens to underscores in property names", {
   expect_true("moments_hu_0" %in% names(picked))
   expect_false("moments_hu_1" %in% names(picked))
 })
+
+# --- Missing-frame completion (#80) ---
+
+# Octron drops any frame in which nothing was detected. The reader should
+# reinstate those frames as all-NA rows across the full track × frame grid,
+# using the analysed-frame count from the CSV header.
+
+# Helper: a 5-frame, single-track file that is missing frame_idx 2 and 3.
+write_octron_gap_fixture <- function(frame_count_analyzed = 5) {
+  path <- tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "video_name: test_gap.mp4",
+      "frame_count: 5",
+      paste0("frame_count_analyzed: ", frame_count_analyzed),
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2026-06-29 00:00:00",
+      "frame_counter,frame_idx,track_id,label,confidence,pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,area,eccentricity,solidity,orientation",
+      "0,0,1,worm,0.9,100.0,200.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4",
+      "1,1,1,worm,0.9,110.0,210.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4",
+      # frames 2 and 3 omitted (no detection)
+      "4,4,1,worm,0.9,140.0,240.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4"
+    ),
+    path
+  )
+  path
+}
+
+test_that("read_octron reinstates missing frames as all-NA rows", {
+  path <- write_octron_gap_fixture()
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_octron(path)
+
+  # All five analysed frames are present (one centroid row each).
+  expect_equal(sort(unique(result$time)), c(0, 1, 2, 3, 4))
+  expect_equal(nrow(result), 5)
+
+  missing <- result[result$time %in% c(2, 3), ]
+  expect_equal(nrow(missing), 2)
+  expect_true(all(is.na(missing$x)))
+  expect_true(all(is.na(missing$y)))
+  expect_true(all(is.na(missing$confidence)))
+  expect_true(all(is.na(missing$area)))
+})
+
+test_that("read_octron keeps the per-track label on reinstated rows", {
+  path <- write_octron_gap_fixture()
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_octron(path)
+  # `label` is part of the entity identity, so it should follow the track
+  # rather than become NA on the reinstated frames.
+  expect_true(all(as.character(result$label) == "worm"))
+})
+
+test_that("read_octron frame completion respects frame_count_analyzed", {
+  # Header declares only 3 analysed frames (0, 1, 2). The fixture observes
+  # frames 0, 1, 4, so the completed time axis is the union of the header
+  # range and the observed frames: {0,1,2} ∪ {0,1,4} = {0,1,2,4}. Frame 3
+  # is neither analysed nor observed, so it stays absent; frame 4's real
+  # observation is never dropped to a short header.
+  path <- write_octron_gap_fixture(frame_count_analyzed = 3)
+  on.exit(unlink(path), add = TRUE)
+
+  result <- read_octron(path)
+  expect_equal(sort(unique(result$time)), c(0, 1, 2, 4))
+})
+
+test_that("read_octron completion fills the full track grid for multiple tracks", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(
+    c(
+      "video_name: test_multi_track.mp4",
+      "frame_count: 3",
+      "frame_count_analyzed: 3",
+      "video_height: 1000",
+      "video_width: 1000",
+      "created_at: 2026-06-29 00:00:00",
+      "frame_counter,frame_idx,track_id,label,confidence,pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,area,eccentricity,solidity,orientation",
+      # track 1 in frames 0,1 ; track 2 only in frame 2
+      "0,0,1,worm,0.9,100.0,200.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4",
+      "1,1,1,worm,0.9,110.0,210.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4",
+      "2,2,2,worm,0.9,300.0,400.0,1000.0,80.0,120.0,180.0,220.0,500.0,0.5,0.9,-0.4"
+    ),
+    path
+  )
+
+  result <- read_octron(path)
+  # 2 tracks x 3 frames = 6 centroid rows.
+  expect_equal(nrow(result), 6)
+  expect_setequal(unique(result$track), c(1, 2))
+  # Track 2 should have NA rows for frames 0 and 1.
+  t2 <- result[result$track == 2, ]
+  expect_equal(sort(unique(t2$time)), c(0, 1, 2))
+  expect_true(all(is.na(t2$x[t2$time %in% c(0, 1)])))
+  expect_false(is.na(t2$x[t2$time == 2]))
+})
+
+test_that("read_octron does not add rows when no frames are missing", {
+  # The dense sample file has every analysed frame present (frames 0-2).
+  path <- test_path("data/octron", "octron_sample.csv")
+  result <- read_octron(path)
+  expect_equal(nrow(result), 3)
+  expect_false(anyNA(result$x))
+})
+
+test_that("parse_octron_header_value returns NA when the key is absent", {
+  header <- c("video_name: x.mp4", "video_height: 1000")
+  expect_true(is.na(parse_octron_header_value(header, "frame_count_analyzed")))
+  expect_equal(parse_octron_header_value(header, "video_height"), 1000)
+})
+
+test_that("complete_octron_frames returns empty input unchanged", {
+  empty <- data.frame(
+    track = numeric(0),
+    time = numeric(0),
+    label = character(0)
+  )
+  expect_equal(nrow(complete_octron_frames(empty, 5)), 0L)
+})
+
+test_that("complete_octron_frames falls back to the observed range when frame_count is missing", {
+  data <- data.frame(
+    track = c(1, 1),
+    time = c(0, 2),
+    label = c("worm", "worm"),
+    x = c(1, 2),
+    stringsAsFactors = FALSE
+  )
+  # frame_count NA -> use observed max (2) -> frames 0, 1, 2; the gap at
+  # frame 1 is reinstated as an NA-measurement row that keeps its label.
+  out <- complete_octron_frames(data, NA_real_)
+  expect_equal(sort(unique(out$time)), c(0, 1, 2))
+  expect_true(is.na(out$x[out$time == 1]))
+  expect_equal(as.character(out$label[out$time == 1]), "worm")
+})

@@ -1,4 +1,15 @@
-# aniread 0.5.0 (development version)
+# aniread 0.5.1 (development version)
+
+## New features
+
+* `get_supported_sources()` returns the source software `aniread` can read as a tibble of `source` / `reader` / `suffix`, so downstream packages can discover supported formats programmatically instead of hard-coding them. Closes #74.
+
+## Bug fixes
+
+* `read_octron()` no longer drops frames in which nothing was detected. Octron omits such frames entirely; the reader now reinstates them as all-NA rows across the full track × frame grid (using the analysed-frame count from the CSV header) so the time axis is gap-free. Closes #80.
+* `read_boris(unit_time = "frame")` no longer fails on exports with an inconsistent image index (e.g. a STOP on the last video frame recorded as frame 1, giving `stop < start`). When FPS is known, the offending frame interval is recovered from `round(time_s * fps)`. Closes #81.
+
+# aniread 0.5.0
 
 ## New features
 

@@ -75,16 +75,13 @@ read_octron <- function(
     )
   }
 
+  header <- readLines(path, n = 6)
   if (is.null(video_height)) {
-    header <- readLines(path, n = 6)
-    video_height <- as.numeric(
-      trimws(sub(
-        "video_height:",
-        "",
-        grep("^video_height:", header, value = TRUE)
-      ))
-    )
+    video_height <- parse_octron_header_value(header, "video_height")
   }
+  # Number of frames Octron actually analysed — used to reinstate frames
+  # that carry no detection as all-NA rows (#80).
+  frame_count <- parse_octron_header_value(header, "frame_count_analyzed")
 
   keep_cols <- octron_columns_to_read(
     path = path,
@@ -142,6 +139,13 @@ read_octron <- function(
   # Resolve multi-segment (tuple-valued) rows into scalar columns or
   # explode them into per-segment rows.
   data <- resolve_octron_segments(data, method)
+
+  # Octron omits any frame in which nothing was detected, so a gap in
+  # `frame_idx` means "no observation", not "frame absent from the video".
+  # Reinstate the missing frames as all-NA rows across the full
+  # track × frame grid (#80) so downstream code sees a rectangular,
+  # gap-free time axis.
+  data <- complete_octron_frames(data, frame_count)
 
   id_cols <- c("track", "time", "label", "confidence")
   if (method == "segments") {
@@ -202,6 +206,72 @@ read_octron <- function(
 # ---------------------------------------------------------------------------
 # Internal helpers for handling Octron's tuple-valued multi-segment rows.
 # ---------------------------------------------------------------------------
+
+#' Parse a single `key: value` line from an Octron CSV header
+#'
+#' Returns the numeric value following `key:` in the metadata header, or
+#' `NA_real_` when the key is absent.
+#' @keywords internal
+#' @noRd
+parse_octron_header_value <- function(header, key) {
+  line <- grep(paste0("^", key, ":"), header, value = TRUE)
+  if (length(line) == 0) {
+    return(NA_real_)
+  }
+  as.numeric(trimws(sub(paste0(key, ":"), "", line[[1]], fixed = TRUE)))
+}
+
+#' Reinstate frames with no detection as all-NA rows
+#'
+#' Completes the full `track` × `frame` grid so that every analysed frame
+#' appears for every track. Frames Octron dropped (because nothing was
+#' detected) come back as rows that are NA in every measurement column.
+#' The per-track class `label` is carried onto the reinstated rows so a
+#' track keeps a consistent identity rather than gaining NA identity
+#' values.
+#'
+#' The frame range runs from 0 to `frame_count - 1` (the analysed-frame
+#' count from the CSV header). When the header lacks that field the
+#' observed `time` range is used instead. Frames present in the data but
+#' beyond `frame_count` are preserved.
+#' @keywords internal
+complete_octron_frames <- function(data, frame_count) {
+  if (nrow(data) == 0L) {
+    return(data)
+  }
+
+  data$time <- as.numeric(data$time)
+  observed_max <- max(data$time, na.rm = TRUE)
+  if (is.na(frame_count) || frame_count <= 0) {
+    frame_count <- observed_max + 1L
+  }
+
+  # Union with any observed frames past the header count so we never drop
+  # real data to a stale/short header.
+  full_time <- sort(union(
+    seq.int(0L, frame_count - 1L),
+    data$time[!is.na(data$time)]
+  ))
+
+  grid <- expand.grid(
+    track = unique(data$track),
+    time = full_time,
+    KEEP.OUT.ATTRS = FALSE,
+    stringsAsFactors = FALSE
+  )
+
+  out <- dplyr::left_join(grid, data, by = c("track", "time"))
+
+  # Keep the per-track `label` consistent on the reinstated rows.
+  if ("label" %in% names(out)) {
+    known <- data[!is.na(data$label), c("track", "label"), drop = FALSE]
+    known <- known[!duplicated(known$track), , drop = FALSE]
+    filled <- known$label[match(out$track, known$track)]
+    out$label <- dplyr::coalesce(out$label, filled)
+  }
+
+  out[order(out$track, out$time), , drop = FALSE]
+}
 
 #' Decide which columns to read from an Octron CSV
 #'
