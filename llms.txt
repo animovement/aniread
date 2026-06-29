@@ -117,6 +117,8 @@ These functions are allow you to save your data.
 
 ## Miscellaneous
 
+- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+  : List the source software formats aniread can read
 - [`get_sample_data()`](http://animovement.dev/aniread/reference/get_sample_data.md)
   : Download sample tracking data
 - [`calibrate_trackball()`](http://animovement.dev/aniread/reference/calibrate_trackball.md)
