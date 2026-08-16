@@ -9,7 +9,7 @@ detect_octron_tuple_cols(data)
 \description{
 Walks each character column once with a fast \code{is.na} + \code{startsWith}
 bulk pass and stops at the first hit. Avoids \code{stats::na.omit}, which
-allocates a \code{na.action} attribute over every NA index — measurable on
+allocates a \code{na.action} attribute over every NA index - measurable on
 a 1.85M-row file with ~60 character columns.
 }
 \keyword{internal}

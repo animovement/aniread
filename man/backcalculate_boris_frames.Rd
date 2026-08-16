@@ -10,7 +10,7 @@ backcalculate_boris_frames(start, stop, start_s, stop_s, fps)
 A list with \code{start} and \code{stop} numeric vectors.
 }
 \description{
-Some BORIS exports emit a bogus image index on boundary frames — e.g.
+Some BORIS exports emit a bogus image index on boundary frames - e.g.
 a STOP recorded on the very last frame of the video carries
 \verb{Image index stop = 1} while its \code{Stop (s)} is the true end time. That
 makes the frame-based \code{stop} smaller than \code{start}, which fails

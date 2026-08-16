@@ -7,7 +7,7 @@
 complete_octron_frames(data, frame_count)
 }
 \description{
-Completes the full \code{track} × \code{frame} grid so that every analysed frame
+Completes the full \code{track} x \code{frame} grid so that every analysed frame
 appears for every track. Frames Octron dropped (because nothing was
 detected) come back as rows that are NA in every measurement column.
 The per-track class \code{label} is carried onto the reinstated rows so a
