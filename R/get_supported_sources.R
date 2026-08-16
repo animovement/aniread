@@ -12,6 +12,10 @@
 #' generic [read_custom()] reader is intentionally omitted because it has
 #' no fixed source software or file suffix.
 #'
+#' The `source` names listed here are exactly those accepted by the
+#' `source` argument of [read_dataset()], and returned by
+#' [detect_source()].
+#'
 #' @return A [tibble][dplyr::tibble] with one row per supported source and
 #'   the columns:
 #'   \describe{
@@ -33,38 +37,7 @@
 #'
 #' @export
 get_supported_sources <- function() {
-  registry <- list(
-    list(source = "aniframe", reader = "read_aniframe", suffix = "parquet"),
-    list(source = "animalta", reader = "read_animalta", suffix = "csv"),
-    list(source = "anipose", reader = "read_anipose", suffix = "csv"),
-    list(source = "bonsai", reader = "read_bonsai", suffix = "csv"),
-    list(source = "boris", reader = "read_boris", suffix = c("csv", "tsv")),
-    list(source = "c3d", reader = "read_c3d", suffix = "c3d"),
-    list(
-      source = "deeplabcut",
-      reader = "read_deeplabcut",
-      suffix = c("csv", "h5")
-    ),
-    list(source = "fasttrack", reader = "read_fasttrack", suffix = "txt"),
-    list(source = "fictrac", reader = "read_fictrac", suffix = "dat"),
-    list(source = "freemocap", reader = "read_freemocap", suffix = "csv"),
-    list(
-      source = "idtrackerai",
-      reader = "read_idtracker",
-      suffix = c("csv", "h5")
-    ),
-    list(
-      source = "lightningpose",
-      reader = "read_lightningpose",
-      suffix = "csv"
-    ),
-    list(source = "movement", reader = "read_movement", suffix = c("nc", "h5")),
-    list(source = "octron", reader = "read_octron", suffix = "csv"),
-    list(source = "sleap", reader = "read_sleap", suffix = c("h5", "csv")),
-    list(source = "trackball", reader = "read_trackball", suffix = "csv"),
-    list(source = "trackmate", reader = "read_trackmate", suffix = "xml"),
-    list(source = "trex", reader = "read_trex", suffix = "csv")
-  )
+  registry <- source_registry()
 
   dplyr::tibble(
     source = vapply(registry, `[[`, character(1), "source"),

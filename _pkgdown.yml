@@ -9,8 +9,20 @@ template:
   package: animovementtemplate
 
 reference:
+- title: "Reading any file"
+  desc: >
+    One entry point for every supported format. `read_dataset()` works out
+    which source software wrote a file and reads it, so you do not need to
+    know which reader it needs beforehand.
+  contents:
+  - read_dataset
+  - detect_source
+
 - title: "Reader functions"
-  desc: These functions are the links between R and your movement data.
+  desc: >
+    The format-specific readers `read_dataset()` dispatches to. Call them
+    directly when you already know the source, or for their format-specific
+    arguments.
   contents:
   - read_aniframe
   - read_animalta
