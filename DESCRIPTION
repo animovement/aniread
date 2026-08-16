@@ -1,7 +1,7 @@
 Package: aniread
 Type: Package
 Title: An R package for reading and writing movement data
-Version: 0.5.1
+Version: 0.5.1.9000
 Authors@R: 
     person(
       "Mikkel", 
@@ -43,4 +43,4 @@ Config/testthat/edition: 3
 Config/Needs/website: animovement/animovementtemplate
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

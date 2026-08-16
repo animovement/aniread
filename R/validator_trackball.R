@@ -65,8 +65,7 @@ ensure_identical_suffix <- function(paths) {
 #' @inheritParams validate_trackball
 #' @keywords internal
 ensure_header_match <- function(path, col_time) {
-  does_file_have_expected_headers(path)
-  if (is.character(col_time)) {
+  if (is.character(col_time) && !detect_opticalflow_layout(path)$has_header) {
     cli::cli_abort(
       "`col_time` is a string ({col_time}), but the file doesn't have named headers. Either use a column number or provide a file with named headers."
     )

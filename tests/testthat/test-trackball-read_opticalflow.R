@@ -1,11 +1,12 @@
 # Tests for read_opticalflow
 #
 # - Reads CSV with expected headers
-# - Reads CSV without headers (skips first 2 rows)
+# - Reads CSV without headers, detecting the leading junk by field count
 # - Renames columns based on col_dx, col_dy, col_time
-# - Time conversion: POSIXt input zeros from start
-# - Time conversion: character datetime input zeros from start
-# - Time conversion: numeric seconds input zeros from start
+# - Time is returned on an absolute scale, not zeroed to each file's own start
+# - Time conversion: POSIXt input -> epoch seconds
+# - Time conversion: character datetime input -> epoch seconds
+# - Time conversion: numeric seconds input kept as-is
 # - Time conversion: numeric microseconds auto-detected and converted
 
 test_that("read_opticalflow reads CSV with expected headers", {
@@ -29,7 +30,7 @@ test_that("read_opticalflow reads CSV with expected headers", {
   expect_equal(result$dy, c(4, 5, 6))
 })
 
-test_that("read_opticalflow reads CSV without headers (skips first 2 rows)", {
+test_that("read_opticalflow reads CSV without headers", {
   path <- withr::local_tempfile(fileext = ".csv")
   lines <- c(
     "Some metadata line",
@@ -75,7 +76,7 @@ test_that("read_opticalflow renames columns based on parameters", {
   expect_equal(result$dx, c(1, 2, 3))
 })
 
-test_that("read_opticalflow converts POSIXt time and zeros from start", {
+test_that("read_opticalflow converts POSIXt time to absolute epoch seconds", {
   path <- withr::local_tempfile(fileext = ".csv")
   times <- as.POSIXct(c(
     "2023-09-14 14:37:55",
@@ -109,12 +110,19 @@ test_that("read_opticalflow converts POSIXt time and zeros from start", {
   )
 
   expect_type(result$time, "double")
-  expect_equal(result$time[1], 0)
-  expect_equal(result$time[2], 1)
-  expect_equal(result$time[3], 2)
+  # Absolute, not zeroed: the caller picks the origin.
+  expect_equal(
+    result$time[1],
+    as.numeric(as.POSIXct("2023-09-14 14:37:55", tz = "UTC"))
+  )
+  expect_equal(diff(result$time), c(1, 1))
+  expect_equal(
+    attr(result, "start_datetime"),
+    as.POSIXct("2023-09-14 14:37:55", tz = "UTC")
+  )
 })
 
-test_that("read_opticalflow converts character datetime and zeros from start", {
+test_that("read_opticalflow converts character datetime to absolute epoch seconds", {
   path <- withr::local_tempfile(fileext = ".csv")
   # Quote the times to ensure they're read as character
   lines <- c(
@@ -133,11 +141,14 @@ test_that("read_opticalflow converts character datetime and zeros from start", {
   )
 
   expect_type(result$time, "double")
-  expect_equal(result$time[1], 0)
+  expect_equal(
+    result$time[1],
+    as.numeric(as.POSIXct("2023-09-14 14:37:55", tz = "UTC"))
+  )
   expect_equal(diff(result$time), c(1, 1))
 })
 
-test_that("read_opticalflow handles numeric seconds and zeros from start", {
+test_that("read_opticalflow keeps numeric seconds on their absolute scale", {
   path <- withr::local_tempfile(fileext = ".csv")
   write.csv(
     data.frame(time = c(100.0, 100.5, 101.0), x = c(1, 2, 3), y = c(4, 5, 6)),
@@ -152,9 +163,8 @@ test_that("read_opticalflow handles numeric seconds and zeros from start", {
     col_dy = "y"
   )
 
-  expect_equal(result$time[1], 0)
-  expect_equal(result$time[2], 0.5)
-  expect_equal(result$time[3], 1.0)
+  expect_equal(result$time, c(100.0, 100.5, 101.0))
+  expect_true(is.na(attr(result, "start_datetime")))
 })
 
 test_that("read_opticalflow auto-detects microseconds and converts to seconds", {
@@ -177,10 +187,10 @@ test_that("read_opticalflow auto-detects microseconds and converts to seconds", 
     col_dy = "y"
   )
 
-  expect_equal(result$time[1], 0)
+  expect_equal(result$time[1], 1684510755 / 1e6)
   # Differences should be in seconds (~0.0166)
   expected_diff <- (1684527395 - 1684510755) / 1e6
-  expect_equal(result$time[2], expected_diff)
+  expect_equal(diff(result$time)[1], expected_diff)
 })
 
 test_that("read_opticalflow keeps numeric seconds as-is when not microseconds", {

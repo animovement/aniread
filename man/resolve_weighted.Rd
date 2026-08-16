@@ -9,7 +9,7 @@ resolve_weighted(values_list, areas_list, .warn_mismatch = TRUE)
 \description{
 Vectorised via \code{rowsum}. Rows whose \code{values_list} and \code{areas_list}
 have different segment counts trigger a single summarised warning and
-fall back to the arithmetic mean of the value vector — protecting
+fall back to the arithmetic mean of the value vector - protecting
 callers from the silent recycling that would otherwise occur in
 \code{v * a}. Falls back to the arithmetic mean when areas are absent or
 sum to 0.

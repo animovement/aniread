@@ -12,6 +12,9 @@ join_trackball_files(data_list, sampling_rate)
 \item{sampling_rate}{Sampling rate}
 }
 \description{
-Join data files with non-matching time stamps
+Bin both sensors onto a shared time grid. Expects time on the absolute scale
+returned by \code{\link[=read_opticalflow]{read_opticalflow()}} - the offset between the two files is what
+the shared window is derived from, so pre-zeroed input would collapse every
+recording onto the same origin.
 }
 \keyword{internal}

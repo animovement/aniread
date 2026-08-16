@@ -32,7 +32,7 @@ read_movement <- function(path, video_height = NULL) {
 
   # Temporary unit workaround until https://github.com/animovement/aniframe/issues/45 is solved
   if (metadata$time_unit == "seconds") {
-    metadata$time_unit = "s"
+    metadata$time_unit <- "s"
   }
 
   #

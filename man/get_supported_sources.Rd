@@ -12,7 +12,7 @@ the columns:
 \describe{
 \item{\code{source}}{Character. The source software / format name.}
 \item{\code{reader}}{Character. The \code{aniread} function that reads it.}
-\item{\code{suffix}}{List column of character vectors — the file
+\item{\code{suffix}}{List column of character vectors - the file
 suffix(es) the reader accepts.}
 }
 }
@@ -20,7 +20,7 @@ suffix(es) the reader accepts.}
 Returns the tracking / event software that \code{aniread} supports, paired
 with the reader function for each and the file suffix(es) it accepts.
 This lets downstream packages discover the supported formats
-programmatically instead of hard-coding the list — mirroring
+programmatically instead of hard-coding the list - mirroring
 \code{movement}'s \code{get_supported_source_software()}.
 }
 \details{
