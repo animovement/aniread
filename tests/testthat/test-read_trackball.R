@@ -13,6 +13,17 @@
 # - of_free produces correct square path
 # - of_fixed produces correct square path
 
+# The fixtures below use a plain numeric time column. `read_trackball()` cannot
+# verify that such a column is a clock the two sensors share, so two-sensor
+# reads warn. That warning is asserted in its own test; muffle it here so these
+# tests stay focused on what they actually check.
+read_trackball_quiet <- function(...) {
+  withCallingHandlers(
+    read_trackball(...),
+    aniread_sensor_local_clock = function(w) invokeRestart("muffleWarning")
+  )
+}
+
 test_that("read_trackball works with of_free setup and two sensors", {
   path1 <- withr::local_tempfile(fileext = ".csv")
   path2 <- withr::local_tempfile(fileext = ".csv")
@@ -28,7 +39,7 @@ test_that("read_trackball works with of_free setup and two sensors", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 10
@@ -53,7 +64,7 @@ test_that("read_trackball works with of_fixed setup and two sensors", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_fixed",
     sampling_rate = 10,
@@ -73,7 +84,7 @@ test_that("read_trackball works with of_fixed setup and one sensor", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = path,
     setup = "of_fixed",
     sampling_rate = 10,
@@ -99,7 +110,7 @@ test_that("read_trackball output has keypoint column set to centroid", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 10
@@ -123,7 +134,7 @@ test_that("read_trackball sets metadata correctly", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 60
@@ -149,7 +160,7 @@ test_that("read_trackball converts time_group to seconds using sampling_rate", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 10
@@ -175,7 +186,7 @@ test_that("read_trackball respects custom column names", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 10,
@@ -238,7 +249,7 @@ test_that("read_trackball of_free produces correct square path", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_free",
     sampling_rate = 1
@@ -299,7 +310,7 @@ test_that("read_trackball of_fixed produces correct square path", {
     row.names = FALSE
   )
 
-  result <- read_trackball(
+  result <- read_trackball_quiet(
     paths = c(path1, path2),
     setup = "of_fixed",
     sampling_rate = 1,

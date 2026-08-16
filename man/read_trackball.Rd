@@ -24,7 +24,14 @@ read_trackball(
 
 \item{sampling_rate}{Sampling rate tells the function how long time it should integrate over. A sampling rate of 60(Hz) will mean windows of 1/60 sec are used to integrate over.}
 
-\item{col_time}{Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).}
+\item{col_time}{Which column contains the information about time. Can be
+specified either by the column number (numeric) or the name of the column if
+it has one (character). Should either be a datetime (POSIXt) or seconds
+(numeric). \strong{With two sensors, this must be a clock the two sensors share.}
+In a Bonsai capture that is the PC datetime (column 4), not the per-board
+device counter (column 3), whose origin is sensor-local and therefore
+cannot be used to cross-reference the two files. A warning is emitted if
+\code{col_time} resolves to a non-datetime column with two sensors.}
 
 \item{col_dx}{Column name for x-axis values}
 
@@ -36,11 +43,33 @@ read_trackball(
 
 \item{dots_per_cm}{For \code{of_fixed} setup: sensor dots-per-cm. Use with \code{ball_diameter} as an alternative to \code{counts_per_rotation}.}
 
-\item{quiet}{If \code{TRUE} (default), suppresses most warning messages.}
+\item{quiet}{If \code{TRUE} (default), suppresses informational messages such as
+the count of malformed rows dropped from each file.}
 }
 \value{
 a movement dataframe
 }
 \description{
 Read trackball data from a variety of setups and configurations.
+}
+\details{
+Raw Bonsai optical-flow captures are headerless CSV files, optionally preceded
+by a single line of serial-port junk, with the layout
+\verb{dx, dy, device_clock_us, pc_datetime, interval_s}. Address their columns by
+number (\code{col_dx = 1}, \code{col_dy = 2}, \code{col_time = 4}).
+
+Such captures are not gap-free: on this rig the COM port emits no row while
+the ball is still, so multi-second gaps are normal. Readings are integrated
+into \code{1 / sampling_rate} windows, and windows containing no reading are
+filled with zero motion so the returned time grid is regular regardless of
+the gaps in the input. Note that this treats a missing sample as \emph{no motion},
+which is a property of this logger rather than of optical flow in general; a
+sensor that drops samples for other reasons would need its gaps treated as
+missing data instead.
+
+With two sensors the output covers only the intersection of the two
+recordings - readings from before the second sensor started, or after the
+first stopped, are discarded rather than zero-filled. \code{time = 0} is the first
+shared sample, and the \code{start_datetime} metadata is the wall-clock instant of
+that sample.
 }

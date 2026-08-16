@@ -9,15 +9,35 @@ read_opticalflow(path, col_time, col_dx, col_dy, quiet = TRUE)
 \arguments{
 \item{path}{Path to the file.}
 
-\item{col_time}{Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).}
+\item{col_time}{Which column contains the information about time. Can be
+specified either by the column number (numeric) or the name of the column if
+it has one (character). Should either be a datetime (POSIXt) or seconds
+(numeric). \strong{With two sensors, this must be a clock the two sensors share.}
+In a Bonsai capture that is the PC datetime (column 4), not the per-board
+device counter (column 3), whose origin is sensor-local and therefore
+cannot be used to cross-reference the two files. A warning is emitted if
+\code{col_time} resolves to a non-datetime column with two sensors.}
 
 \item{col_dx}{Column name for x-axis values}
 
 \item{col_dy}{Column name for y-axis values}
 
-\item{quiet}{If \code{TRUE} (default), suppresses most warning messages.}
+\item{quiet}{If \code{TRUE} (default), suppresses informational messages such as
+the count of malformed rows dropped from each file.}
+}
+\value{
+A data frame with columns \code{time}, \code{dx} and \code{dy}, carrying a
+\code{start_datetime} attribute. The attribute is \code{NA} when the time column was
+not a real clock, which is also how the caller detects a sensor-local
+device counter.
 }
 \description{
-Read optical flow sensor data.
+Read a single optical flow sensor file.
+
+Time is returned on an \strong{absolute} scale (epoch seconds when the time column
+is a datetime, otherwise the raw device clock scaled to seconds). Choosing an
+origin is left to the caller: with two sensors, the offset between the files
+is the only thing \code{\link[=join_trackball_files]{join_trackball_files()}} has to align them on, so zeroing
+each file to its own start here would destroy it.
 }
 \keyword{internal}
