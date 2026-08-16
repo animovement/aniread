@@ -380,3 +380,58 @@ test_that("a character col_time on a headerless file errors informatively", {
     "doesn't have named headers"
   )
 })
+
+
+# ---- Defensive paths --------------------------------------------------------
+
+test_that("a file with nothing usable in it errors clearly", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  # Right number of fields, but the timestamp is missing on every row, so
+  # every row is dropped. (Truncating every row instead would not work: the
+  # short width would simply become the modal one.)
+  writeLines(rep("0,1,2718587701,,0.0166", 5), path)
+
+  expect_error(
+    read_opticalflow(path, col_time = 4, col_dx = 1, col_dy = 2),
+    "No usable rows left"
+  )
+})
+
+test_that("timestamps vroom leaves as character are parsed", {
+  # vroom parses ISO8601 to POSIXct itself; a non-ISO but still
+  # as.POSIXct()-readable layout is what reaches the character branch.
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "time,x,y",
+      "2023/09/14 14:37:55,1,4",
+      "2023/09/14 14:37:56,2,5",
+      "2023/09/14 14:37:57,3,6"
+    ),
+    path
+  )
+
+  result <- read_opticalflow(path, col_time = "time", col_dx = "x", col_dy = "y")
+
+  expect_type(result$time, "double")
+  expect_equal(diff(result$time), c(1, 1))
+  expect_equal(
+    as.numeric(attr(result, "start_datetime")),
+    as.numeric(as.POSIXct("2023-09-14 14:37:55"))
+  )
+})
+
+test_that("is_header_row treats a row of empty fields as data", {
+  expect_false(is_header_row(c("", "  ", "")))
+  expect_false(is_header_row(character(0)))
+  expect_true(is_header_row(c("x", "y", "time")))
+})
+
+test_that("fill_missing_time_groups errors when no finite times are present", {
+  empty <- dplyr::tibble(time_group = numeric(0), x_1 = numeric(0))
+
+  expect_error(
+    suppressWarnings(fill_missing_time_groups(empty, zero_cols = "x_1")),
+    "Could not determine the time range"
+  )
+})

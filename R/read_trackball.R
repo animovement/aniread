@@ -409,7 +409,7 @@ fill_missing_time_groups <- function(data, zero_cols) {
   if (!is.finite(min_t) || !is.finite(max_t)) {
     cli::cli_abort(
       "Could not determine the time range; no finite time values were found."
-    ) # nocov
+    )
   }
 
   # A stalled clock, or a time column in the wrong unit, can imply a grid far
