@@ -25,5 +25,7 @@ export(read_trex)
 export(validate_trackball)
 export(write_aniframe)
 export(write_intracktive)
-importFrom(rlang,":=")
-importFrom(rlang,.data)
+importFrom(rlang,
+  ":=",
+  .data
+)
