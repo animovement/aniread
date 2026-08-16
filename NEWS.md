@@ -18,6 +18,8 @@
 
 ## Bug fixes
 
+* `detect_source()` recognises a Bonsai optical-flow capture whether or not it carries a header row. It previously gave up as soon as it saw one, so a headed capture — which `read_trackball()` reads perfectly well, returning identical data to its headerless twin — was detected as nothing and could not be opened through `read_dataset()`. Recognition now keys off the first data row in both cases, and additionally requires the four non-datetime fields to be numeric, which makes the detector stricter rather than looser.
+
 * `read_trackball()` can now read real two-sensor Bonsai optical-flow captures (#85). Previously it either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. In detail:
 
   * **Sensor alignment.** `read_opticalflow()` zeroed each file to its own start time, which destroyed the offset between the two sensors — the only thing `join_trackball_files()` can align them on. Its shared-window logic could therefore never fire, and a sensor that started 4.2 s late was silently shifted to t = 0. `read_opticalflow()` now returns time on an absolute scale and the caller chooses the origin.

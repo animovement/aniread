@@ -275,23 +275,31 @@ detect_fictrac_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_trackball_file <- function(path) {
-  # Headerless Bonsai optical-flow capture: dx, dy, device clock, PC datetime,
-  # inter-sample interval. Reuses the layout detection the reader itself uses.
+  # Bonsai optical-flow capture: dx, dy, device clock, PC datetime,
+  # inter-sample interval. Reuses the layout detection the reader itself uses,
+  # so a capture is recognised whether or not it carries a header row -
+  # matching the reader, which returns the same data either way.
   layout <- detect_opticalflow_layout(path)
-  if (isTRUE(layout$has_header)) {
+  data_row <- layout$skip + if (isTRUE(layout$has_header)) 2L else 1L
+
+  lines <- peek_lines(path, n = data_row)
+  if (length(lines) < data_row) {
     return(FALSE)
   }
-  lines <- peek_lines(path, n = layout$skip + 1)
-  if (length(lines) <= layout$skip) {
+
+  fields <- trimws(strsplit(lines[[data_row]], ",", fixed = TRUE)[[1]])
+  if (length(fields) != 5) {
     return(FALSE)
   }
-  fields <- trimws(strsplit(lines[[layout$skip + 1]], ",", fixed = TRUE)[[1]])
-  length(fields) == 5 &&
-    !is.na(suppressWarnings(as.POSIXct(
-      fields[[4]],
-      format = "%Y-%m-%dT%H:%M:%OS",
-      tz = "UTC"
-    )))
+
+  # Column 4 is the PC datetime; the other four are the two motion counts,
+  # the device clock and the inter-sample interval, all numeric.
+  is_datetime <- !is.na(suppressWarnings(as.POSIXct(
+    fields[[4]],
+    format = "%Y-%m-%dT%H:%M:%OS",
+    tz = "UTC"
+  )))
+  is_datetime && !anyNA(suppressWarnings(as.numeric(fields[-4])))
 }
 
 

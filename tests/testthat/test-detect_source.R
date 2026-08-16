@@ -113,6 +113,14 @@ detection_cases <- list(
     path = fixture("single", "opticalflow_sensor_1.csv")
   ),
   list(
+    source = "trackball_bonsai",
+    path = fixture("single", "named_cols_opticalflow_sensor_1.csv")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("single", "named_cols_opticalflow_sensor_2.csv")
+  ),
+  list(
     source = "deeplabcut/lightningpose",
     path = fixture("deeplabcut", "mouse_single.csv")
   ),
@@ -371,4 +379,44 @@ test_that("no file in the fixture tree matches more than one detector", {
   }
 
   expect_identical(collisions, character(0))
+})
+
+
+test_that("an optical-flow capture is detected with or without a header", {
+  # `single/opticalflow_sensor_1.csv` and its `named_cols_` twin hold
+  # byte-identical data rows; one carries a line of serial junk, the other a
+  # header. read_trackball() returns the same data from either, so detection
+  # has to recognise both - it previously gave up as soon as it saw a header.
+  headerless <- fixture("single", "opticalflow_sensor_1.csv")
+  headered <- fixture("single", "named_cols_opticalflow_sensor_1.csv")
+
+  expect_identical(detect_source(headerless), "trackball_bonsai")
+  expect_identical(detect_source(headered), "trackball_bonsai")
+})
+
+test_that("read_dataset gives the same result either way", {
+  pair <- function(prefix) {
+    fixture("single", paste0(prefix, c("sensor_1.csv", "sensor_2.csv")))
+  }
+  args <- list(
+    setup = "of_free",
+    sampling_rate = 60,
+    col_time = 4,
+    col_dx = 1,
+    col_dy = 2
+  )
+
+  from_headerless <- do.call(
+    read_dataset,
+    c(list(pair("opticalflow_")), args)
+  )
+  from_headered <- do.call(
+    read_dataset,
+    c(list(pair("named_cols_opticalflow_")), args)
+  )
+
+  expect_equal(
+    as.data.frame(from_headerless),
+    as.data.frame(from_headered)
+  )
 })
