@@ -7,6 +7,54 @@
 
 fixture <- function(...) testthat::test_path("data", ...)
 
+# Sources without a committed fixture get a minimal synthetic one, so that
+# every detector is exercised positively rather than only by returning FALSE
+# for other formats' files (#89).
+synthetic_fixture <- function(ext, lines = NULL, bytes = NULL) {
+  path <- tempfile(fileext = paste0(".", ext))
+  if (!is.null(bytes)) {
+    con <- file(path, "wb")
+    on.exit(close(con), add = TRUE)
+    writeBin(bytes, con)
+  } else {
+    writeLines(lines, path)
+  }
+  path
+}
+
+synthetic_anipose <- synthetic_fixture(
+  "csv",
+  c(
+    "fnum,snout_x,snout_y,snout_z,snout_error,snout_ncams,snout_score",
+    "0,1.0,2.0,3.0,0.1,3,0.99"
+  )
+)
+synthetic_fictrac <- synthetic_fixture(
+  "dat",
+  c(
+    paste(seq_len(23), collapse = ","),
+    paste(seq_len(23) + 1, collapse = ",")
+  )
+)
+synthetic_trackmate <- synthetic_fixture(
+  "xml",
+  paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate version="7.11.1"><Model spatialunits="pixel">',
+    '<AllSpots nspots="0"/></Model></TrackMate>'
+  )
+)
+# A C3D file opens with the parameter-block pointer then the format key 0x50.
+synthetic_c3d <- synthetic_fixture(
+  "c3d",
+  bytes = as.raw(c(0x02, 0x50, rep(0x00, 30)))
+)
+# Parquet files open and close with the "PAR1" magic number.
+synthetic_parquet <- synthetic_fixture(
+  "parquet",
+  bytes = c(charToRaw("PAR1"), as.raw(rep(0x00, 8)), charToRaw("PAR1"))
+)
+
 # Fixtures paired with the source they must detect as.
 detection_cases <- list(
   list(
@@ -83,7 +131,12 @@ detection_cases <- list(
   list(
     source = "deeplabcut/lightningpose",
     path = fixture("lightningpose", "mouse_twoview.csv")
-  )
+  ),
+  list(source = "anipose", path = synthetic_anipose),
+  list(source = "fictrac", path = synthetic_fictrac),
+  list(source = "trackmate", path = synthetic_trackmate),
+  list(source = "c3d", path = synthetic_c3d),
+  list(source = "aniframe", path = synthetic_parquet)
 )
 
 test_that("every fixture detects as its own source", {
@@ -222,4 +275,48 @@ test_that("detect_source reports sources skipped for a missing package", {
   writeLines("not really hdf5", path)
 
   expect_error(detect_source(path), "not installed")
+})
+
+
+# ---- Edge cases -------------------------------------------------------------
+
+test_that("detect_source errors when more than one source matches", {
+  # No two real detectors match the same file except the expected
+  # DeepLabCut/LightningPose pair, so the general case is reached with a
+  # registry of two detectors that always match.
+  local_mocked_bindings(
+    source_registry = function() {
+      list(
+        list(
+          source = "alpha",
+          reader = "read_trex",
+          suffix = "csv",
+          detector = function(path) TRUE,
+          requires = NULL
+        ),
+        list(
+          source = "beta",
+          reader = "read_octron",
+          suffix = "csv",
+          detector = function(path) TRUE,
+          requires = NULL
+        )
+      )
+    }
+  )
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("a,b", "1,2"), path)
+
+  expect_error(detect_source(path), "matches more than one source")
+})
+
+test_that("the peek helpers cope with an empty file", {
+  # validate_files() rejects empty files before any detector runs, but the
+  # helpers are called directly by the cross-product test above.
+  path <- withr::local_tempfile(fileext = ".csv")
+  file.create(path)
+
+  expect_identical(peek_header(path), character(0))
+  expect_identical(peek_lines(path), character(0))
+  expect_false(detect_trackball_file(path))
 })

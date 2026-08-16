@@ -1,4 +1,4 @@
-# aniread 0.5.1.9000 (development version)
+# aniread 0.5.1.9001 (development version)
 
 ## New features
 
