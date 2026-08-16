@@ -1,8 +1,75 @@
 # Changelog
 
-## aniread 0.5.1.9000 (development version)
+## aniread 0.5.1.9001 (development version)
+
+### New features
+
+- [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+  reads any supported format through a single entry point, working out
+  which source software wrote the file rather than requiring you to know
+  in advance ([\#73](https://github.com/animovement/aniread/issues/73)).
+  `read_dataset("mouse.h5")` is enough; pass `source` to name the format
+  explicitly, and `...` to reach a reader’s own arguments
+  (`read_dataset(paths, sampling_rate = 60)` for a trackball pair). The
+  object returned is exactly what the underlying reader returns — an
+  `aniframe`, or an `anievent` for
+  [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md).
+
+- [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  reports which source software wrote a file without reading it.
+  Candidates are narrowed by file suffix, then each candidate’s detector
+  inspects the contents — a header block, a set of HDF5 datasets, or a
+  magic number — and exactly one match is required. This matters because
+  twelve of the supported sources read `.csv`, so the suffix decides
+  almost nothing on its own.
+
+  DeepLabCut and LightningPose export structurally identical CSV files.
+  Rather than guess,
+  [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  returns the combined name `"deeplabcut/lightningpose"`, and
+  [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+  reads such a file with
+  [`read_deeplabcut()`](http://animovement.dev/aniread/reference/read_deeplabcut.md)
+  — the parse is the same either way — while recording the combined name
+  as its source, so the ambiguity is preserved rather than silently
+  resolved. This follows `movement`’s handling of the same collision.
+
+  Detectors for HDF5, Parquet, XML and C3D files need an optional
+  package (`rhdf5`, `arrow`, `xml2`, `c3dr`). When one is missing those
+  sources are skipped, and if nothing is detected the error names both
+  the skipped sources and the packages that would have been consulted.
+
+### Breaking changes
+
+- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+  no longer lists `csv` as a SLEAP suffix.
+  [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md)
+  aborts on CSV input with “We hope to support SLEAP CSV import soon!”,
+  so the registry was advertising a format the reader cannot read;
+  auto-detection would have routed such files straight into that error.
+  Restored when the reader gains support
+  ([\#87](https://github.com/animovement/aniread/issues/87)).
+
+- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+  renames the `trackball` source to `trackball_bonsai`, matching the
+  `source` metadata that
+  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  actually stamps. The two names previously disagreed, which becomes
+  visible now that `source` is an argument matched against the registry.
 
 ### Bug fixes
+
+- [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  recognises a Bonsai optical-flow capture whether or not it carries a
+  header row. It previously gave up as soon as it saw one, so a headed
+  capture — which
+  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  reads perfectly well, returning identical data to its headerless twin
+  — was detected as nothing and could not be opened through
+  [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md).
+  Recognition now keys off the first data row in both cases, and
+  additionally requires the four non-datetime fields to be numeric,
+  which makes the detector stricter rather than looser.
 
 - [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
   can now read real two-sensor Bonsai optical-flow captures

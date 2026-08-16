@@ -1,8 +1,23 @@
 # Package index
 
+## Reading any file
+
+One entry point for every supported format.
+[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+works out which source software wrote a file and reads it, so you do not
+need to know which reader it needs beforehand.
+
+- [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+  : Read a movement or event dataset from any supported format
+- [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  : Detect which source software wrote a file
+
 ## Reader functions
 
-These functions are the links between R and your movement data.
+The format-specific readers
+[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+dispatches to. Call them directly when you already know the source, or
+for their format-specific arguments.
 
 - [`read_aniframe()`](http://animovement.dev/aniread/reference/read_aniframe.md)
   : Read an aniframe from a Parquet file

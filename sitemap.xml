@@ -11,6 +11,7 @@
 <url><loc>http://animovement.dev/aniread/reference/complete_octron_frames.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/detect_octron_tuple_cols.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/detect_opticalflow_layout.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/detect_source.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/detect_time_divisor.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/does_file_have_expected_headers.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/drop_uninformative_boris_columns.html</loc></url>
@@ -26,6 +27,7 @@
 <url><loc>http://animovement.dev/aniread/reference/fill_missing_time_groups.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/get_sample_data.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/get_supported_sources.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/has_deeplabcut_csv_header.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/index.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/is_empty_file.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/is_file_readable.html</loc></url>
@@ -33,6 +35,10 @@
 <url><loc>http://animovement.dev/aniread/reference/join_trackball_files.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_dlc_pickle.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_octron_column.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/peek_bytes.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/peek_h5_names.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/peek_header.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/peek_lines.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_aniframe.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_animalta.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_anipose.html</loc></url>
@@ -41,6 +47,7 @@
 <url><loc>http://animovement.dev/aniread/reference/read_boris_tabular.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_c3d.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_custom.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/read_dataset.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_deeplabcut.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_deeplabcut_csv.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_deeplabcut_csv_multi.html</loc></url>
@@ -61,11 +68,16 @@
 <url><loc>http://animovement.dev/aniread/reference/read_trex.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/read_trex_csv.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/reflect_to_bottom_left.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/registry_entry.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/registry_requires.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/resolve_area_sum.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/resolve_column.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/resolve_largest.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/resolve_octron_segments.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/resolve_weighted.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/run_detector.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/source_detectors.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/source_registry.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_deeplabcut_csv.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_files.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/validate_trackball.html</loc></url>

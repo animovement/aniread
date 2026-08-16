@@ -15,7 +15,7 @@ movement's get_supported_source_software()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,40 +94,43 @@ matching the convention used throughout <code>aniread</code> (see the
 <code>expected_suffix</code> argument of the internal file validator). The
 generic <code><a href="read_custom.html">read_custom()</a></code> reader is intentionally omitted because it has
 no fixed source software or file suffix.</p>
+<p>The <code>source</code> names listed here are exactly those accepted by the
+<code>source</code> argument of <code><a href="read_dataset.html">read_dataset()</a></code>, and returned by
+<code><a href="detect_source.html">detect_source()</a></code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">get_supported_sources</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 18 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    source        reader             suffix   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> aniframe      read_aniframe      <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> animalta      read_animalta      <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> anipose       read_anipose       <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> bonsai        read_bonsai        <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> boris         read_boris         <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> c3d           read_c3d           <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> deeplabcut    read_deeplabcut    <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> fasttrack     read_fasttrack     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> fictrac       read_fictrac       <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> freemocap     read_freemocap     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> idtrackerai   read_idtracker     <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> lightningpose read_lightningpose <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> movement      read_movement      <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> octron        read_octron        <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> sleap         read_sleap         <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> trackball     read_trackball     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> trackmate     read_trackmate     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> trex          read_trex          <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    source           reader             suffix   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> aniframe         read_aniframe      <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> animalta         read_animalta      <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> anipose          read_anipose       <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> bonsai           read_bonsai        <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> boris            read_boris         <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> c3d              read_c3d           <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> deeplabcut       read_deeplabcut    <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> fasttrack        read_fasttrack     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> fictrac          read_fictrac       <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> freemocap        read_freemocap     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> idtrackerai      read_idtracker     <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> lightningpose    read_lightningpose <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> movement         read_movement      <span style="color: #949494;">&lt;chr [2]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> octron           read_octron        <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> sleap            read_sleap         <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> trackball_bonsai read_trackball     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> trackmate        read_trackmate     <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> trex             read_trex          <span style="color: #949494;">&lt;chr [1]&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># All source names:</span></span></span>
 <span class="r-in"><span><span class="fu">get_supported_sources</span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">source</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "aniframe"      "animalta"      "anipose"       "bonsai"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "boris"         "c3d"           "deeplabcut"    "fasttrack"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "fictrac"       "freemocap"     "idtrackerai"   "lightningpose"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "movement"      "octron"        "sleap"         "trackball"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "trackmate"     "trex"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "aniframe"         "animalta"         "anipose"          "bonsai"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "boris"            "c3d"              "deeplabcut"       "fasttrack"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "fictrac"          "freemocap"        "idtrackerai"      "lightningpose"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "movement"         "octron"           "sleap"            "trackball_bonsai"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "trackmate"        "trex"            </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Which sources read HDF5 (`.h5`) files?</span></span></span>
 <span class="r-in"><span><span class="va">supported</span> <span class="op">&lt;-</span> <span class="fu">get_supported_sources</span><span class="op">(</span><span class="op">)</span></span></span>
