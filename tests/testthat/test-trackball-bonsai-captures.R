@@ -38,10 +38,16 @@ make_sensor <- function(
     "%Y-%m-%dT%H:%M:%OS7+00:00"
   )
   lines <- sprintf("%d,%d,%.0f,%s,0.0166", dx, dy, us, dt)
-  if (dup > 1) lines <- rep(lines, each = dup)
+  if (dup > 1) {
+    lines <- rep(lines, each = dup)
+  }
   # Serial capture occasionally drops a field mid-line.
-  if (!is.na(badrow)) lines[badrow] <- sub("^[-0-9]+,", "", lines[badrow])
-  if (junk) lines <- c("!b?b??????????j", lines)
+  if (!is.na(badrow)) {
+    lines[badrow] <- sub("^[-0-9]+,", "", lines[badrow])
+  }
+  if (junk) {
+    lines <- c("!b?b??????????j", lines)
+  }
   writeLines(lines, path)
   path
 }
@@ -162,11 +168,15 @@ test_that("sensor 2's motion lands in the correct bins", {
   # Sensor 1 runs 3 s from t0 with dy = 0; sensor 2 starts 1 s later with dy = 1.
   s1 <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9, n = 180, dy = 0
+    t0 = 1e9,
+    n = 180,
+    dy = 0
   )
   s2 <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9 + 1, n = 180, dy = 1
+    t0 = 1e9 + 1,
+    n = 180,
+    dy = 1
   )
 
   result <- read_bonsai_trackball(
@@ -206,7 +216,9 @@ test_that("start_datetime is the wall-clock instant of t = 0", {
 test_that("non-overlapping recordings error rather than failing downstream", {
   s1 <- make_sensor(withr::local_tempfile(fileext = ".csv"), t0 = 1e9, n = 60)
   s2 <- make_sensor(
-    withr::local_tempfile(fileext = ".csv"), t0 = 1e9 + 600, n = 60
+    withr::local_tempfile(fileext = ".csv"),
+    t0 = 1e9 + 600,
+    n = 60
   )
 
   expect_error(
@@ -250,11 +262,17 @@ test_that("a datetime col_time does not warn", {
 test_that("gaps are back-filled to a regular grid for two sensors", {
   s1 <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9, n = 120, gap_after = 60, gap = 2
+    t0 = 1e9,
+    n = 120,
+    gap_after = 60,
+    gap = 2
   )
   s2 <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9, n = 120, gap_after = 60, gap = 2
+    t0 = 1e9,
+    n = 120,
+    gap_after = 60,
+    gap = 2
   )
 
   result <- read_bonsai_trackball(
@@ -269,7 +287,10 @@ test_that("gaps are back-filled to a regular grid for two sensors", {
 test_that("gaps are back-filled to a regular grid for one sensor", {
   s1 <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9, n = 120, gap_after = 60, gap = 2
+    t0 = 1e9,
+    n = 120,
+    gap_after = 60,
+    gap = 2
   )
 
   result <- read_bonsai_trackball(
@@ -286,16 +307,23 @@ test_that("one- and two-sensor paths agree on the time grid", {
   # The same gappy file read both ways must produce the same grid.
   path <- make_sensor(
     withr::local_tempfile(fileext = ".csv"),
-    t0 = 1e9, n = 120, gap_after = 60, gap = 2
+    t0 = 1e9,
+    n = 120,
+    gap_after = 60,
+    gap = 2
   )
 
   one <- read_bonsai_trackball(
     path,
-    setup = "of_fixed", sampling_rate = 60, counts_per_rotation = 1000
+    setup = "of_fixed",
+    sampling_rate = 60,
+    counts_per_rotation = 1000
   )
   two <- read_bonsai_trackball(
     c(path, path),
-    setup = "of_fixed", sampling_rate = 60, counts_per_rotation = 1000
+    setup = "of_fixed",
+    sampling_rate = 60,
+    counts_per_rotation = 1000
   )
 
   expect_equal(one$time, two$time)

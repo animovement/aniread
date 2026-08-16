@@ -81,15 +81,18 @@ read_trackball <- function(
     # files - warn rather than silently return a misaligned trajectory.
     has_clock <- !vapply(start_datetimes, \(x) all(is.na(x)), logical(1))
     if (!all(has_clock)) {
-      cli::cli_warn(c(
-        "{.arg col_time} does not resolve to a datetime column.",
-        "!" = "With two sensors, {.arg col_time} must be a clock both sensors
+      cli::cli_warn(
+        c(
+          "{.arg col_time} does not resolve to a datetime column.",
+          "!" = "With two sensors, {.arg col_time} must be a clock both sensors
                share; a per-board device counter has a sensor-local origin and
                cannot align the two files.",
-        "i" = "For a Bonsai capture, use the PC datetime column
+          "i" = "For a Bonsai capture, use the PC datetime column
                ({.code col_time = 4}) rather than the device counter
                ({.code col_time = 3})."
-      ), class = "aniread_sensor_local_clock")
+        ),
+        class = "aniread_sensor_local_clock"
+      )
     }
     # Shared start is the later of the two (max of mins)
     if (all(has_clock)) {
@@ -423,7 +426,9 @@ fill_missing_time_groups <- function(data, zero_cols) {
   }
 
   full_t_seq <- seq(from = min_t, to = max_t, by = 1)
-  missing_times <- dplyr::tibble(time_group = setdiff(full_t_seq, data$time_group))
+  missing_times <- dplyr::tibble(
+    time_group = setdiff(full_t_seq, data$time_group)
+  )
   for (col in zero_cols) {
     missing_times[[col]] <- 0
   }

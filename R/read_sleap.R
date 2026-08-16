@@ -55,7 +55,7 @@ read_sleap_h5 <- function(path) {
 
   data <- data.frame()
   for (i in 1:n_individuals) {
-    point_scores = rhdf5::h5read(path, "point_scores")[,, i] |>
+    point_scores <- rhdf5::h5read(path, "point_scores")[,, i] |>
       dplyr::as_tibble(.name_repair = "unique") |>
       suppressMessages() |>
       dplyr::rename_with(~node_names) |>
@@ -77,7 +77,7 @@ read_sleap_h5 <- function(path) {
         values_to = "x"
       )
 
-    y_coords = rhdf5::h5read(path, "tracks")[,, 2, i] |>
+    y_coords <- rhdf5::h5read(path, "tracks")[,, 2, i] |>
       dplyr::as_tibble(.name_repair = "unique") |>
       suppressMessages() |>
       dplyr::rename_with(~node_names) |>
