@@ -411,7 +411,12 @@ test_that("timestamps vroom leaves as character are parsed", {
     path
   )
 
-  result <- read_opticalflow(path, col_time = "time", col_dx = "x", col_dy = "y")
+  result <- read_opticalflow(
+    path,
+    col_time = "time",
+    col_dx = "x",
+    col_dy = "y"
+  )
 
   expect_type(result$time, "double")
   expect_equal(diff(result$time), c(1, 1))
