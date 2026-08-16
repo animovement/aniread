@@ -1,0 +1,422 @@
+# Tests for detect_source()
+#
+# The load-bearing test here is the confusion matrix: every fixture against
+# every detector. Twelve sources read .csv, so a detector firing on another
+# source's file is the failure mode that matters, and only the full
+# cross-product catches it.
+
+fixture <- function(...) testthat::test_path("data", ...)
+
+# Sources without a committed fixture get a minimal synthetic one, so that
+# every detector is exercised positively rather than only by returning FALSE
+# for other formats' files (#89).
+synthetic_fixture <- function(ext, lines = NULL, bytes = NULL) {
+  path <- tempfile(fileext = paste0(".", ext))
+  if (!is.null(bytes)) {
+    con <- file(path, "wb")
+    on.exit(close(con), add = TRUE)
+    writeBin(bytes, con)
+  } else {
+    writeLines(lines, path)
+  }
+  path
+}
+
+synthetic_anipose <- synthetic_fixture(
+  "csv",
+  c(
+    "fnum,snout_x,snout_y,snout_z,snout_error,snout_ncams,snout_score",
+    "0,1.0,2.0,3.0,0.1,3,0.99"
+  )
+)
+synthetic_fictrac <- synthetic_fixture(
+  "dat",
+  c(
+    paste(seq_len(23), collapse = ","),
+    paste(seq_len(23) + 1, collapse = ",")
+  )
+)
+synthetic_trackmate <- synthetic_fixture(
+  "xml",
+  paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate version="7.11.1"><Model spatialunits="pixel">',
+    '<AllSpots nspots="0"/></Model></TrackMate>'
+  )
+)
+# A C3D file opens with the parameter-block pointer then the format key 0x50.
+synthetic_c3d <- synthetic_fixture(
+  "c3d",
+  bytes = as.raw(c(0x02, 0x50, rep(0x00, 30)))
+)
+# Parquet files open and close with the "PAR1" magic number.
+synthetic_parquet <- synthetic_fixture(
+  "parquet",
+  bytes = c(charToRaw("PAR1"), as.raw(rep(0x00, 8)), charToRaw("PAR1"))
+)
+
+# Fixtures paired with the source they must detect as.
+detection_cases <- list(
+  list(
+    source = "animalta",
+    path = fixture("animalta", "single_individual_multi_arena.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "variable_individuals_single_arena.csv")
+  ),
+  list(source = "bonsai", path = fixture("bonsai", "LI850.csv")),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "test_export_events_tabular.csv")
+  ),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "test_export_events_tabular.tsv")
+  ),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "flat_dslr_subject.csv")
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "test_export_aggregated_events_test_full_1.tsv"
+    )
+  ),
+  list(
+    source = "freemocap",
+    path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")
+  ),
+  list(source = "octron", path = fixture("octron", "octron_sample.csv")),
+  list(
+    source = "octron",
+    path = fixture("octron", "octron_sample_bytetrack.csv")
+  ),
+  list(source = "trex", path = fixture("trex", "beetle.csv")),
+  list(
+    source = "fasttrack",
+    path = fixture("fasttrack", "fasttrack-tracking.txt")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("multi", "GB_COM6_2021-08-05T15_37_55.csv")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("single", "opticalflow_sensor_1.csv")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("single", "named_cols_opticalflow_sensor_1.csv")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("single", "named_cols_opticalflow_sensor_2.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "mouse_multi.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "wasp_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "mouse_twoview.csv")
+  ),
+  list(source = "anipose", path = synthetic_anipose),
+  list(source = "fictrac", path = synthetic_fictrac),
+  list(source = "trackmate", path = synthetic_trackmate),
+  list(source = "c3d", path = synthetic_c3d),
+  list(source = "aniframe", path = synthetic_parquet)
+)
+
+test_that("every fixture detects as its own source", {
+  for (case in detection_cases) {
+    expect_identical(
+      detect_source(case$path),
+      case$source,
+      info = basename(case$path)
+    )
+  }
+})
+
+test_that("no detector fires on another source's file", {
+  # The cross-product. Each detector is run directly (bypassing the suffix
+  # narrowing in detect_source()) so that a detector matching a file it should
+  # not is caught even when the suffixes differ.
+  registry <- source_registry()
+
+  for (case in detection_cases) {
+    expected <- strsplit(case$source, "/", fixed = TRUE)[[1]]
+    suffix <- tolower(get_file_ext(case$path))
+
+    for (entry in registry) {
+      pkg <- registry_requires(entry, suffix)
+      if (!is.na(pkg) && !rlang::is_installed(pkg)) {
+        next
+      }
+
+      matched <- isTRUE(run_detector(entry$detector, case$path))
+      should_match <- entry$source %in% expected
+
+      expect_equal(
+        matched,
+        should_match,
+        info = paste0(
+          basename(case$path),
+          " vs detector for '",
+          entry$source,
+          "'"
+        )
+      )
+    }
+  }
+})
+
+test_that("files that are not datasets detect as nothing", {
+  # The idtracker.ai probabilities CSV is read via read_idtracker()'s
+  # `path_probabilities`, never on its own, and shares its `seconds` column
+  # with the trajectories file.
+  expect_error(
+    detect_source(fixture(
+      "idtrackerai",
+      "trajectories_csv",
+      "id_probabilities.csv"
+    )),
+    "Cannot detect the source software"
+  )
+  expect_error(
+    detect_source(fixture("bbox", "single-crab.csv")),
+    "Cannot detect the source software"
+  )
+})
+
+test_that("detection declines exactly the BORIS exports the reader declines", {
+  # Headerless BORIS exports cannot be read by read_boris() either - it aborts
+  # with the same "could not detect format" message - so detection refusing
+  # them keeps the two consistent rather than promising a read that would fail.
+  headerless <- fixture(
+    "boris",
+    "aggregated",
+    "test_export_aggregated_events_test_full_2.tsv"
+  )
+
+  expect_error(detect_source(headerless), "Cannot detect the source software")
+  expect_error(read_boris(headerless), "Could not detect BORIS export format")
+})
+
+test_that("detect_source errors on a suffix no source reads", {
+  path <- withr::local_tempfile(fileext = ".sqlite")
+  writeLines("not a dataset", path)
+
+  expect_error(detect_source(path), "No supported source reads")
+})
+
+test_that("detect_source names the candidates when content matches none", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("a,b,c", "1,2,3"), path)
+
+  expect_error(detect_source(path), "match none of the sources")
+})
+
+test_that("detect_source inspects the first of several paths", {
+  path1 <- fixture("multi", "GB_COM6_2021-08-05T15_37_55.csv")
+  path2 <- fixture("multi", "GB_COM7_2021-08-05T15_37_55.csv")
+
+  expect_identical(detect_source(c(path1, path2)), "trackball_bonsai")
+})
+
+test_that("SLEAP HDF5 files are detected", {
+  skip_if_not_installed("rhdf5")
+  expect_identical(
+    detect_source(fixture("sleap", "SLEAP_single-mouse_EPM.analysis.h5")),
+    "sleap"
+  )
+  expect_identical(
+    detect_source(fixture(
+      "sleap",
+      "SLEAP_three-mice_Aeon_mixed-labels.analysis.h5"
+    )),
+    "sleap"
+  )
+})
+
+test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
+  skip_if_not_installed("rhdf5")
+  expect_identical(
+    detect_source(fixture("idtrackerai", "trajectories.h5")),
+    "idtrackerai"
+  )
+})
+
+test_that("a detector that errors counts as a non-match", {
+  expect_false(run_detector(function(path) stop("boom"), "any/path"))
+  expect_false(run_detector(function(path) FALSE, "any/path"))
+  expect_true(run_detector(function(path) TRUE, "any/path"))
+})
+
+test_that("detect_source reports sources skipped for a missing package", {
+  # Pretend rhdf5 is absent so the HDF5 sources are skipped, and check the
+  # error says so rather than claiming the format is unknown.
+  local_mocked_bindings(
+    is_installed = function(pkg, ...) FALSE,
+    .package = "rlang"
+  )
+  path <- withr::local_tempfile(fileext = ".h5")
+  writeLines("not really hdf5", path)
+
+  expect_error(detect_source(path), "not installed")
+})
+
+
+# ---- Edge cases -------------------------------------------------------------
+
+test_that("detect_source errors when more than one source matches", {
+  # No two real detectors match the same file except the expected
+  # DeepLabCut/LightningPose pair, so the general case is reached with a
+  # registry of two detectors that always match.
+  local_mocked_bindings(
+    source_registry = function() {
+      list(
+        list(
+          source = "alpha",
+          reader = "read_trex",
+          suffix = "csv",
+          detector = function(path) TRUE,
+          requires = NULL
+        ),
+        list(
+          source = "beta",
+          reader = "read_octron",
+          suffix = "csv",
+          detector = function(path) TRUE,
+          requires = NULL
+        )
+      )
+    }
+  )
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("a,b", "1,2"), path)
+
+  expect_error(detect_source(path), "matches more than one source")
+})
+
+test_that("the peek helpers cope with an empty file", {
+  # validate_files() rejects empty files before any detector runs, but the
+  # helpers are called directly by the cross-product test above.
+  path <- withr::local_tempfile(fileext = ".csv")
+  file.create(path)
+
+  expect_identical(peek_header(path), character(0))
+  expect_identical(peek_lines(path), character(0))
+  expect_false(detect_trackball_file(path))
+})
+
+
+# ---- Mutual exclusivity across the whole fixture tree ------------------------
+
+test_that("no file in the fixture tree matches more than one detector", {
+  # The cases above are a curated list. This sweeps every file under
+  # tests/testthat/data/ - including the ones no reader claims, such as the
+  # VIA-tracks CSVs and the BORIS project, sequence and jwatcher files - and
+  # asserts the property detect_source() depends on: at most one detector
+  # recognises any given file.
+  #
+  # Candidates are narrowed by suffix first, exactly as detect_source() does,
+  # so this tests the collisions that can actually change a result.
+  files <- list.files(
+    testthat::test_path("data"),
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  expect_gt(length(files), 40)
+
+  registry <- source_registry()
+  collisions <- character(0)
+
+  for (path in files) {
+    suffix <- tolower(get_file_ext(path))
+    hits <- character(0)
+
+    for (entry in registry) {
+      if (!suffix %in% entry$suffix) {
+        next
+      }
+      pkg <- registry_requires(entry, suffix)
+      if (!is.na(pkg) && !rlang::is_installed(pkg)) {
+        next
+      }
+      if (isTRUE(run_detector(entry$detector, path))) {
+        hits <- c(hits, entry$source)
+      }
+    }
+
+    # DeepLabCut and LightningPose share a CSV layout by design, and
+    # detect_source() resolves that pair to a combined name.
+    if (length(hits) > 1 && !setequal(hits, c("deeplabcut", "lightningpose"))) {
+      collisions <- c(
+        collisions,
+        paste0(basename(path), ": ", paste(hits, collapse = " + "))
+      )
+    }
+  }
+
+  expect_identical(collisions, character(0))
+})
+
+
+test_that("an optical-flow capture is detected with or without a header", {
+  # `single/opticalflow_sensor_1.csv` and its `named_cols_` twin hold
+  # byte-identical data rows; one carries a line of serial junk, the other a
+  # header. read_trackball() returns the same data from either, so detection
+  # has to recognise both - it previously gave up as soon as it saw a header.
+  headerless <- fixture("single", "opticalflow_sensor_1.csv")
+  headered <- fixture("single", "named_cols_opticalflow_sensor_1.csv")
+
+  expect_identical(detect_source(headerless), "trackball_bonsai")
+  expect_identical(detect_source(headered), "trackball_bonsai")
+})
+
+test_that("read_dataset gives the same result either way", {
+  pair <- function(prefix) {
+    fixture("single", paste0(prefix, c("sensor_1.csv", "sensor_2.csv")))
+  }
+  args <- list(
+    setup = "of_free",
+    sampling_rate = 60,
+    col_time = 4,
+    col_dx = 1,
+    col_dy = 2
+  )
+
+  from_headerless <- do.call(
+    read_dataset,
+    c(list(pair("opticalflow_")), args)
+  )
+  from_headered <- do.call(
+    read_dataset,
+    c(list(pair("named_cols_opticalflow_")), args)
+  )
+
+  expect_equal(
+    as.data.frame(from_headerless),
+    as.data.frame(from_headered)
+  )
+})

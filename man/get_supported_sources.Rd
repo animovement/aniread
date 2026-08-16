@@ -29,6 +29,10 @@ matching the convention used throughout \code{aniread} (see the
 \code{expected_suffix} argument of the internal file validator). The
 generic \code{\link[=read_custom]{read_custom()}} reader is intentionally omitted because it has
 no fixed source software or file suffix.
+
+The \code{source} names listed here are exactly those accepted by the
+\code{source} argument of \code{\link[=read_dataset]{read_dataset()}}, and returned by
+\code{\link[=detect_source]{detect_source()}}.
 }
 \examples{
 get_supported_sources()
