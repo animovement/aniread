@@ -2,7 +2,7 @@
 
 Vectorised via `rowsum`. Rows whose `values_list` and `areas_list` have
 different segment counts trigger a single summarised warning and fall
-back to the arithmetic mean of the value vector — protecting callers
+back to the arithmetic mean of the value vector - protecting callers
 from the silent recycling that would otherwise occur in `v * a`. Falls
 back to the arithmetic mean when areas are absent or sum to 0.
 

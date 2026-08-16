@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Read trackball data</h1>
-      <small class="dont-index">Source: <a href="https://github.com/animovement/aniread/blob/v0.5.1/R/read_trackball.R" class="external-link"><code>R/read_trackball.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/animovement/aniread/blob/main/R/read_trackball.R" class="external-link"><code>R/read_trackball.R</code></a></small>
       <div class="d-none name"><code>read_trackball.Rd</code></div>
     </div>
 
@@ -88,7 +88,14 @@
 
 
 <dt id="arg-col-time">col_time<a class="anchor" aria-label="anchor" href="#arg-col-time"></a></dt>
-<dd><p>Which column contains the information about time. Can be specified either by the column number (numeric) or the name of the column if it has one (character). Should either be a datetime (POSIXt) or seconds (numeric).</p></dd>
+<dd><p>Which column contains the information about time. Can be
+specified either by the column number (numeric) or the name of the column if
+it has one (character). Should either be a datetime (POSIXt) or seconds
+(numeric). <strong>With two sensors, this must be a clock the two sensors share.</strong>
+In a Bonsai capture that is the PC datetime (column 4), not the per-board
+device counter (column 3), whose origin is sensor-local and therefore
+cannot be used to cross-reference the two files. A warning is emitted if
+<code>col_time</code> resolves to a non-datetime column with two sensors.</p></dd>
 
 
 <dt id="arg-col-dx">col_dx<a class="anchor" aria-label="anchor" href="#arg-col-dx"></a></dt>
@@ -112,12 +119,33 @@
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
-<dd><p>If <code>TRUE</code> (default), suppresses most warning messages.</p></dd>
+<dd><p>If <code>TRUE</code> (default), suppresses informational messages such as
+the count of malformed rows dropped from each file.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a movement dataframe</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Raw Bonsai optical-flow captures are headerless CSV files, optionally preceded
+by a single line of serial-port junk, with the layout
+<code>dx, dy, device_clock_us, pc_datetime, interval_s</code>. Address their columns by
+number (<code>col_dx = 1</code>, <code>col_dy = 2</code>, <code>col_time = 4</code>).</p>
+<p>Such captures are not gap-free: on this rig the COM port emits no row while
+the ball is still, so multi-second gaps are normal. Readings are integrated
+into <code>1 / sampling_rate</code> windows, and windows containing no reading are
+filled with zero motion so the returned time grid is regular regardless of
+the gaps in the input. Note that this treats a missing sample as <em>no motion</em>,
+which is a property of this logger rather than of optical flow in general; a
+sensor that drops samples for other reasons would need its gaps treated as
+missing data instead.</p>
+<p>With two sensors the output covers only the intersection of the two
+recordings - readings from before the second sensor started, or after the
+first stopped, are discarded rather than zero-filled. <code>time = 0</code> is the first
+shared sample, and the <code>start_datetime</code> metadata is the wall-clock instant of
+that sample.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
@@ -129,7 +157,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

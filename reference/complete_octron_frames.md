@@ -1,6 +1,6 @@
 # Reinstate frames with no detection as all-NA rows
 
-Completes the full `track` × `frame` grid so that every analysed frame
+Completes the full `track` x `frame` grid so that every analysed frame
 appears for every track. Frames Octron dropped (because nothing was
 detected) come back as rows that are NA in every measurement column. The
 per-track class `label` is carried onto the reinstated rows so a track

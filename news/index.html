@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,9 +47,39 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/animovement/aniread/blob/v0.5.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/animovement/aniread/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.5.1.9000" id="aniread-0519000-development-version">aniread 0.5.1.9000 (development version)<a class="anchor" aria-label="anchor" href="#aniread-0519000-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-0-5-1-9000">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1-9000"></a></h3>
+<ul><li>
+<p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> can now read real two-sensor Bonsai optical-flow captures (<a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a>). Previously it either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. In detail:</p>
+<ul><li>
+<strong>Sensor alignment.</strong> <code><a href="../reference/read_opticalflow.html">read_opticalflow()</a></code> zeroed each file to its own start time, which destroyed the offset between the two sensors — the only thing <code><a href="../reference/join_trackball_files.html">join_trackball_files()</a></code> can align them on. Its shared-window logic could therefore never fire, and a sensor that started 4.2 s late was silently shifted to t = 0. <code><a href="../reference/read_opticalflow.html">read_opticalflow()</a></code> now returns time on an absolute scale and the caller chooses the origin.</li>
+<li>
+<strong><code>start_datetime</code> agrees with <code>time</code>.</strong> <code>time = 0</code> is the first sample both sensors recorded, and the <code>start_datetime</code> metadata is the wall-clock instant of that sample. The two previously disagreed by the sensor offset.</li>
+<li>
+<strong>Corrupt rows.</strong> Serial capture drops characters, so short rows are normal. One such row used to abort the read with <code>missing value where TRUE/FALSE needed</code> or <code>'from' must be a finite number</code>. Malformed rows are now dropped, with the count reported when <code>quiet = FALSE</code>.</li>
+<li>
+<strong>Leading junk.</strong> The reader hardcoded <code>skip = 2</code> and then took the next line as a header, discarding two real data rows from a file with one junk line and three from a file with none. The leading junk is now detected by field count, and headerless files are read as such.</li>
+<li>
+<strong>Microsecond clocks.</strong> Auto-detection divided by the median timestamp step, which is 0 when more than half the timestamps repeat — the microsecond clock was then never scaled and the time grid exploded. Zero-length and missing steps are now excluded.</li>
+<li>
+<strong>Gap filling.</strong> The one-sensor path did not back-fill empty time bins while the two-sensor path did, so the same gappy input produced different time grids. Both now produce a regular grid.</li>
+<li>
+<strong>Argument handling.</strong> <code>setup</code> is now <code><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg()</a></code>d, so omitting it no longer fails with <code>the condition has length &gt; 1</code> and a typo gives an informative error. <code><a href="../reference/read_trackball.html">read_trackball()</a></code> now calls the previously orphaned <code><a href="../reference/validate_trackball.html">validate_trackball()</a></code>, so <code>of_free</code> with a single file errors up front instead of failing later in <code>compute_xy_coordinates_free()</code>. <code>quiet</code> is now honoured.</li>
+</ul></li>
+<li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> warns when <code>col_time</code> resolves to a non-datetime column and two sensors are given. A per-board device counter has a sensor-local origin and cannot cross-reference two files — in the dataset behind <a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a> the two counters differ by 36.8 s while the true offset is 4.2 s. Use the PC datetime column instead. The warning has class <code>aniread_sensor_local_clock</code>.</p></li>
+<li><p><code>ensure_header_match()</code> no longer rejects a character <code>col_time</code> on files that <em>do</em> have named headers; it now aborts only when the file is headerless.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-5-1-9000">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-5-1-9000"></a></h3>
+<ul><li>
+<code><a href="../reference/read_trackball.html">?read_trackball</a></code> documents the raw Bonsai layout (<code>dx, dy, device_clock_us, pc_datetime, interval_s</code>), the requirement that <code>col_time</code> be a shared clock when two sensors are given, and that empty time bins are filled with zero motion — a deliberate assumption about this logger, which emits no row while the ball is still, rather than a general claim about optical flow.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.1" id="aniread-051">aniread 0.5.1<a class="anchor" aria-label="anchor" href="#aniread-051"></a></h2>
 <div class="section level3">
@@ -156,7 +186,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

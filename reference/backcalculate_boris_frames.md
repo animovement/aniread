@@ -1,6 +1,6 @@
 # Recover frame numbers from timestamps when the image index is bad
 
-Some BORIS exports emit a bogus image index on boundary frames — e.g. a
+Some BORIS exports emit a bogus image index on boundary frames - e.g. a
 STOP recorded on the very last frame of the video carries
 `Image index stop = 1` while its `Stop (s)` is the true end time. That
 makes the frame-based `stop` smaller than `start`, which fails

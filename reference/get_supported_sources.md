@@ -3,7 +3,7 @@
 Returns the tracking / event software that `aniread` supports, paired
 with the reader function for each and the file suffix(es) it accepts.
 This lets downstream packages discover the supported formats
-programmatically instead of hard-coding the list — mirroring
+programmatically instead of hard-coding the list - mirroring
 `movement`'s `get_supported_source_software()`.
 
 ## Usage
@@ -27,7 +27,7 @@ row per supported source and the columns:
 
 - `suffix`:
 
-  List column of character vectors — the file suffix(es) the reader
+  List column of character vectors - the file suffix(es) the reader
   accepts.
 
 ## Details

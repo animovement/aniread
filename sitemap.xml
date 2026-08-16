@@ -10,6 +10,8 @@
 <url><loc>http://animovement.dev/aniread/reference/calibrate_trackball.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/complete_octron_frames.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/detect_octron_tuple_cols.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/detect_opticalflow_layout.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/detect_time_divisor.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/does_file_have_expected_headers.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/drop_uninformative_boris_columns.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_dlc_expected_header_levels.html</loc></url>
@@ -21,11 +23,13 @@
 <url><loc>http://animovement.dev/aniread/reference/ensure_file_is_not_empty.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_is_not_dir.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/ensure_trackball_setup.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/fill_missing_time_groups.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/get_sample_data.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/get_supported_sources.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/index.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/is_empty_file.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/is_file_readable.html</loc></url>
+<url><loc>http://animovement.dev/aniread/reference/is_header_row.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/join_trackball_files.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_dlc_pickle.html</loc></url>
 <url><loc>http://animovement.dev/aniread/reference/parse_octron_column.html</loc></url>

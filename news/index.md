@@ -1,5 +1,80 @@
 # Changelog
 
+## aniread 0.5.1.9000 (development version)
+
+### Bug fixes
+
+- [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  can now read real two-sensor Bonsai optical-flow captures
+  ([\#85](https://github.com/animovement/aniread/issues/85)). Previously
+  it either aborted with an error pointing nowhere near the cause, or
+  silently returned a misaligned trajectory. In detail:
+
+  - **Sensor alignment.**
+    [`read_opticalflow()`](http://animovement.dev/aniread/reference/read_opticalflow.md)
+    zeroed each file to its own start time, which destroyed the offset
+    between the two sensors — the only thing
+    [`join_trackball_files()`](http://animovement.dev/aniread/reference/join_trackball_files.md)
+    can align them on. Its shared-window logic could therefore never
+    fire, and a sensor that started 4.2 s late was silently shifted to t
+    = 0.
+    [`read_opticalflow()`](http://animovement.dev/aniread/reference/read_opticalflow.md)
+    now returns time on an absolute scale and the caller chooses the
+    origin.
+  - **`start_datetime` agrees with `time`.** `time = 0` is the first
+    sample both sensors recorded, and the `start_datetime` metadata is
+    the wall-clock instant of that sample. The two previously disagreed
+    by the sensor offset.
+  - **Corrupt rows.** Serial capture drops characters, so short rows are
+    normal. One such row used to abort the read with
+    `missing value where TRUE/FALSE needed` or
+    `'from' must be a finite number`. Malformed rows are now dropped,
+    with the count reported when `quiet = FALSE`.
+  - **Leading junk.** The reader hardcoded `skip = 2` and then took the
+    next line as a header, discarding two real data rows from a file
+    with one junk line and three from a file with none. The leading junk
+    is now detected by field count, and headerless files are read as
+    such.
+  - **Microsecond clocks.** Auto-detection divided by the median
+    timestamp step, which is 0 when more than half the timestamps repeat
+    — the microsecond clock was then never scaled and the time grid
+    exploded. Zero-length and missing steps are now excluded.
+  - **Gap filling.** The one-sensor path did not back-fill empty time
+    bins while the two-sensor path did, so the same gappy input produced
+    different time grids. Both now produce a regular grid.
+  - **Argument handling.** `setup` is now
+    [`match.arg()`](https://rdrr.io/r/base/match.arg.html)d, so omitting
+    it no longer fails with `the condition has length > 1` and a typo
+    gives an informative error.
+    [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+    now calls the previously orphaned
+    [`validate_trackball()`](http://animovement.dev/aniread/reference/validate_trackball.md),
+    so `of_free` with a single file errors up front instead of failing
+    later in `compute_xy_coordinates_free()`. `quiet` is now honoured.
+
+- [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  warns when `col_time` resolves to a non-datetime column and two
+  sensors are given. A per-board device counter has a sensor-local
+  origin and cannot cross-reference two files — in the dataset behind
+  [\#85](https://github.com/animovement/aniread/issues/85) the two
+  counters differ by 36.8 s while the true offset is 4.2 s. Use the PC
+  datetime column instead. The warning has class
+  `aniread_sensor_local_clock`.
+
+- `ensure_header_match()` no longer rejects a character `col_time` on
+  files that *do* have named headers; it now aborts only when the file
+  is headerless.
+
+### Documentation
+
+- [`?read_trackball`](http://animovement.dev/aniread/reference/read_trackball.md)
+  documents the raw Bonsai layout
+  (`dx, dy, device_clock_us, pc_datetime, interval_s`), the requirement
+  that `col_time` be a shared clock when two sensors are given, and that
+  empty time bins are filled with zero motion — a deliberate assumption
+  about this logger, which emits no row while the ball is still, rather
+  than a general claim about optical flow.
+
 ## aniread 0.5.1
 
 ### New features
