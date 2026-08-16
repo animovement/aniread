@@ -99,9 +99,11 @@ detect_source <- function(paths) {
     "x" = "Its contents match none of the sources that read {.val {suffix}}
            files: {.val {vapply(candidates, `[[`, character(1), 'source')}}.",
     if (length(skipped) > 0) {
-      c("!" = "{.val {skipped}} {?was/were} not checked because
+      c(
+        "!" = "{.val {skipped}} {?was/were} not checked because
                {?package/packages} {.pkg {unique(missing_pkgs)}}
-               {?is/are} not installed.")
+               {?is/are} not installed."
+      )
     },
     "i" = "Pass {.arg source} explicitly to {.fn read_dataset} if you know the
            format."
@@ -195,7 +197,8 @@ detect_animalta_file <- function(path) {
 #' @keywords internal
 detect_anipose_file <- function(path) {
   header <- peek_header(path)
-  "fnum" %in% header &&
+  "fnum" %in%
+    header &&
     any(endsWith(header, "_score")) &&
     any(endsWith(header, "_error")) &&
     any(endsWith(header, "_ncams"))

@@ -113,7 +113,10 @@ test_that("read_dataset errors on an unsupported source", {
 test_that("read_dataset requires source to be a single string", {
   path <- fixture("trex", "beetle.csv")
 
-  expect_error(read_dataset(path, source = c("trex", "octron")), "single source")
+  expect_error(
+    read_dataset(path, source = c("trex", "octron")),
+    "single source"
+  )
   expect_error(read_dataset(path, source = 1), "single source")
 })
 

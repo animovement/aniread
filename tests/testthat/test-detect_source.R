@@ -9,26 +9,81 @@ fixture <- function(...) testthat::test_path("data", ...)
 
 # Fixtures paired with the source they must detect as.
 detection_cases <- list(
-  list(source = "animalta", path = fixture("animalta", "single_individual_multi_arena.csv")),
-  list(source = "animalta", path = fixture("animalta", "variable_individuals_single_arena.csv")),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "single_individual_multi_arena.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "variable_individuals_single_arena.csv")
+  ),
   list(source = "bonsai", path = fixture("bonsai", "LI850.csv")),
-  list(source = "boris", path = fixture("boris", "tabular", "test_export_events_tabular.csv")),
-  list(source = "boris", path = fixture("boris", "tabular", "test_export_events_tabular.tsv")),
-  list(source = "boris", path = fixture("boris", "tabular", "flat_dslr_subject.csv")),
-  list(source = "boris", path = fixture("boris", "aggregated", "test_export_aggregated_events_test_full_1.tsv")),
-  list(source = "freemocap", path = fixture("freemocap", "freemocap_test_data_by_frame.csv")),
-  list(source = "idtrackerai", path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "test_export_events_tabular.csv")
+  ),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "test_export_events_tabular.tsv")
+  ),
+  list(
+    source = "boris",
+    path = fixture("boris", "tabular", "flat_dslr_subject.csv")
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "test_export_aggregated_events_test_full_1.tsv"
+    )
+  ),
+  list(
+    source = "freemocap",
+    path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")
+  ),
   list(source = "octron", path = fixture("octron", "octron_sample.csv")),
-  list(source = "octron", path = fixture("octron", "octron_sample_bytetrack.csv")),
+  list(
+    source = "octron",
+    path = fixture("octron", "octron_sample_bytetrack.csv")
+  ),
   list(source = "trex", path = fixture("trex", "beetle.csv")),
-  list(source = "fasttrack", path = fixture("fasttrack", "fasttrack-tracking.txt")),
-  list(source = "trackball_bonsai", path = fixture("multi", "GB_COM6_2021-08-05T15_37_55.csv")),
-  list(source = "trackball_bonsai", path = fixture("single", "opticalflow_sensor_1.csv")),
-  list(source = "deeplabcut/lightningpose", path = fixture("deeplabcut", "mouse_single.csv")),
-  list(source = "deeplabcut/lightningpose", path = fixture("deeplabcut", "mouse_multi.csv")),
-  list(source = "deeplabcut/lightningpose", path = fixture("deeplabcut", "wasp_single.csv")),
-  list(source = "deeplabcut/lightningpose", path = fixture("lightningpose", "mouse_single.csv")),
-  list(source = "deeplabcut/lightningpose", path = fixture("lightningpose", "mouse_twoview.csv"))
+  list(
+    source = "fasttrack",
+    path = fixture("fasttrack", "fasttrack-tracking.txt")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("multi", "GB_COM6_2021-08-05T15_37_55.csv")
+  ),
+  list(
+    source = "trackball_bonsai",
+    path = fixture("single", "opticalflow_sensor_1.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "mouse_multi.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "wasp_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "mouse_twoview.csv")
+  )
 )
 
 test_that("every fixture detects as its own source", {
@@ -53,7 +108,9 @@ test_that("no detector fires on another source's file", {
 
     for (entry in registry) {
       pkg <- registry_requires(entry, suffix)
-      if (!is.na(pkg) && !rlang::is_installed(pkg)) next
+      if (!is.na(pkg) && !rlang::is_installed(pkg)) {
+        next
+      }
 
       matched <- isTRUE(run_detector(entry$detector, case$path))
       should_match <- entry$source %in% expected
@@ -62,7 +119,10 @@ test_that("no detector fires on another source's file", {
         matched,
         should_match,
         info = paste0(
-          basename(case$path), " vs detector for '", entry$source, "'"
+          basename(case$path),
+          " vs detector for '",
+          entry$source,
+          "'"
         )
       )
     }
@@ -74,7 +134,11 @@ test_that("files that are not datasets detect as nothing", {
   # `path_probabilities`, never on its own, and shares its `seconds` column
   # with the trajectories file.
   expect_error(
-    detect_source(fixture("idtrackerai", "trajectories_csv", "id_probabilities.csv")),
+    detect_source(fixture(
+      "idtrackerai",
+      "trajectories_csv",
+      "id_probabilities.csv"
+    )),
     "Cannot detect the source software"
   )
   expect_error(
@@ -125,7 +189,10 @@ test_that("SLEAP HDF5 files are detected", {
     "sleap"
   )
   expect_identical(
-    detect_source(fixture("sleap", "SLEAP_three-mice_Aeon_mixed-labels.analysis.h5")),
+    detect_source(fixture(
+      "sleap",
+      "SLEAP_three-mice_Aeon_mixed-labels.analysis.h5"
+    )),
     "sleap"
   )
 })
