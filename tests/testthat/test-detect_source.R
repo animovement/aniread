@@ -320,3 +320,55 @@ test_that("the peek helpers cope with an empty file", {
   expect_identical(peek_lines(path), character(0))
   expect_false(detect_trackball_file(path))
 })
+
+
+# ---- Mutual exclusivity across the whole fixture tree ------------------------
+
+test_that("no file in the fixture tree matches more than one detector", {
+  # The cases above are a curated list. This sweeps every file under
+  # tests/testthat/data/ - including the ones no reader claims, such as the
+  # VIA-tracks CSVs and the BORIS project, sequence and jwatcher files - and
+  # asserts the property detect_source() depends on: at most one detector
+  # recognises any given file.
+  #
+  # Candidates are narrowed by suffix first, exactly as detect_source() does,
+  # so this tests the collisions that can actually change a result.
+  files <- list.files(
+    testthat::test_path("data"),
+    recursive = TRUE,
+    full.names = TRUE
+  )
+  expect_gt(length(files), 40)
+
+  registry <- source_registry()
+  collisions <- character(0)
+
+  for (path in files) {
+    suffix <- tolower(get_file_ext(path))
+    hits <- character(0)
+
+    for (entry in registry) {
+      if (!suffix %in% entry$suffix) {
+        next
+      }
+      pkg <- registry_requires(entry, suffix)
+      if (!is.na(pkg) && !rlang::is_installed(pkg)) {
+        next
+      }
+      if (isTRUE(run_detector(entry$detector, path))) {
+        hits <- c(hits, entry$source)
+      }
+    }
+
+    # DeepLabCut and LightningPose share a CSV layout by design, and
+    # detect_source() resolves that pair to a combined name.
+    if (length(hits) > 1 && !setequal(hits, c("deeplabcut", "lightningpose"))) {
+      collisions <- c(
+        collisions,
+        paste0(basename(path), ": ", paste(hits, collapse = " + "))
+      )
+    }
+  }
+
+  expect_identical(collisions, character(0))
+})
