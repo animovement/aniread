@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,9 +47,17 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/animovement/aniread/blob/v0.6.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/animovement/aniread/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="aniread-development-version">aniread (development version)<a class="anchor" aria-label="anchor" href="#aniread-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/read_trackball.html">read_trackball()</a></code> and <code><a href="../reference/detect_source.html">detect_source()</a></code> cope with a run of serial-port junk before the first complete record, not just a single partial row (<a href="https://github.com/animovement/aniread/issues/94" class="external-link">#94</a>). The skip was computed from <code><a href="https://rdrr.io/r/utils/count.fields.html" class="external-link">utils::count.fields()</a></code>, which silently drops blank lines, so on a capture with blank lines among the junk it landed early — on a noise line, which was then accepted as a header, and the read failed with <code>Column index 4 is out of bounds</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="aniread-060-2026-08-18">aniread 0.6.0 (2026-08-18)<a class="anchor" aria-label="anchor" href="#aniread-060-2026-08-18"></a></h2>
 <div class="section level3">

@@ -86,7 +86,8 @@ a movement dataframe
 ## Details
 
 Raw Bonsai optical-flow captures are headerless CSV files, optionally
-preceded by a single line of serial-port junk, with the layout
+preceded by serial-port junk – a partial row, or a run of noise lines
+and blanks before the first complete record – with the layout
 `dx, dy, device_clock_us, pc_datetime, interval_s`. Address their
 columns by number (`col_dx = 1`, `col_dy = 2`, `col_time = 4`).
 
