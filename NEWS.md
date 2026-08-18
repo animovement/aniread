@@ -1,48 +1,32 @@
-# aniread 0.5.1.9002 (development version)
-
-## Bug fixes
-
-* `read_animalta()` works out which export layout a file uses instead of being told (#88). `detailed` now defaults to `"auto"` and reads the answer from the header — the raw layout continues into `X_Arena<n>_Ind<n>` columns, the detailed one into `Arena;Ind;X;Y` — with `TRUE` and `FALSE` still honoured when passed. Reading a detailed export with the old default produced a header error naming columns the user had never heard of, rather than pointing at the argument.
-
-  This was the one case where `detect_source()` identified a file correctly and `read_dataset()` then failed on it, since the dispatcher has no way to pass reader-specific arguments.
+# aniread 0.6.0 (2026-08-18)
 
 ## New features
 
-* `read_dataset()` reads any supported format through a single entry point, working out which source software wrote the file rather than requiring you to know in advance (#73). `read_dataset("mouse.h5")` is enough; pass `source` to name the format explicitly, and `...` to reach a reader's own arguments (`read_dataset(paths, sampling_rate = 60)` for a trackball pair). The object returned is exactly what the underlying reader returns — an `aniframe`, or an `anievent` for `read_boris()`.
+* `read_dataset()` reads any supported format through one entry point, working out which source software wrote the file rather than requiring you to know in advance (#73). Pass `source` to name the format explicitly, or `...` to reach a reader's own arguments. It returns whatever the underlying reader returns — an `aniframe`, or an `anievent` for `read_boris()`.
 
-* `detect_source()` reports which source software wrote a file without reading it. Candidates are narrowed by file suffix, then each candidate's detector inspects the contents — a header block, a set of HDF5 datasets, or a magic number — and exactly one match is required. This matters because twelve of the supported sources read `.csv`, so the suffix decides almost nothing on its own.
-
-  DeepLabCut and LightningPose export structurally identical CSV files. Rather than guess, `detect_source()` returns the combined name `"deeplabcut/lightningpose"`, and `read_dataset()` reads such a file with `read_deeplabcut()` — the parse is the same either way — while recording the combined name as its source, so the ambiguity is preserved rather than silently resolved. This follows `movement`'s handling of the same collision.
-
-  Detectors for HDF5, Parquet, XML and C3D files need an optional package (`rhdf5`, `arrow`, `xml2`, `c3dr`). When one is missing those sources are skipped, and if nothing is detected the error names both the skipped sources and the packages that would have been consulted.
+* `detect_source()` reports which software wrote a file without reading it. Candidates are narrowed by suffix, then each detector inspects the contents, which matters because twelve sources read `.csv`. DeepLabCut and LightningPose export structurally identical files, so it returns the combined name `"deeplabcut/lightningpose"` rather than guessing. Detectors needing an optional package (`rhdf5`, `arrow`, `xml2`, `c3dr`) are skipped when it is absent, and the error names what was skipped.
 
 ## Breaking changes
 
-* `get_supported_sources()` no longer lists `csv` as a SLEAP suffix. `read_sleap()` aborts on CSV input with "We hope to support SLEAP CSV import soon!", so the registry was advertising a format the reader cannot read; auto-detection would have routed such files straight into that error. Restored when the reader gains support (#87).
+* `get_supported_sources()` no longer lists `csv` as a SLEAP suffix — `read_sleap()` cannot read it, and auto-detection would have routed such files straight into that error. Restored when the reader gains support (#87).
 
-* `get_supported_sources()` renames the `trackball` source to `trackball_bonsai`, matching the `source` metadata that `read_trackball()` actually stamps. The two names previously disagreed, which becomes visible now that `source` is an argument matched against the registry.
+* `get_supported_sources()` renames the `trackball` source to `trackball_bonsai`, matching the `source` metadata `read_trackball()` actually stamps.
 
 ## Bug fixes
 
-* `detect_source()` recognises a Bonsai optical-flow capture whether or not it carries a header row. It previously gave up as soon as it saw one, so a headed capture — which `read_trackball()` reads perfectly well, returning identical data to its headerless twin — was detected as nothing and could not be opened through `read_dataset()`. Recognition now keys off the first data row in both cases, and additionally requires the four non-datetime fields to be numeric, which makes the detector stricter rather than looser.
+* `read_trackball()` reads real two-sensor Bonsai optical-flow captures (#85). It previously either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. Sensor alignment, `start_datetime`, corrupt rows, leading junk, microsecond clocks, gap filling and argument handling were each at fault; see the PR for the breakdown.
 
-* `read_trackball()` can now read real two-sensor Bonsai optical-flow captures (#85). Previously it either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. In detail:
+* `read_trackball()` warns when `col_time` resolves to a non-datetime column and two sensors are given — a per-board counter has a sensor-local origin and cannot align two files. Warning class `aniread_sensor_local_clock`.
 
-  * **Sensor alignment.** `read_opticalflow()` zeroed each file to its own start time, which destroyed the offset between the two sensors — the only thing `join_trackball_files()` can align them on. Its shared-window logic could therefore never fire, and a sensor that started 4.2 s late was silently shifted to t = 0. `read_opticalflow()` now returns time on an absolute scale and the caller chooses the origin.
-  * **`start_datetime` agrees with `time`.** `time = 0` is the first sample both sensors recorded, and the `start_datetime` metadata is the wall-clock instant of that sample. The two previously disagreed by the sensor offset.
-  * **Corrupt rows.** Serial capture drops characters, so short rows are normal. One such row used to abort the read with `missing value where TRUE/FALSE needed` or `'from' must be a finite number`. Malformed rows are now dropped, with the count reported when `quiet = FALSE`.
-  * **Leading junk.** The reader hardcoded `skip = 2` and then took the next line as a header, discarding two real data rows from a file with one junk line and three from a file with none. The leading junk is now detected by field count, and headerless files are read as such.
-  * **Microsecond clocks.** Auto-detection divided by the median timestamp step, which is 0 when more than half the timestamps repeat — the microsecond clock was then never scaled and the time grid exploded. Zero-length and missing steps are now excluded.
-  * **Gap filling.** The one-sensor path did not back-fill empty time bins while the two-sensor path did, so the same gappy input produced different time grids. Both now produce a regular grid.
-  * **Argument handling.** `setup` is now `match.arg()`d, so omitting it no longer fails with `the condition has length > 1` and a typo gives an informative error. `read_trackball()` now calls the previously orphaned `validate_trackball()`, so `of_free` with a single file errors up front instead of failing later in `compute_xy_coordinates_free()`. `quiet` is now honoured.
+* `read_animalta()` works out which export layout a file uses instead of being told (#88). `detailed` defaults to `"auto"` and reads the answer from the header. This was the one case where `detect_source()` identified a file correctly and `read_dataset()` then failed on it.
 
-* `read_trackball()` warns when `col_time` resolves to a non-datetime column and two sensors are given. A per-board device counter has a sensor-local origin and cannot cross-reference two files — in the dataset behind #85 the two counters differ by 36.8 s while the true offset is 4.2 s. Use the PC datetime column instead. The warning has class `aniread_sensor_local_clock`.
+* `detect_source()` recognises a Bonsai optical-flow capture whether or not it carries a header row.
 
-* `ensure_header_match()` no longer rejects a character `col_time` on files that *do* have named headers; it now aborts only when the file is headerless.
+* `ensure_header_match()` no longer rejects a character `col_time` on files that do have named headers.
 
 ## Documentation
 
-* `?read_trackball` documents the raw Bonsai layout (`dx, dy, device_clock_us, pc_datetime, interval_s`), the requirement that `col_time` be a shared clock when two sensors are given, and that empty time bins are filled with zero motion — a deliberate assumption about this logger, which emits no row while the ball is still, rather than a general claim about optical flow.
+* `?read_trackball` documents the raw Bonsai layout, the requirement that `col_time` be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.
 
 # aniread 0.5.1
 
