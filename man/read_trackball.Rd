@@ -54,7 +54,8 @@ Read trackball data from a variety of setups and configurations.
 }
 \details{
 Raw Bonsai optical-flow captures are headerless CSV files, optionally preceded
-by a single line of serial-port junk, with the layout
+by serial-port junk -- a partial row, or a run of noise lines and blanks
+before the first complete record -- with the layout
 \verb{dx, dy, device_clock_us, pc_datetime, interval_s}. Address their columns by
 number (\code{col_dx = 1}, \code{col_dy = 2}, \code{col_time = 4}).
 

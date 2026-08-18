@@ -321,3 +321,78 @@ test_that("read_trackball of_fixed produces correct square path", {
   expect_equal(result$y, c(1, 1, -1, -1, 1, 1), tolerance = 1e-10)
   expect_equal(result$time, c(0, 1, 2, 3, 4, 5))
 })
+
+# ---- Leading serial-port junk (#90) -------------------------------------
+
+# A raw capture from a COM port can open with a run of noise lines and
+# blank lines before the first complete record, not just the single
+# partial row the reader originally allowed for.
+write_junk_capture <- function(path, n_rows = 40) {
+  rows <- sprintf(
+    "%d,%d,%d,2025-06-13T10:25:%06.3f+01:00,0.0001",
+    seq_len(n_rows),
+    seq_len(n_rows) * 2L,
+    20000000L + seq_len(n_rows) * 18720L,
+    45 + seq_len(n_rows) / 100
+  )
+  writeLines(
+    c(
+      "??HH????LH????LH????",
+      "",
+      "????L??*??L",
+      "???L??8?L?",
+      "",
+      "?8?JL?L?81HLJ",
+      "?H9?!11,2025-06-13T10:25:45.170,0",
+      rows
+    ),
+    path
+  )
+}
+
+test_that("a run of junk and blank lines is skipped, not counted as a header", {
+  # `count.fields()` skips blank lines, so a skip computed from its output
+  # landed early — on a junk line, which was then read as a header.
+  path <- withr::local_tempfile(fileext = ".csv")
+  write_junk_capture(path)
+
+  layout <- detect_opticalflow_layout(path)
+
+  expect_equal(layout$skip, 7)
+  expect_false(layout$has_header)
+})
+
+test_that("detect_source() recognises a capture behind leading junk", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  write_junk_capture(path)
+
+  expect_equal(detect_source(path), "trackball_bonsai")
+})
+
+test_that("read_trackball() reads a capture behind leading junk", {
+  path1 <- withr::local_tempfile(fileext = ".csv")
+  path2 <- withr::local_tempfile(fileext = ".csv")
+  write_junk_capture(path1)
+  write_junk_capture(path2)
+
+  result <- read_trackball_quiet(
+    paths = c(path1, path2),
+    setup = "of_free",
+    sampling_rate = 60,
+    col_dx = 1,
+    col_dy = 2,
+    col_time = 4
+  )
+
+  expect_s3_class(result, "aniframe")
+  expect_gt(nrow(result), 0)
+  expect_false(anyNA(result$x))
+})
+
+test_that("a file that is only junk does not derail layout detection", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(c("??HH??", "", "?8?JL?"), path)
+
+  expect_no_error(layout <- detect_opticalflow_layout(path))
+  expect_equal(layout$skip, 0)
+})

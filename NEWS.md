@@ -1,3 +1,9 @@
+# aniread (development version)
+
+## Bug fixes
+
+* `read_trackball()` and `detect_source()` cope with a run of serial-port junk before the first complete record, not just a single partial row (#94). The skip was computed from `utils::count.fields()`, which silently drops blank lines, so on a capture with blank lines among the junk it landed early — on a noise line, which was then accepted as a header, and the read failed with `Column index 4 is out of bounds`.
+
 # aniread 0.6.0 (2026-08-18)
 
 ## New features

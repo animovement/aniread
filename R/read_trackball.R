@@ -23,7 +23,8 @@
 #'
 #' @details
 #' Raw Bonsai optical-flow captures are headerless CSV files, optionally preceded
-#' by a single line of serial-port junk, with the layout
+#' by serial-port junk -- a partial row, or a run of noise lines and blanks
+#' before the first complete record -- with the layout
 #' `dx, dy, device_clock_us, pc_datetime, interval_s`. Address their columns by
 #' number (`col_dx = 1`, `col_dy = 2`, `col_time = 4`).
 #'
@@ -283,14 +284,29 @@ detect_opticalflow_layout <- function(path, n_peek = 20) {
 
   con <- textConnection(lines)
   on.exit(close(con), add = TRUE)
-  n_fields <- utils::count.fields(con, sep = ",", quote = "\"")
-  n_fields <- n_fields[!is.na(n_fields)]
+  # `blank.lines.skip = FALSE` keeps one count per line. With the default,
+  # blank lines are dropped from the result, so the vector is shorter than
+  # the file and the skip below lands early -- on a junk line, which
+  # `is_header_row()` then accepts as a header (#94).
+  n_fields <- utils::count.fields(
+    con,
+    sep = ",",
+    quote = "\"",
+    blank.lines.skip = FALSE
+  )
+  n_fields[is.na(n_fields)] <- 0L
   if (length(n_fields) == 0) {
     return(list(skip = 0, has_header = FALSE)) # nocov
   }
 
+  # A blank line is never the record width, so it cannot win the vote.
+  n_fields_for_vote <- n_fields[n_fields > 0]
+  if (length(n_fields_for_vote) == 0) {
+    return(list(skip = 0, has_header = FALSE)) # nocov
+  }
+
   # Modal field count, breaking ties towards the wider record.
-  counts <- table(n_fields)
+  counts <- table(n_fields_for_vote)
   width <- max(as.integer(names(counts)[counts == max(counts)]))
   skip <- match(width, n_fields) - 1L
 
