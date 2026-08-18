@@ -1,6 +1,25 @@
 # Changelog
 
-## aniread 0.5.1.9001 (development version)
+## aniread 0.5.1.9002 (development version)
+
+### Bug fixes
+
+- [`read_animalta()`](http://animovement.dev/aniread/reference/read_animalta.md)
+  works out which export layout a file uses instead of being told
+  ([\#88](https://github.com/animovement/aniread/issues/88)). `detailed`
+  now defaults to `"auto"` and reads the answer from the header — the
+  raw layout continues into `X_Arena<n>_Ind<n>` columns, the detailed
+  one into `Arena;Ind;X;Y` — with `TRUE` and `FALSE` still honoured when
+  passed. Reading a detailed export with the old default produced a
+  header error naming columns the user had never heard of, rather than
+  pointing at the argument.
+
+  This was the one case where
+  [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  identified a file correctly and
+  [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+  then failed on it, since the dispatcher has no way to pass
+  reader-specific arguments.
 
 ### New features
 
