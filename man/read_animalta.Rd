@@ -4,13 +4,16 @@
 \alias{read_animalta}
 \title{Read AnimalTA data}
 \usage{
-read_animalta(path, detailed = FALSE, video_height = NULL)
+read_animalta(path, detailed = "auto", video_height = NULL)
 }
 \arguments{
 \item{path}{An AnimalTA data frame}
 
-\item{detailed}{Animal export either raw (default) or detailed data files. We
-only have limited support for detailed data.}
+\item{detailed}{Which export layout the file uses. \code{"auto"} (the
+default) reads it from the header: the raw layout continues into
+\verb{X_Arena<n>_Ind<n>} columns, the detailed one into \verb{Arena;Ind;X;Y}.
+Pass \code{TRUE} or \code{FALSE} to state it explicitly. We only have limited
+support for detailed data.}
 
 \item{video_height}{Optional numeric height of the source video frame in
 pixels. AnimalTA does not record this in the export, so when not
