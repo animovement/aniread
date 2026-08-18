@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.1.9002</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,55 +51,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.5.1.9002" id="aniread-0519002-development-version">aniread 0.5.1.9002 (development version)<a class="anchor" aria-label="anchor" href="#aniread-0519002-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.6.0" id="aniread-060-2026-08-18">aniread 0.6.0 (2026-08-18)<a class="anchor" aria-label="anchor" href="#aniread-060-2026-08-18"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-0-5-1-9002">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1-9002"></a></h3>
+<h3 id="new-features-0-6-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-6-0"></a></h3>
+<ul><li><p><code><a href="../reference/read_dataset.html">read_dataset()</a></code> reads any supported format through one entry point, working out which source software wrote the file rather than requiring you to know in advance (<a href="https://github.com/animovement/aniread/issues/73" class="external-link">#73</a>). Pass <code>source</code> to name the format explicitly, or <code>...</code> to reach a reader’s own arguments. It returns whatever the underlying reader returns — an <code>aniframe</code>, or an <code>anievent</code> for <code><a href="../reference/read_boris.html">read_boris()</a></code>.</p></li>
+<li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> reports which software wrote a file without reading it. Candidates are narrowed by suffix, then each detector inspects the contents, which matters because twelve sources read <code>.csv</code>. DeepLabCut and LightningPose export structurally identical files, so it returns the combined name <code>"deeplabcut/lightningpose"</code> rather than guessing. Detectors needing an optional package (<code>rhdf5</code>, <code>arrow</code>, <code>xml2</code>, <code>c3dr</code>) are skipped when it is absent, and the error names what was skipped.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
+<ul><li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> no longer lists <code>csv</code> as a SLEAP suffix — <code><a href="../reference/read_sleap.html">read_sleap()</a></code> cannot read it, and auto-detection would have routed such files straight into that error. Restored when the reader gains support (<a href="https://github.com/animovement/aniread/issues/87" class="external-link">#87</a>).</p></li>
+<li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> renames the <code>trackball</code> source to <code>trackball_bonsai</code>, matching the <code>source</code> metadata <code><a href="../reference/read_trackball.html">read_trackball()</a></code> actually stamps.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
+<ul><li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> reads real two-sensor Bonsai optical-flow captures (<a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a>). It previously either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. Sensor alignment, <code>start_datetime</code>, corrupt rows, leading junk, microsecond clocks, gap filling and argument handling were each at fault; see the PR for the breakdown.</p></li>
+<li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> warns when <code>col_time</code> resolves to a non-datetime column and two sensors are given — a per-board counter has a sensor-local origin and cannot align two files. Warning class <code>aniread_sensor_local_clock</code>.</p></li>
+<li><p><code><a href="../reference/read_animalta.html">read_animalta()</a></code> works out which export layout a file uses instead of being told (<a href="https://github.com/animovement/aniread/issues/88" class="external-link">#88</a>). <code>detailed</code> defaults to <code>"auto"</code> and reads the answer from the header. This was the one case where <code><a href="../reference/detect_source.html">detect_source()</a></code> identified a file correctly and <code><a href="../reference/read_dataset.html">read_dataset()</a></code> then failed on it.</p></li>
+<li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> recognises a Bonsai optical-flow capture whether or not it carries a header row.</p></li>
+<li><p><code>ensure_header_match()</code> no longer rejects a character <code>col_time</code> on files that do have named headers.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-6-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-6-0"></a></h3>
 <ul><li>
-<p><code><a href="../reference/read_animalta.html">read_animalta()</a></code> works out which export layout a file uses instead of being told (<a href="https://github.com/animovement/aniread/issues/88" class="external-link">#88</a>). <code>detailed</code> now defaults to <code>"auto"</code> and reads the answer from the header — the raw layout continues into <code>X_Arena&lt;n&gt;_Ind&lt;n&gt;</code> columns, the detailed one into <code>Arena;Ind;X;Y</code> — with <code>TRUE</code> and <code>FALSE</code> still honoured when passed. Reading a detailed export with the old default produced a header error naming columns the user had never heard of, rather than pointing at the argument.</p>
-<p>This was the one case where <code><a href="../reference/detect_source.html">detect_source()</a></code> identified a file correctly and <code><a href="../reference/read_dataset.html">read_dataset()</a></code> then failed on it, since the dispatcher has no way to pass reader-specific arguments.</p>
-</li>
-</ul></div>
-<div class="section level3">
-<h3 id="new-features-0-5-1-9002">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-1-9002"></a></h3>
-<ul><li><p><code><a href="../reference/read_dataset.html">read_dataset()</a></code> reads any supported format through a single entry point, working out which source software wrote the file rather than requiring you to know in advance (<a href="https://github.com/animovement/aniread/issues/73" class="external-link">#73</a>). <code>read_dataset("mouse.h5")</code> is enough; pass <code>source</code> to name the format explicitly, and <code>...</code> to reach a reader’s own arguments (<code>read_dataset(paths, sampling_rate = 60)</code> for a trackball pair). The object returned is exactly what the underlying reader returns — an <code>aniframe</code>, or an <code>anievent</code> for <code><a href="../reference/read_boris.html">read_boris()</a></code>.</p></li>
-<li>
-<p><code><a href="../reference/detect_source.html">detect_source()</a></code> reports which source software wrote a file without reading it. Candidates are narrowed by file suffix, then each candidate’s detector inspects the contents — a header block, a set of HDF5 datasets, or a magic number — and exactly one match is required. This matters because twelve of the supported sources read <code>.csv</code>, so the suffix decides almost nothing on its own.</p>
-<p>DeepLabCut and LightningPose export structurally identical CSV files. Rather than guess, <code><a href="../reference/detect_source.html">detect_source()</a></code> returns the combined name <code>"deeplabcut/lightningpose"</code>, and <code><a href="../reference/read_dataset.html">read_dataset()</a></code> reads such a file with <code><a href="../reference/read_deeplabcut.html">read_deeplabcut()</a></code> — the parse is the same either way — while recording the combined name as its source, so the ambiguity is preserved rather than silently resolved. This follows <code>movement</code>’s handling of the same collision.</p>
-<p>Detectors for HDF5, Parquet, XML and C3D files need an optional package (<code>rhdf5</code>, <code>arrow</code>, <code>xml2</code>, <code>c3dr</code>). When one is missing those sources are skipped, and if nothing is detected the error names both the skipped sources and the packages that would have been consulted.</p>
-</li>
-</ul></div>
-<div class="section level3">
-<h3 id="breaking-changes-0-5-1-9002">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-5-1-9002"></a></h3>
-<ul><li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> no longer lists <code>csv</code> as a SLEAP suffix. <code><a href="../reference/read_sleap.html">read_sleap()</a></code> aborts on CSV input with “We hope to support SLEAP CSV import soon!”, so the registry was advertising a format the reader cannot read; auto-detection would have routed such files straight into that error. Restored when the reader gains support (<a href="https://github.com/animovement/aniread/issues/87" class="external-link">#87</a>).</p></li>
-<li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> renames the <code>trackball</code> source to <code>trackball_bonsai</code>, matching the <code>source</code> metadata that <code><a href="../reference/read_trackball.html">read_trackball()</a></code> actually stamps. The two names previously disagreed, which becomes visible now that <code>source</code> is an argument matched against the registry.</p></li>
-</ul></div>
-<div class="section level3">
-<h3 id="bug-fixes-0-5-1-9002-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1-9002-1"></a></h3>
-<ul><li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> recognises a Bonsai optical-flow capture whether or not it carries a header row. It previously gave up as soon as it saw one, so a headed capture — which <code><a href="../reference/read_trackball.html">read_trackball()</a></code> reads perfectly well, returning identical data to its headerless twin — was detected as nothing and could not be opened through <code><a href="../reference/read_dataset.html">read_dataset()</a></code>. Recognition now keys off the first data row in both cases, and additionally requires the four non-datetime fields to be numeric, which makes the detector stricter rather than looser.</p></li>
-<li>
-<p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> can now read real two-sensor Bonsai optical-flow captures (<a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a>). Previously it either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. In detail:</p>
-<ul><li>
-<strong>Sensor alignment.</strong> <code><a href="../reference/read_opticalflow.html">read_opticalflow()</a></code> zeroed each file to its own start time, which destroyed the offset between the two sensors — the only thing <code><a href="../reference/join_trackball_files.html">join_trackball_files()</a></code> can align them on. Its shared-window logic could therefore never fire, and a sensor that started 4.2 s late was silently shifted to t = 0. <code><a href="../reference/read_opticalflow.html">read_opticalflow()</a></code> now returns time on an absolute scale and the caller chooses the origin.</li>
-<li>
-<strong><code>start_datetime</code> agrees with <code>time</code>.</strong> <code>time = 0</code> is the first sample both sensors recorded, and the <code>start_datetime</code> metadata is the wall-clock instant of that sample. The two previously disagreed by the sensor offset.</li>
-<li>
-<strong>Corrupt rows.</strong> Serial capture drops characters, so short rows are normal. One such row used to abort the read with <code>missing value where TRUE/FALSE needed</code> or <code>'from' must be a finite number</code>. Malformed rows are now dropped, with the count reported when <code>quiet = FALSE</code>.</li>
-<li>
-<strong>Leading junk.</strong> The reader hardcoded <code>skip = 2</code> and then took the next line as a header, discarding two real data rows from a file with one junk line and three from a file with none. The leading junk is now detected by field count, and headerless files are read as such.</li>
-<li>
-<strong>Microsecond clocks.</strong> Auto-detection divided by the median timestamp step, which is 0 when more than half the timestamps repeat — the microsecond clock was then never scaled and the time grid exploded. Zero-length and missing steps are now excluded.</li>
-<li>
-<strong>Gap filling.</strong> The one-sensor path did not back-fill empty time bins while the two-sensor path did, so the same gappy input produced different time grids. Both now produce a regular grid.</li>
-<li>
-<strong>Argument handling.</strong> <code>setup</code> is now <code><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg()</a></code>d, so omitting it no longer fails with <code>the condition has length &gt; 1</code> and a typo gives an informative error. <code><a href="../reference/read_trackball.html">read_trackball()</a></code> now calls the previously orphaned <code><a href="../reference/validate_trackball.html">validate_trackball()</a></code>, so <code>of_free</code> with a single file errors up front instead of failing later in <code>compute_xy_coordinates_free()</code>. <code>quiet</code> is now honoured.</li>
-</ul></li>
-<li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> warns when <code>col_time</code> resolves to a non-datetime column and two sensors are given. A per-board device counter has a sensor-local origin and cannot cross-reference two files — in the dataset behind <a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a> the two counters differ by 36.8 s while the true offset is 4.2 s. Use the PC datetime column instead. The warning has class <code>aniread_sensor_local_clock</code>.</p></li>
-<li><p><code>ensure_header_match()</code> no longer rejects a character <code>col_time</code> on files that <em>do</em> have named headers; it now aborts only when the file is headerless.</p></li>
-</ul></div>
-<div class="section level3">
-<h3 id="documentation-0-5-1-9002">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-5-1-9002"></a></h3>
-<ul><li>
-<code><a href="../reference/read_trackball.html">?read_trackball</a></code> documents the raw Bonsai layout (<code>dx, dy, device_clock_us, pc_datetime, interval_s</code>), the requirement that <code>col_time</code> be a shared clock when two sensors are given, and that empty time bins are filled with zero motion — a deliberate assumption about this logger, which emits no row while the ball is still, rather than a general claim about optical flow.</li>
+<code><a href="../reference/read_trackball.html">?read_trackball</a></code> documents the raw Bonsai layout, the requirement that <code>col_time</code> be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.</li>
 </ul></div>
 </div>
     <div class="section level2">
