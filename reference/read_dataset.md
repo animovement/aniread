@@ -15,7 +15,7 @@ read_dataset(paths, source = "auto", ...)
 - paths:
 
   Path to the file to read. A few readers take more than one path -
-  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   takes one per sensor - in which case pass them all; detection inspects
   the first.
 
@@ -23,17 +23,17 @@ read_dataset(paths, source = "auto", ...)
 
   Which source software wrote the file. `"auto"` (the default) detects
   it with
-  [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md).
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md).
   Otherwise one of the names in
-  [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md).
+  [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md).
 
 - ...:
 
   Passed on to the reader for `source`. This is how arguments that only
   some readers take are supplied, e.g. `sampling_rate` for
-  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   or `path_probabilities` for
-  [`read_idtracker()`](http://animovement.dev/aniread/reference/read_idtracker.md).
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md).
 
 ## Value
 
@@ -50,21 +50,21 @@ underlying reader returns - an
 tracking data, or an
 [anievent](http://animovement.dev/aniframe/reference/anievent.md) for
 behavioural events from
-[`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md).
+[`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md).
 
 DeepLabCut and LightningPose CSV exports are structurally identical, so
 a file in that format cannot be attributed to one or the other. Such a
 file is read with
-[`read_deeplabcut()`](http://animovement.dev/aniread/reference/read_deeplabcut.md) -
+[`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md) -
 the parse is the same either way - and its `source` metadata is set to
 `"deeplabcut/lightningpose"` to record that the distinction is
 undetermined. Pass `source` explicitly to override this.
 
 ## See also
 
-[`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+[`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
 to detect the format without reading,
-[`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+[`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
 for what is supported, and the individual `read_*()` functions for
 format-specific arguments.
 

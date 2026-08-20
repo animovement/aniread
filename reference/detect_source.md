@@ -3,7 +3,7 @@
 Works out which of the supported source software formats a file is in,
 by looking at the file itself rather than trusting its name. This is
 what
-[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 uses when `source = "auto"`.
 
 Candidates are first narrowed to the sources registered for the file's
@@ -21,13 +21,13 @@ detect_source(paths)
 - paths:
 
   Path to the file. If several paths are given (as
-  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   takes), only the first is inspected.
 
 ## Value
 
 The source name, as it appears in
-[`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md),
+[`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md),
 or the combined `"deeplabcut/lightningpose"`.
 
 ## Details
@@ -35,9 +35,9 @@ or the combined `"deeplabcut/lightningpose"`.
 DeepLabCut and LightningPose export structurally identical CSV files, so
 a file in that format matches both. Rather than guess, `detect_source()`
 returns the combined name `"deeplabcut/lightningpose"`;
-[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 reads it with
-[`read_deeplabcut()`](http://animovement.dev/aniread/reference/read_deeplabcut.md) -
+[`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md) -
 the parse is the same either way - and records the combined name as the
 source, so the ambiguity is preserved rather than silently resolved.
 
@@ -56,9 +56,9 @@ and treats an error as "did not match".
 
 ## See also
 
-[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 to read the file,
-[`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+[`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
 for the supported formats.
 
 ## Examples

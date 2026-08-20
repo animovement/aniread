@@ -61,7 +61,7 @@ read_trackball(
 
   For `of_fixed` setup: the sensor count for a full 360 degree rotation.
   Can be obtained using
-  [`calibrate_trackball()`](http://animovement.dev/aniread/reference/calibrate_trackball.md).
+  [`calibrate_trackball()`](https://animovement.dev/aniread/reference/calibrate_trackball.md).
 
 - ball_diameter:
 

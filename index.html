@@ -13,6 +13,7 @@
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="aniread – An R package for reading and writing movement data">
 <meta name="description" content="An R package for reading and writing movement data.">
 <meta property="og:description" content="An R package for reading and writing movement data.">
+<meta property="og:image" content="https://animovement.dev/aniread/logo.svg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -46,7 +47,7 @@
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animetric/">animetric</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animovement/">animovement</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/aniprocess/">aniprocess</a></li>
-    <li><a class="external-link dropdown-item" href="https://animovement.dev/aniread/">aniread</a></li>
+    <li><a class="dropdown-item" href="https://animovement.dev/aniread/">aniread</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/anispace/">anispace</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/anivis/">anivis</a></li>
   </ul>
@@ -69,8 +70,11 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="aniread">aniread<a class="anchor" aria-label="anchor" href="#aniread"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="aniread-">aniread 
+<a class="anchor" aria-label="anchor" href="#aniread-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p><em>An R package for reading and writing movement data</em></p>
@@ -83,7 +87,7 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'aniread'</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'https://animovement.r-universe.dev'</span>, <span class="st">'https://cloud.r-project.org'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Once you have installed the package, you can load it with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="http://animovement.dev/aniread/">"aniread"</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="http://animovement.dev/aniread/" class="external-link">"aniread"</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
@@ -92,24 +96,23 @@
 <p>To cite <em>aniread</em> in publications use:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"aniread"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; To cite aniread in publications use:</span></span>
+<span><span class="co">#&gt; To cite aniread in publications, please cite the animovement toolbox as</span></span>
+<span><span class="co">#&gt; a whole (the first entry below). If your work used only aniread, you</span></span>
+<span><span class="co">#&gt; may cite the package directly instead (the second entry).</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Roald-Arbøl M (2026). "animovement: An R toolbox for analysing</span></span>
+<span><span class="co">#&gt;   movement across space and time." doi:10.5281/zenodo.13235277</span></span>
+<span><span class="co">#&gt;   &lt;https://doi.org/10.5281/zenodo.13235277&gt;.</span></span>
+<span><span class="co">#&gt;   &lt;https://animovement.dev/animovement/&gt;.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   Roald-Arbøl M (2026). "aniread: An R package for reading and writing</span></span>
-<span><span class="co">#&gt;   movement data." doi:10.5281/zenodo.17352843</span></span>
-<span><span class="co">#&gt;   &lt;https://doi.org/10.5281/zenodo.17352843&gt;,</span></span>
-<span><span class="co">#&gt;   &lt;http://animovement.dev/aniread/&gt;.</span></span>
+<span><span class="co">#&gt;   movement data." doi:10.5281/zenodo.17352842</span></span>
+<span><span class="co">#&gt;   &lt;https://doi.org/10.5281/zenodo.17352842&gt;.</span></span>
+<span><span class="co">#&gt;   &lt;https://animovement.dev/aniread/&gt;.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   @Misc{aniread,</span></span>
-<span><span class="co">#&gt;     doi = {10.5281/zenodo.17352843},</span></span>
-<span><span class="co">#&gt;     title = {aniread: An R package for reading and writing movement data},</span></span>
-<span><span class="co">#&gt;     author = {Mikkel Roald-Arbøl},</span></span>
-<span><span class="co">#&gt;     year = {2026},</span></span>
-<span><span class="co">#&gt;     url = {http://animovement.dev/aniread/},</span></span>
-<span><span class="co">#&gt;     abstract = {An R package for reading and writing movement data.},</span></span>
-<span><span class="co">#&gt;     version = {0.4.0},</span></span>
-<span><span class="co">#&gt;   }</span></span></code></pre></div>
+<span><span class="co">#&gt; To see these entries in BibTeX format, use 'print(&lt;citation&gt;,</span></span>
+<span><span class="co">#&gt; bibtex=TRUE)', 'toBibtex(.)', or set</span></span>
+<span><span class="co">#&gt; 'options(citation.bibtex.max=999)'.</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -148,7 +151,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://doi.org/10.5281/zenodo.17352843" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17352843.svg" alt="DOI"></a></li>
+<li><a href="https://doi.org/10.5281/zenodo.17352842" class="external-link"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.17352842.svg" alt="DOI"></a></li>
 <li><a href="https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://animovement.r-universe.dev" class="external-link"><img src="https://animovement.r-universe.dev/badges/aniread" alt="aniread status badge"></a></li>
 <li><a href="https://app.codecov.io/gh/animovement/aniread" class="external-link"><img src="https://codecov.io/gh/animovement/aniread/graph/badge.svg" alt="Codecov test coverage"></a></li>

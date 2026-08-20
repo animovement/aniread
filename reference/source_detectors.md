@@ -2,7 +2,7 @@
 
 One predicate per supported format, each returning `TRUE` when the file
 at `path` was written by that source software. See
-[`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+[`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
 for the contract they follow and how they are dispatched.
 
 ## Usage

@@ -35,15 +35,15 @@ row per supported source and the columns:
 Suffixes are returned without a leading dot (e.g. `"csv"`, `"h5"`),
 matching the convention used throughout `aniread` (see the
 `expected_suffix` argument of the internal file validator). The generic
-[`read_custom()`](http://animovement.dev/aniread/reference/read_custom.md)
+[`read_custom()`](https://animovement.dev/aniread/reference/read_custom.md)
 reader is intentionally omitted because it has no fixed source software
 or file suffix.
 
 The `source` names listed here are exactly those accepted by the
 `source` argument of
-[`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md),
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
 and returned by
-[`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md).
+[`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md).
 
 ## Examples
 

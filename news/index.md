@@ -4,9 +4,9 @@
 
 ### Bug fixes
 
-- [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+- [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   and
-  [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
   cope with a run of serial-port junk before the first complete record,
   not just a single partial row
   ([\#94](https://github.com/animovement/aniread/issues/94)). The skip
@@ -21,16 +21,16 @@
 
 ### New features
 
-- [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+- [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
   reads any supported format through one entry point, working out which
   source software wrote the file rather than requiring you to know in
   advance ([\#73](https://github.com/animovement/aniread/issues/73)).
   Pass `source` to name the format explicitly, or `...` to reach a
   reader’s own arguments. It returns whatever the underlying reader
   returns — an `aniframe`, or an `anievent` for
-  [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md).
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md).
 
-- [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+- [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
   reports which software wrote a file without reading it. Candidates are
   narrowed by suffix, then each detector inspects the contents, which
   matters because twelve sources read `.csv`. DeepLabCut and
@@ -42,22 +42,22 @@
 
 ### Breaking changes
 
-- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+- [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
   no longer lists `csv` as a SLEAP suffix —
-  [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md)
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   cannot read it, and auto-detection would have routed such files
   straight into that error. Restored when the reader gains support
   ([\#87](https://github.com/animovement/aniread/issues/87)).
 
-- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+- [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
   renames the `trackball` source to `trackball_bonsai`, matching the
   `source` metadata
-  [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+  [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   actually stamps.
 
 ### Bug fixes
 
-- [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+- [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   reads real two-sensor Bonsai optical-flow captures
   ([\#85](https://github.com/animovement/aniread/issues/85)). It
   previously either aborted with an error pointing nowhere near the
@@ -66,22 +66,22 @@
   filling and argument handling were each at fault; see the PR for the
   breakdown.
 
-- [`read_trackball()`](http://animovement.dev/aniread/reference/read_trackball.md)
+- [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   warns when `col_time` resolves to a non-datetime column and two
   sensors are given — a per-board counter has a sensor-local origin and
   cannot align two files. Warning class `aniread_sensor_local_clock`.
 
-- [`read_animalta()`](http://animovement.dev/aniread/reference/read_animalta.md)
+- [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
   works out which export layout a file uses instead of being told
   ([\#88](https://github.com/animovement/aniread/issues/88)). `detailed`
   defaults to `"auto"` and reads the answer from the header. This was
   the one case where
-  [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
   identified a file correctly and
-  [`read_dataset()`](http://animovement.dev/aniread/reference/read_dataset.md)
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
   then failed on it.
 
-- [`detect_source()`](http://animovement.dev/aniread/reference/detect_source.md)
+- [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
   recognises a Bonsai optical-flow capture whether or not it carries a
   header row.
 
@@ -90,7 +90,7 @@
 
 ### Documentation
 
-- [`?read_trackball`](http://animovement.dev/aniread/reference/read_trackball.md)
+- [`?read_trackball`](https://animovement.dev/aniread/reference/read_trackball.md)
   documents the raw Bonsai layout, the requirement that `col_time` be a
   shared clock with two sensors, and that empty time bins are filled
   with zero motion — an assumption about this logger rather than about
@@ -100,7 +100,7 @@
 
 ### New features
 
-- [`get_supported_sources()`](http://animovement.dev/aniread/reference/get_supported_sources.md)
+- [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
   returns the source software `aniread` can read as a tibble of `source`
   / `reader` / `suffix`, so downstream packages can discover supported
   formats programmatically instead of hard-coding them. Closes
@@ -108,7 +108,7 @@
 
 ### Bug fixes
 
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   no longer drops frames in which nothing was detected. Octron omits
   such frames entirely; the reader now reinstates them as all-NA rows
   across the full track × frame grid (using the analysed-frame count
@@ -124,7 +124,7 @@
 
 ### New features
 
-- [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md)
+- [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   imports behavioural events from a [BORIS](https://www.boris.unito.it/)
   export into an
   [`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html).
@@ -159,25 +159,25 @@
 ### Dependencies
 
 - `aniframe (>= 0.6.0)` is now required, since
-  [`read_boris()`](http://animovement.dev/aniread/reference/read_boris.md)
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   produces an `anievent` object — a new class added in aniframe 0.6.0.
 
 ## aniread 0.4.1
 
 ### New features
 
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   gains a `properties` argument for picking which region-property
   columns to read (`"all"` by default; pass a character vector for a
   subset or `NULL` to skip them). `area` is auto-included when
   `method = "weighted"`.
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   normalises hyphens to underscores in column names (`moments_hu-0` →
   `moments_hu_0`).
 
 ### Performance
 
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   is now substantially faster on large multi-segment files, especially
   when only a few `properties` are requested.
 
@@ -196,18 +196,18 @@
   so the returned aniframe is in the conventional `bottom_left` origin.
   This fixes plots being upside-down without manual reorientation.
   Affects
-  [`read_animalta()`](http://animovement.dev/aniread/reference/read_animalta.md),
-  [`read_bonsai()`](http://animovement.dev/aniread/reference/read_bonsai.md),
-  [`read_deeplabcut()`](http://animovement.dev/aniread/reference/read_deeplabcut.md),
-  [`read_fasttrack()`](http://animovement.dev/aniread/reference/read_fasttrack.md),
-  [`read_idtracker()`](http://animovement.dev/aniread/reference/read_idtracker.md),
-  [`read_lightningpose()`](http://animovement.dev/aniread/reference/read_lightningpose.md),
-  [`read_movement()`](http://animovement.dev/aniread/reference/read_movement.md),
-  [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md),
-  [`read_sleap()`](http://animovement.dev/aniread/reference/read_sleap.md),
-  [`read_trackmate()`](http://animovement.dev/aniread/reference/read_trackmate.md),
+  [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md),
+  [`read_bonsai()`](https://animovement.dev/aniread/reference/read_bonsai.md),
+  [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md),
+  [`read_fasttrack()`](https://animovement.dev/aniread/reference/read_fasttrack.md),
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md),
+  [`read_lightningpose()`](https://animovement.dev/aniread/reference/read_lightningpose.md),
+  [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md),
+  [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md),
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md),
+  [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md),
   and
-  [`read_trex()`](http://animovement.dev/aniread/reference/read_trex.md)
+  [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
   ([\#61](https://github.com/animovement/aniread/issues/61)).
 - `aniframe (>= 0.5.0)` is now required, since the reflection uses the
   new `set_origin()` / `set_y_height()` API.
@@ -220,16 +220,16 @@
   idtracker.ai CSV, movement netCDF). When omitted, the reader falls
   back to source-extracted values where available, and finally to
   `max(y)`.
-- [`read_idtracker()`](http://animovement.dev/aniread/reference/read_idtracker.md)
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
   now reads `/height` from the trajectories h5 file by default.
-- [`read_trackmate()`](http://animovement.dev/aniread/reference/read_trackmate.md)
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
   now reads the frame height from `Settings/ImageData/@height` in the
   XML by default.
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   continues to read `video_height:` from the CSV header, but now also
   accepts a `video_height` override and stores the value in the aniframe
   metadata.
-- [`read_octron()`](http://animovement.dev/aniread/reference/read_octron.md)
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   gains a `method` argument to handle frames where Octron emitted
   multiple mask segments for the same track
   ([\#67](https://github.com/animovement/aniread/issues/67)). One of
@@ -240,7 +240,7 @@
 
 ### Bug fixes
 
-- [`read_idtracker()`](http://animovement.dev/aniread/reference/read_idtracker.md)
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
   now accepts both the legacy `seconds` and the newer `time` leading
   column in idtracker.ai CSV exports
   ([\#60](https://github.com/animovement/aniread/issues/60)).

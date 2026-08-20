@@ -10,17 +10,29 @@
 Source:
 [`inst/CITATION`](https://github.com/animovement/aniread/blob/main/inst/CITATION)
 
+Roald-Arbøl M (2026). “animovement: An R toolbox for analysing movement
+across space and time.”
+[doi:10.5281/zenodo.13235277](https://doi.org/10.5281/zenodo.13235277).
+<https://animovement.dev/animovement/>.
+
+    @Misc{animovement,
+      title = {animovement: An R toolbox for analysing movement across space and time},
+      author = {Mikkel Roald-Arbøl},
+      year = {2026},
+      doi = {10.5281/zenodo.13235277},
+      url = {https://animovement.dev/animovement/},
+    }
+
 Roald-Arbøl M (2026). “aniread: An R package for reading and writing
 movement data.”
-[doi:10.5281/zenodo.17352843](https://doi.org/10.5281/zenodo.17352843).
-<http://animovement.dev/aniread/>.
+[doi:10.5281/zenodo.17352842](https://doi.org/10.5281/zenodo.17352842).
+<https://animovement.dev/aniread/>.
 
     @Misc{aniread,
-      doi = {10.5281/zenodo.17352843},
       title = {aniread: An R package for reading and writing movement data},
       author = {Mikkel Roald-Arbøl},
       year = {2026},
-      url = {http://animovement.dev/aniread/},
-      abstract = {An R package for reading and writing movement data.},
-      version = {0.6.0},
+      doi = {10.5281/zenodo.17352842},
+      version = {0.6.0.9000},
+      url = {https://animovement.dev/aniread/},
     }

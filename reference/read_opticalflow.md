@@ -6,7 +6,7 @@ Time is returned on an **absolute** scale (epoch seconds when the time
 column is a datetime, otherwise the raw device clock scaled to seconds).
 Choosing an origin is left to the caller: with two sensors, the offset
 between the files is the only thing
-[`join_trackball_files()`](http://animovement.dev/aniread/reference/join_trackball_files.md)
+[`join_trackball_files()`](https://animovement.dev/aniread/reference/join_trackball_files.md)
 has to align them on, so zeroing each file to its own start here would
 destroy it.
 
