@@ -1,0 +1,10 @@
+video_name: test_video.mp4
+frame_count: 5
+frame_count_analyzed: 3
+video_height: 1000
+video_width: 1000
+created_at: 2025-10-04 09:06:31.546592
+frame_counter,frame_idx,track_id,label,confidence,pos_x,pos_y,bbox_area,bbox_x_min,bbox_x_max,bbox_y_min,bbox_y_max,area,eccentricity,solidity,orientation
+0,0,1,worm,0.917,320.0,293.0,16876.6,265.0,364.5,190.2,359.9,8404.0,0.918,0.889,-0.458
+1,1,1,worm,0.915,314.0,304.0,18039.3,258.3,360.3,202.7,379.6,8816.0,0.929,0.869,-0.521
+2,2,1,worm,0.916,309.0,318.0,17867.0,251.1,357.9,217.1,384.4,8508.0,0.924,0.911,-0.527

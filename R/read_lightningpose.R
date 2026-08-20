@@ -9,6 +9,9 @@
 #'   in pixels. Falls back to `max(y)` when not supplied.
 #'
 #' @return an aniframe
+#' @examples
+#' path <- system.file("extdata", "lightningpose.csv", package = "aniread")
+#' read_lightningpose(path)
 #' @export
 read_lightningpose <- function(path, video_height = NULL) {
   read_deeplabcut(path, video_height = video_height) |>

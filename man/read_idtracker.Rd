@@ -33,3 +33,7 @@ from the \verb{/height} dataset. CSV exports do not include the frame
 height, so pass \code{video_height} explicitly to get an accurate flip
 (otherwise \code{max(y)} is used as a fallback).
 }
+\examples{
+path <- system.file("extdata", "idtracker.csv", package = "aniread")
+read_idtracker(path)
+}

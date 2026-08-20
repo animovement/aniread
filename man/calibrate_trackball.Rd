@@ -34,3 +34,8 @@ A list with two elements:
 Reads a calibration recording and computes calibration values. Spin the ball
 a known number of times in one direction while recording.
 }
+\examples{
+# Roll the ball a known number of turns, then convert sensor counts to cm
+path <- system.file("extdata", "trackball_sensor_1.csv", package = "aniread")
+calibrate_trackball(path, ball_diameter = 5, ball_rotations = 10)
+}

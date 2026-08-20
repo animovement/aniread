@@ -12,6 +12,9 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
 #' @return an aniframe
+#' @examples
+#' path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
+#' read_deeplabcut(path)
 #' @export
 read_deeplabcut <- function(path, video_height = NULL) {
   # Validate file

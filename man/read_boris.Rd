@@ -60,6 +60,10 @@ them. Modifiers travel via the optional
 single-column (\code{a|b|None}) layout, and comma-separated values
 within a single slot are all accepted.
 }
+\examples{
+path <- system.file("extdata", "boris.csv", package = "aniread")
+read_boris(path)
+}
 \references{
 \itemize{
 \item Friard, O., & Gamba, M. (2016). BORIS: a free, versatile open-source

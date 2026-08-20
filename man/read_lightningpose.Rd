@@ -20,3 +20,7 @@ Read csv files from LightningPose (LP). Like DeepLabCut, the source
 is in image (top-left) coordinates and the reader reflects y to
 \code{bottom_left}.
 }
+\examples{
+path <- system.file("extdata", "lightningpose.csv", package = "aniread")
+read_lightningpose(path)
+}

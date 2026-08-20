@@ -12,6 +12,10 @@
 #' @return A list with two elements:
 #'   - `counts_per_rotation`: Sensor counts per full rotation (for `ball_calibration` in `read_trackball`).
 #'   - `calibration_factor`: Distance per sensor count (for `set_unit_space`).
+#' @examples
+#' # Roll the ball a known number of turns, then convert sensor counts to cm
+#' path <- system.file("extdata", "trackball_sensor_1.csv", package = "aniread")
+#' calibrate_trackball(path, ball_diameter = 5, ball_rotations = 10)
 #' @export
 calibrate_trackball <- function(
   path,

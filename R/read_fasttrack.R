@@ -14,6 +14,9 @@
 #'
 #' @return An aniframe
 #'
+#' @examples
+#' path <- system.file("extdata", "fasttrack.txt", package = "aniread")
+#' read_fasttrack(path)
 #' @export
 read_fasttrack <- function(path, video_height = NULL) {
   # Validate file

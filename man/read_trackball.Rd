@@ -74,3 +74,12 @@ first stopped, are discarded rather than zero-filled. \code{time = 0} is the fir
 shared sample, and the \code{start_datetime} metadata is the wall-clock instant of
 that sample.
 }
+\examples{
+# A free-floating ball is tracked by two optical flow sensors,
+# so both files are supplied together
+paths <- c(
+  system.file("extdata", "trackball_sensor_1.csv", package = "aniread"),
+  system.file("extdata", "trackball_sensor_2.csv", package = "aniread")
+)
+read_trackball(paths, setup = "of_free", sampling_rate = 60, col_time = "t")
+}

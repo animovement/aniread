@@ -14,6 +14,9 @@
 #'
 #' @return a movement dataframe
 #'
+#' @examples
+#' path <- system.file("extdata", "bonsai.csv", package = "aniread")
+#' read_bonsai(path)
 #' @export
 read_bonsai <- function(path, video_height = NULL) {
   # There can be tracking from multiple ROIs at the same time

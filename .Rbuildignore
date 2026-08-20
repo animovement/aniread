@@ -12,3 +12,4 @@
 ^README\.qmd$
 ^.vscode$
 ^_snaps$
+^AGENTS\.md$

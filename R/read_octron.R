@@ -58,6 +58,9 @@
 #'
 #' @return An aniframe
 #'
+#' @examples
+#' path <- system.file("extdata", "octron.csv", package = "aniread")
+#' read_octron(path)
 #' @export
 read_octron <- function(
   path,
