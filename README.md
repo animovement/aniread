@@ -1,11 +1,12 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# aniread
+<!-- README.md is generated from README.qmd. Please edit that file -->
+
+# aniread <a href="https://animovement.dev/aniread/"><img src="man/figures/logo.png" align="right" height="139" alt="aniread hex logo" /></a>
 
 <!-- badges: start -->
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352843.svg)](https://doi.org/10.5281/zenodo.17352843)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352842.svg)](https://doi.org/10.5281/zenodo.17352842)
 [![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)
@@ -44,22 +45,21 @@ To cite *aniread* in publications use:
 
 ``` r
 citation("aniread")
-#> To cite aniread in publications use:
+#> To cite aniread in publications, please cite the animovement toolbox as
+#> a whole (the first entry below). If your work used only aniread, you
+#> may cite the package directly instead (the second entry).
+#> 
+#>   Roald-Arbøl M (2026). "animovement: An R toolbox for analysing
+#>   movement across space and time." doi:10.5281/zenodo.13235277
+#>   <https://doi.org/10.5281/zenodo.13235277>.
+#>   <https://animovement.dev/animovement/>.
 #> 
 #>   Roald-Arbøl M (2026). "aniread: An R package for reading and writing
-#>   movement data." doi:10.5281/zenodo.17352843
-#>   <https://doi.org/10.5281/zenodo.17352843>,
-#>   <http://animovement.dev/aniread/>.
+#>   movement data." doi:10.5281/zenodo.17352842
+#>   <https://doi.org/10.5281/zenodo.17352842>.
+#>   <https://animovement.dev/aniread/>.
 #> 
-#> A BibTeX entry for LaTeX users is
-#> 
-#>   @Misc{aniread,
-#>     doi = {10.5281/zenodo.17352843},
-#>     title = {aniread: An R package for reading and writing movement data},
-#>     author = {Mikkel Roald-Arbøl},
-#>     year = {2026},
-#>     url = {http://animovement.dev/aniread/},
-#>     abstract = {An R package for reading and writing movement data.},
-#>     version = {0.4.0},
-#>   }
+#> To see these entries in BibTeX format, use 'print(<citation>,
+#> bibtex=TRUE)', 'toBibtex(.)', or set
+#> 'options(citation.bibtex.max=999)'.
 ```

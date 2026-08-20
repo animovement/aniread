@@ -8,18 +8,18 @@ message: 'To cite package "aniread" in publications use:'
 type: software
 license: MIT
 title: 'aniread: An R package for reading and writing movement data.'
-version: 0.6.0
+version: 0.6.0.9000
 date-released: 2026-08-18
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.17352843
+    value: 10.5281/zenodo.17352842
 abstract: An R package for reading and writing movement data.
 authors:
 - family-names: Roald-Arbøl
   given-names: Mikkel
   email: animovement.84w1m@passmail.com
   orcid: https://orcid.org/0000-0002-9998-0058
-url: http://animovement.dev/aniread/
+url: https://animovement.dev/aniread/
 contact:
 - family-names: Roald-Arbøl
   given-names: Mikkel
