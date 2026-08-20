@@ -1,23 +1,28 @@
 ---
-output: github_document
+format:
+  gfm:
+    # Without this, pandoc appends ".png" to extensionless image URLs and every
+    # shields.io / R-universe badge in this README breaks.
+    default-image-extension: ""
+knitr:
+  opts_chunk:
+    fig.path: "man/figures/README-"
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.qmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-",
   out.width = "100%"
 )
-install.packages('aniread', repos = c('https://animovement.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
 
-# aniread
+# aniread <a href="https://animovement.dev/aniread/"><img src="man/figures/logo.png" align="right" height="139" alt="aniread hex logo" /></a>
 <!-- badges: start -->
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352843.svg)](https://doi.org/10.5281/zenodo.17352843)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17352842.svg)](https://doi.org/10.5281/zenodo.17352842)
 [![R-CMD-check](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animovement/aniread/actions/workflows/R-CMD-check.yaml)
 [![aniread status
 badge](https://animovement.r-universe.dev/badges/aniread)](https://animovement.r-universe.dev)

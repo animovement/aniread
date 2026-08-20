@@ -9,6 +9,6 @@
 ^pkgdown$
 ^\.github$
 ^CITATION\.cff$
-^README\.Rmd$
+^README\.qmd$
 ^.vscode$
 ^_snaps$
