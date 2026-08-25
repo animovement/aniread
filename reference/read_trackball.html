@@ -148,6 +148,36 @@ shared sample, and the <code>start_datetime</code> metadata is the wall-clock in
 that sample.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A free-floating ball is tracked by two optical flow sensors,</span></span></span>
+<span class="r-in"><span><span class="co"># so both files are supplied together</span></span></span>
+<span class="r-in"><span><span class="va">paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"trackball_sensor_1.csv"</span>, package <span class="op">=</span> <span class="st">"aniread"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"trackball_sensor_2.csv"</span>, package <span class="op">=</span> <span class="st">"aniread"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">read_trackball</span><span class="op">(</span><span class="va">paths</span>, setup <span class="op">=</span> <span class="st">"of_free"</span>, sampling_rate <span class="op">=</span> <span class="fl">60</span>, col_time <span class="op">=</span> <span class="st">"t"</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`col_time` does not resolve to a datetime column.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> With two sensors, `col_time` must be a clock both sensors share; a per-board</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   device counter has a sensor-local origin and cannot align the two files.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> For a Bonsai capture, use the PC datetime column (`col_time = 4`) rather than</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   the device counter (`col_time = 3`).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:     centroid</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Sampling rate: 60 Hz</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Time:          00:00:00.000 to 00:00:00.133</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   keypoint   time     x     y</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> centroid 0          0     0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> centroid 0.016<span style="text-decoration: underline;">7</span>     2     2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> centroid 0.033<span style="text-decoration: underline;">3</span>     5     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> centroid 0.05       6     6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> centroid 0.066<span style="text-decoration: underline;">7</span>     6     6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> centroid 0.083<span style="text-decoration: underline;">3</span>     7     7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">7</span> centroid 0.1       12    12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">8</span> centroid 0.117     16    16</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">9</span> centroid 0.133     22    22</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

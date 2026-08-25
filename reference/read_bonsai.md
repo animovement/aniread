@@ -26,3 +26,24 @@ read_bonsai(path, video_height = NULL)
 ## Value
 
 a movement dataframe
+
+## Examples
+
+``` r
+path <- system.file("extdata", "bonsai.csv", package = "aniread")
+read_bonsai(path)
+#> # Individuals: NA
+#> # Keypoints:   centroid
+#>    individual keypoint   time     x      y confidence
+#>    <fct>      <fct>     <dbl> <dbl>  <dbl>      <dbl>
+#>  1 NA         centroid 0       153.  0.828         NA
+#>  2 NA         centroid 0.0234  153. 49.6           NA
+#>  3 NA         centroid 0.0554  153. 50.4           NA
+#>  4 NA         centroid 0.0859  153. 48.7           NA
+#>  5 NA         centroid 0.117   153. 40.9           NA
+#>  6 NA         centroid 0.162   153. 40.0           NA
+#>  7 NA         centroid 0.194   154.  0.666         NA
+#>  8 NA         centroid 0.226   153.  0.583         NA
+#>  9 NA         centroid 0.260   153.  0             NA
+#> 10 NA         centroid 0.292   154.  0.281         NA
+```

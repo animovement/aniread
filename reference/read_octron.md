@@ -89,3 +89,19 @@ detects multiple disconnected mask segments belonging to the same track
 in a single frame. The `method` argument controls how those rows are
 reduced to scalar values, or whether they are expanded into one row per
 segment.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "octron.csv", package = "aniread")
+read_octron(path)
+#> # Labels:    worm
+#> # Tracks:    1
+#> # Keypoints: centroid
+#>   label track keypoint  time     x     y confidence bbox_area  area eccentricity
+#>   <fct> <int> <fct>    <dbl> <dbl> <dbl>      <dbl>     <dbl> <dbl>        <dbl>
+#> 1 worm      1 centroid     0   320   707      0.917    16877.  8404        0.918
+#> 2 worm      1 centroid     1   314   696      0.915    18039.  8816        0.929
+#> 3 worm      1 centroid     2   309   682      0.916    17867   8508        0.924
+#> # ℹ 2 more variables: solidity <dbl>, orientation <dbl>
+```

@@ -105,3 +105,34 @@ recordings - readings from before the second sensor started, or after
 the first stopped, are discarded rather than zero-filled. `time = 0` is
 the first shared sample, and the `start_datetime` metadata is the
 wall-clock instant of that sample.
+
+## Examples
+
+``` r
+# A free-floating ball is tracked by two optical flow sensors,
+# so both files are supplied together
+paths <- c(
+  system.file("extdata", "trackball_sensor_1.csv", package = "aniread"),
+  system.file("extdata", "trackball_sensor_2.csv", package = "aniread")
+)
+read_trackball(paths, setup = "of_free", sampling_rate = 60, col_time = "t")
+#> Warning: `col_time` does not resolve to a datetime column.
+#> ! With two sensors, `col_time` must be a clock both sensors share; a per-board
+#>   device counter has a sensor-local origin and cannot align the two files.
+#> ℹ For a Bonsai capture, use the PC datetime column (`col_time = 4`) rather than
+#>   the device counter (`col_time = 3`).
+#> # Keypoints:     centroid
+#> # Sampling rate: 60 Hz
+#> # Time:          00:00:00.000 to 00:00:00.133
+#>   keypoint   time     x     y
+#>   <fct>     <dbl> <dbl> <dbl>
+#> 1 centroid 0          0     0
+#> 2 centroid 0.0167     2     2
+#> 3 centroid 0.0333     5     5
+#> 4 centroid 0.05       6     6
+#> 5 centroid 0.0667     6     6
+#> 6 centroid 0.0833     7     7
+#> 7 centroid 0.1       12    12
+#> 8 centroid 0.117     16    16
+#> 9 centroid 0.133     22    22
+```

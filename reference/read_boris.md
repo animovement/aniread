@@ -75,3 +75,22 @@ with metadata fields `source`, `filename`, `unit_time`, and
   *Methods in Ecology and Evolution*, 7(11), 1325-1330.
   [doi:10.1111/2041-210X.12584](https://doi.org/10.1111/2041-210X.12584)
   .
+
+## Examples
+
+``` r
+path <- system.file("extdata", "boris.csv", package = "aniread")
+read_boris(path)
+#> # anievent:       4 × 12
+#> # Subjects:       subject1, subject2
+#> # Event channels: behavior
+#> # Event types:    4 state
+#> # Sampling rate:  25 Hz
+#>   subject  observation    start  stop channel  type  label media_file           
+#>   <fct>    <fct>          <dbl> <dbl> <chr>    <fct> <fct> <chr>                
+#> 1 subject1 observation #1   3.3  7.75 behavior state s     video_test_25fps_360…
+#> 2 subject1 observation #1   9.9 16.2  behavior state s     video_test_25fps_360…
+#> 3 subject1 observation #1  18.4 24.5  behavior state s     video_test_25fps_360…
+#> 4 subject2 observation #1  38.4 46.1  behavior state s     video_test_25fps_360…
+#> # ℹ 4 more variables: observation_date <chr>, a <chr>, b <chr>, c <chr>
+```

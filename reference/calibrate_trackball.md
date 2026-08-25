@@ -46,3 +46,17 @@ A list with two elements:
 
 - `calibration_factor`: Distance per sensor count (for
   `set_unit_space`).
+
+## Examples
+
+``` r
+# Roll the ball a known number of turns, then convert sensor counts to cm
+path <- system.file("extdata", "trackball_sensor_1.csv", package = "aniread")
+calibrate_trackball(path, ball_diameter = 5, ball_rotations = 10)
+#> $counts_per_rotation
+#> [1] 2.2
+#> 
+#> $calibration_factor
+#> [1] 7.139983
+#> 
+```
