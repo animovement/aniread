@@ -16,7 +16,7 @@ write_aniframe(data, filename, ...)
 - data:
 
   An **aniframe** object (see
-  [`aniframe::is_aniframe()`](http://animovement.dev/aniframe/reference/is_aniframe.md)).
+  [`aniframe::is_aniframe()`](https://animovement.dev/aniframe/reference/is_aniframe.html)).
 
 - filename:
 

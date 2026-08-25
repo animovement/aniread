@@ -111,7 +111,7 @@ within a single slot are all accepted."><meta property="og:image" content="https
     <div class="ref-description section level2">
     <p>Read behavioural events from a
 <a href="https://www.boris.unito.it/" class="external-link">BORIS</a> export into an
-<code><a href="http://animovement.dev/aniframe/reference/anievent.html" class="external-link">aniframe::anievent()</a></code>. Two flat-text BORIS exports are
+<code><a href="https://animovement.dev/aniframe/reference/anievent.html" class="external-link">aniframe::anievent()</a></code>. Two flat-text BORIS exports are
 supported: <strong>aggregated events</strong> (one row per bout, the default
 export shape) and <strong>tabular events</strong> (one row per START / STOP /
 POINT transition; paired into bouts by the reader).</p>
@@ -119,20 +119,20 @@ POINT transition; paired into bouts by the reader).</p>
 <code>unit_time = "s"</code> uses <code>Start (s)</code> / <code>Stop (s)</code> and works on any
 BORIS export. With <code>unit_time = "frame"</code> the reader uses the
 <code>Image index start</code> / <code>Image index stop</code> columns instead; frames
-stay aligned with rows of a host <code><a href="http://animovement.dev/aniframe/reference/aniframe.html" class="external-link">aniframe::aniframe()</a></code>, which
+stay aligned with rows of a host <code><a href="https://animovement.dev/aniframe/reference/aniframe.html" class="external-link">aniframe::aniframe()</a></code>, which
 keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If <code>"frame"</code> is
 requested but the export carries no image-index columns, the
 reader falls back to <code>"s"</code> with an informational message. FPS is
 recorded as <code>sampling_rate</code> metadata without rescaling the
-timestamps; call <code><a href="http://animovement.dev/aniframe/reference/set_sampling_rate.html" class="external-link">aniframe::set_sampling_rate()</a></code> later if you
+timestamps; call <code><a href="https://animovement.dev/aniframe/reference/set_sampling_rate.html" class="external-link">aniframe::set_sampling_rate()</a></code> later if you
 need to convert between frames and seconds.</p>
 <p>Channels: each row's <code>channel</code> is the value of BORIS's
 <code>Behavioral category</code> column when populated, falling back to the
 literal <code>"behavior"</code> otherwise; <code>label</code> is the behaviour name,
 and <code>type</code> is <code>"state"</code> or <code>"point"</code> mapped from BORIS's
 <code>Behavior type</code> column. Overlap between bouts of the same channel
-is permitted on the <code>anievent</code> side; <code><a href="http://animovement.dev/aniframe/reference/validate_anievent.html" class="external-link">aniframe::validate_anievent()</a></code>
+is permitted on the <code>anievent</code> side; <code><a href="https://animovement.dev/aniframe/reference/validate_anievent.html" class="external-link">aniframe::validate_anievent()</a></code>
 flags overlapping state bouts with a warning rather than rejecting
 them. Modifiers travel via the optional
 <code>modifiers</code> list-column; the multi-column (<code>Modifier #1</code>,
@@ -172,7 +172,7 @@ anievent with an aniframe to keep frame-aligned semantics.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An <code><a href="http://animovement.dev/aniframe/reference/anievent.html" class="external-link">aniframe::anievent()</a></code> with metadata fields <code>source</code>,
+    <p>An <code><a href="https://animovement.dev/aniframe/reference/anievent.html" class="external-link">aniframe::anievent()</a></code> with metadata fields <code>source</code>,
 <code>filename</code>, <code>unit_time</code>, and <code>sampling_rate</code> (when FPS is a
 single numeric in the export) populated.</p>
     </div>

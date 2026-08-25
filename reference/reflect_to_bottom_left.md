@@ -3,11 +3,11 @@
 Marks the data's `origin` as `"top_left"` (so the reflection is well
 defined), applies a user-supplied `video_height` to the `y_height`
 metadata when given, then calls
-[`aniframe::set_origin()`](http://animovement.dev/aniframe/reference/set_origin.md)
+[`aniframe::set_origin()`](https://animovement.dev/aniframe/reference/set_origin.html)
 to reflect y around `y_height`. Used by all readers whose source data is
 in an image / video coordinate system. When `video_height` is `NULL`,
 the `y_height` value already on the aniframe (set to `max(y)` by
-[`aniframe::as_aniframe()`](http://animovement.dev/aniframe/reference/as_aniframe.md)
+[`aniframe::as_aniframe()`](https://animovement.dev/aniframe/reference/as_aniframe.html)
 when not otherwise populated) is used.
 
 ## Usage

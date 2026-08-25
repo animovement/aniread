@@ -2,7 +2,7 @@
 
 Read behavioural events from a [BORIS](https://www.boris.unito.it/)
 export into an
-[`aniframe::anievent()`](http://animovement.dev/aniframe/reference/anievent.md).
+[`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html).
 Two flat-text BORIS exports are supported: **aggregated events** (one
 row per bout, the default export shape) and **tabular events** (one row
 per START / STOP / POINT transition; paired into bouts by the reader).
@@ -12,13 +12,13 @@ Time units come from the columns BORIS provides. The default
 export. With `unit_time = "frame"` the reader uses the
 `Image index start` / `Image index stop` columns instead; frames stay
 aligned with rows of a host
-[`aniframe::aniframe()`](http://animovement.dev/aniframe/reference/aniframe.md),
+[`aniframe::aniframe()`](https://animovement.dev/aniframe/reference/aniframe.html),
 which keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If `"frame"` is requested but the
 export carries no image-index columns, the reader falls back to `"s"`
 with an informational message. FPS is recorded as `sampling_rate`
 metadata without rescaling the timestamps; call
-[`aniframe::set_sampling_rate()`](http://animovement.dev/aniframe/reference/set_sampling_rate.md)
+[`aniframe::set_sampling_rate()`](https://animovement.dev/aniframe/reference/set_sampling_rate.html)
 later if you need to convert between frames and seconds.
 
 Channels: each row's `channel` is the value of BORIS's
@@ -27,7 +27,7 @@ Channels: each row's `channel` is the value of BORIS's
 `"state"` or `"point"` mapped from BORIS's `Behavior type` column.
 Overlap between bouts of the same channel is permitted on the `anievent`
 side;
-[`aniframe::validate_anievent()`](http://animovement.dev/aniframe/reference/validate_anievent.md)
+[`aniframe::validate_anievent()`](https://animovement.dev/aniframe/reference/validate_anievent.html)
 flags overlapping state bouts with a warning rather than rejecting them.
 Modifiers travel via the optional `modifiers` list-column; the
 multi-column (`Modifier #1`, `Modifier #2`, ...) layout, the legacy
@@ -64,7 +64,7 @@ read_boris(
 ## Value
 
 An
-[`aniframe::anievent()`](http://animovement.dev/aniframe/reference/anievent.md)
+[`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html)
 with metadata fields `source`, `filename`, `unit_time`, and
 `sampling_rate` (when FPS is a single numeric in the export) populated.
 

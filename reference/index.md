@@ -59,7 +59,7 @@ for their format-specific arguments.
 ## Event-data readers
 
 Readers for behavioural-event data — these import into an
-[`aniframe::anievent()`](http://animovement.dev/aniframe/reference/anievent.md).
+[`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html).
 
 - [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   : Read events from a BORIS export
