@@ -15,6 +15,9 @@
 #'   available.
 #'
 #' @return a movement dataframe
+#' @examples
+#' path <- system.file("extdata", "idtracker.csv", package = "aniread")
+#' read_idtracker(path)
 #' @export
 read_idtracker <- function(
   path,

@@ -22,6 +22,9 @@
 #' program for tracking and analysing animal movement in different environments.
 #' *Methods in Ecology and Evolution*, 14, 1699–1707. \doi{0.1111/2041-210X.14115}.
 #'
+#' @examples
+#' path <- system.file("extdata", "animalta.csv", package = "aniread")
+#' read_animalta(path)
 #' @export
 read_animalta <- function(path, detailed = "auto", video_height = NULL) {
   detailed <- resolve_animalta_layout(path, detailed)

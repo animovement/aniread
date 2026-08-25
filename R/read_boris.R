@@ -51,6 +51,9 @@
 #'   *Methods in Ecology and Evolution*, 7(11), 1325-1330.
 #'   \doi{10.1111/2041-210X.12584}.
 #'
+#' @examples
+#' path <- system.file("extdata", "boris.csv", package = "aniread")
+#' read_boris(path)
 #' @export
 read_boris <- function(
   path,

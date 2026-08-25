@@ -24,3 +24,7 @@ video resolution (it lives in the project's \code{config.yaml}), so pass
 \code{video_height} to get an accurate flip — otherwise \code{max(y)} is used
 as a fallback.
 }
+\examples{
+path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
+read_deeplabcut(path)
+}

@@ -27,6 +27,10 @@ Read a data frame from AnimalTA. AnimalTA exports tracking
 data in image (top-left) coordinates; the reader reflects y so the
 returned aniframe is in the conventional \code{bottom_left} origin.
 }
+\examples{
+path <- system.file("extdata", "animalta.csv", package = "aniread")
+read_animalta(path)
+}
 \references{
 \itemize{
 \item Chiara, V., & Kim, S.-Y. (2023). AnimalTA: A highly flexible and easy-to-use

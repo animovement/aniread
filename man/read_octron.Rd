@@ -78,3 +78,7 @@ the same track in a single frame. The \code{method} argument controls
 how those rows are reduced to scalar values, or whether they are
 expanded into one row per segment.
 }
+\examples{
+path <- system.file("extdata", "octron.csv", package = "aniread")
+read_octron(path)
+}

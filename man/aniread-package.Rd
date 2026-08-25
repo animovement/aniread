@@ -6,6 +6,8 @@
 \alias{aniread-package}
 \title{aniread: An R package for reading and writing movement data}
 \description{
+\if{html}{\figure{logo.svg}{options: style='float: right' alt='logo' width='120'}}
+
 An R package for reading and writing movement data.
 }
 \seealso{

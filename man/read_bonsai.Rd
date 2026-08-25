@@ -24,3 +24,7 @@ user-defined and the output CSV does not record video resolution,
 so pass \code{video_height} to get an accurate flip — otherwise \code{max(y)}
 is used as a fallback.
 }
+\examples{
+path <- system.file("extdata", "bonsai.csv", package = "aniread")
+read_bonsai(path)
+}
