@@ -1,24 +1,25 @@
 # aniread (development version)
 
-## Bug fixes
+## Fixed
 
 * `read_trackball()` and `detect_source()` cope with a run of serial-port junk before the first complete record, not just a single partial row (#94). The skip was computed from `utils::count.fields()`, which silently drops blank lines, so on a capture with blank lines among the junk it landed early — on a noise line, which was then accepted as a header, and the read failed with `Column index 4 is out of bounds`.
 
 # aniread 0.6.0 (2026-08-18)
 
-## New features
+## Added
 
 * `read_dataset()` reads any supported format through one entry point, working out which source software wrote the file rather than requiring you to know in advance (#73). Pass `source` to name the format explicitly, or `...` to reach a reader's own arguments. It returns whatever the underlying reader returns — an `aniframe`, or an `anievent` for `read_boris()`.
 
 * `detect_source()` reports which software wrote a file without reading it. Candidates are narrowed by suffix, then each detector inspects the contents, which matters because twelve sources read `.csv`. DeepLabCut and LightningPose export structurally identical files, so it returns the combined name `"deeplabcut/lightningpose"` rather than guessing. Detectors needing an optional package (`rhdf5`, `arrow`, `xml2`, `c3dr`) are skipped when it is absent, and the error names what was skipped.
+* `?read_trackball` documents the raw Bonsai layout, the requirement that `col_time` be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.
 
-## Breaking changes
+## Changed
 
 * `get_supported_sources()` no longer lists `csv` as a SLEAP suffix — `read_sleap()` cannot read it, and auto-detection would have routed such files straight into that error. Restored when the reader gains support (#87).
 
 * `get_supported_sources()` renames the `trackball` source to `trackball_bonsai`, matching the `source` metadata `read_trackball()` actually stamps.
 
-## Bug fixes
+## Fixed
 
 * `read_trackball()` reads real two-sensor Bonsai optical-flow captures (#85). It previously either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. Sensor alignment, `start_datetime`, corrupt rows, leading junk, microsecond clocks, gap filling and argument handling were each at fault; see the PR for the breakdown.
 
@@ -30,58 +31,54 @@
 
 * `ensure_header_match()` no longer rejects a character `col_time` on files that do have named headers.
 
-## Documentation
-
-* `?read_trackball` documents the raw Bonsai layout, the requirement that `col_time` be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.
-
 # aniread 0.5.1
 
-## New features
+## Added
 
 * `get_supported_sources()` returns the source software `aniread` can read as a tibble of `source` / `reader` / `suffix`, so downstream packages can discover supported formats programmatically instead of hard-coding them. Closes #74.
 
-## Bug fixes
+## Fixed
 
 * `read_octron()` no longer drops frames in which nothing was detected. Octron omits such frames entirely; the reader now reinstates them as all-NA rows across the full track × frame grid (using the analysed-frame count from the CSV header) so the time axis is gap-free. Closes #80.
 * `read_boris(unit_time = "frame")` no longer fails on exports with an inconsistent image index (e.g. a STOP on the last video frame recorded as frame 1, giving `stop < start`). When FPS is known, the offending frame interval is recovered from `round(time_s * fps)`. Closes #81.
 
 # aniread 0.5.0
 
-## New features
+## Added
 
 * `read_boris()` imports behavioural events from a [BORIS](https://www.boris.unito.it/) export into an [`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html). Supports the two flat-text BORIS exports — **aggregated events** (one row per bout) and **tabular events** (one row per START / STOP / POINT transition; paired into bouts by the reader) — and auto-detects the format from the file's first row. Channels are taken from BORIS's `Behavioral category` when populated, falling back to the literal `"behavior"`; modifiers travel via the `modifiers` list-column in both the newer multi-column (`Modifier #1`, `Modifier #2`, ...) and the legacy single-column pipe-separated layouts. State-vs-point classification is recorded in `metadata$variables_event`. `unit_time = "s"` (default) reads `Start (s)` / `Stop (s)`; pass `unit_time = "frame"` to use the image-index columns instead, which keeps event timestamps row-aligned with a host aniframe (and falls back to seconds when no image-index columns are present). FPS is recorded as `sampling_rate` metadata without rescaling timestamps. Closes #76.
 
-## Bug fixes
+## Fixed
 
 * File validation no longer rejects readable files on Windows network (UNC) shares. `file.access()` returns false negatives for read permission on such paths; the read check now falls back to a non-destructive open attempt when `file.access()` reports no access.
 
-## Dependencies
+## Changed
 
 * `aniframe (>= 0.6.0)` is now required, since `read_boris()` produces an `anievent` object — a new class added in aniframe 0.6.0.
 
 # aniread 0.4.1
 
-## New features
+## Added
 
 * `read_octron()` gains a `properties` argument for picking which region-property columns to read (`"all"` by default; pass a character vector for a subset or `NULL` to skip them). `area` is auto-included when `method = "weighted"`.
 * `read_octron()` normalises hyphens to underscores in column names (`moments_hu-0` → `moments_hu_0`).
 
-## Performance
+## Changed
 
 * `read_octron()` is now substantially faster on large multi-segment files, especially when only a few `properties` are requested.
 
-## Bug fixes
+## Fixed
 
 * `read_octron(method = "weighted")` no longer silently recycles `v * a` when a row's value and area columns have different segment counts; it falls back to the arithmetic mean for those rows and emits a single warning naming the affected `frame_idx` values.
 
 # aniread 0.4.0
 
-## Breaking changes
+## Changed
 
 * Readers whose source data uses image (top-left) origin now reflect `y` so the returned aniframe is in the conventional `bottom_left` origin. This fixes plots being upside-down without manual reorientation. Affects `read_animalta()`, `read_bonsai()`, `read_deeplabcut()`, `read_fasttrack()`, `read_idtracker()`, `read_lightningpose()`, `read_movement()`, `read_octron()`, `read_sleap()`, `read_trackmate()`, and `read_trex()` (#61).
 * `aniframe (>= 0.5.0)` is now required, since the reflection uses the new `set_origin()` / `set_y_height()` API.
 
-## New features
+## Added
 
 * All affected readers gain an optional `video_height` argument for supplying the source frame height when the format does not record it (DeepLabCut, LightningPose, SLEAP, AnimalTA, Bonsai, FastTrack, TRex, idtracker.ai CSV, movement netCDF). When omitted, the reader falls back to source-extracted values where available, and finally to `max(y)`.
 * `read_idtracker()` now reads `/height` from the trajectories h5 file by default.
@@ -89,25 +86,50 @@
 * `read_octron()` continues to read `video_height:` from the CSV header, but now also accepts a `video_height` override and stores the value in the aniframe metadata.
 * `read_octron()` gains a `method` argument to handle frames where Octron emitted multiple mask segments for the same track (#67). One of `"weighted"` (default; area-weighted mean of position and shape props, sum of areas), `"largest"` (single largest segment per row), or `"segments"` (one row per segment, with a new `segment` identity variable).
 
-## Bug fixes
+## Fixed
 
 * `read_idtracker()` now accepts both the legacy `seconds` and the newer `time` leading column in idtracker.ai CSV exports (#60).
 
+# aniread 0.3.2
+
+## Added
+
+* `read_c3d()` for C3D motion-capture data, and `read_fasttrack()` for FastTrack data.
+* `read_deeplabcut()` reads HDF5 exports as well as CSV.
+
+## Fixed
+
+* `read_octron()` handles the newer Octron output format.
+
 # aniread 0.3.1
 
-* Adds `read_aniframe` that allows you to read your saved aniframes (in `.parquet` format) back into R!
-* Adds `read_movement` for importing data from the awesome *movement* Python package.
-* Adds `read_c3d` for importing C3D motion capture data.
-* Adds `read_fasttrack` for importing FastTrack data.
-* Adds support for HDF5 DeepLabCut files in `read_deeplabcut`.
+## Added
+
+* `read_aniframe()` reads a saved aniframe back from parquet.
+* `read_movement()` imports data from the [movement](https://movement.neuroinformatics.dev) Python package.
+* `read_trackmate()` reads TrackMate XML. Adapted from the reader in TrackMateR, with thanks to @quantixed.
+* `read_octron()` reads Octron CSV.
+* `calibrate_trackball()` for trackball calibration.
 
 # aniread 0.3.0
 
-* Adapt to the tidy movement data ethos implemented in *aniframe* 0.4.0.
-* Adds `read_trackmate` for TrackMate XML files. Thanks to @quantixed for writing the reader function in TrackMateR, which has been adapted here.
-* Adds `read_octron` for Octron CSV files.
+## Added
+
+* `write_aniframe()` writes an aniframe to parquet, and `write_intracktive()` exports for intracktive.
+* `read_anipose()`, `read_fictrac()`, `read_freemocap()` and `read_custom()`.
+* `get_sample_data()` fetches example files for the readers.
+
+## Changed
+
+* Adapted to the tidy movement data model introduced in aniframe 0.4.0.
 
 # aniread 0.2.0
 
-* Added a `NEWS.md` file to track changes to the package.
-* Added `write_aniframe` and tests
+## Added
+
+* The first readers: `read_deeplabcut()`, `read_sleap()`, `read_lightningpose()`, `read_trex()`, `read_idtracker()`, `read_animalta()`, `read_bonsai()`, `read_movement()` and `read_trackball()`, with `validate_trackball()`.
+* A `NEWS.md` file, to track changes to the package.
+
+# aniread 0.1.0
+
+Package skeleton. No readers yet.
