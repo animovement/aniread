@@ -178,7 +178,7 @@ test_that("read_custom respects variables_what", {
   )
 
   expect_true("individual" %in% dplyr::group_vars(result))
-  expect_equal(aniframe::get_metadata(result)$variables_what, "individual")
+  expect_equal(anicore::get_metadata(result)$variables_what, "individual")
 })
 
 test_that("read_custom respects variables_when", {
@@ -190,7 +190,7 @@ test_that("read_custom respects variables_when", {
   )
 
   expect_equal(
-    aniframe::get_metadata(result)$variables_when,
+    anicore::get_metadata(result)$variables_when,
     c("trial", "time")
   )
   expect_true("trial" %in% dplyr::group_vars(result))
@@ -204,9 +204,9 @@ test_that("read_custom respects variables_where", {
     variables_where = c("x", "y", "z")
   )
 
-  expect_equal(aniframe::get_metadata(result)$variables_where, c("x", "y", "z"))
+  expect_equal(anicore::get_metadata(result)$variables_where, c("x", "y", "z"))
   expect_equal(
-    as.character(aniframe::get_metadata(result)$coordinate_system),
+    as.character(anicore::get_metadata(result)$coordinate_system),
     "cartesian_3d"
   )
 })
@@ -218,7 +218,7 @@ test_that("read_custom works with renamed temporal column", {
   )
 
   expect_s3_class(result, "aniframe")
-  expect_equal(aniframe::get_metadata(result)$variables_when, "time")
+  expect_equal(anicore::get_metadata(result)$variables_when, "time")
 })
 
 # Metadata ----------------------------------------------------------------
@@ -231,7 +231,7 @@ test_that("read_custom sets custom metadata", {
     metadata = custom_meta
   )
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$source, "custom_source")
 })
 
@@ -243,7 +243,7 @@ test_that("read_custom works with empty metadata list", {
   )
 
   expect_s3_class(result, "aniframe")
-  expect_no_error(aniframe::get_metadata(result))
+  expect_no_error(anicore::get_metadata(result))
 })
 
 test_that("read_custom sets coordinate system metadata", {
@@ -253,7 +253,7 @@ test_that("read_custom sets coordinate system metadata", {
     variables_where = c("x", "y", "z")
   )
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(as.character(meta$coordinate_system), "cartesian_3d")
 })
 
@@ -266,7 +266,7 @@ test_that("read_custom stores variables in metadata", {
     variables_where = c("x", "y")
   )
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$variables_what, "individual")
   expect_equal(meta$variables_when, "time")
   expect_equal(meta$variables_where, c("x", "y"))
@@ -341,7 +341,7 @@ test_that("read_custom maintains column order", {
 test_that("read_custom output works with aniframe functions", {
   result <- read_custom(path_valid, cols = c(time = "time", x = "x", y = "y"))
 
-  expect_no_error(aniframe::get_metadata(result))
+  expect_no_error(anicore::get_metadata(result))
   expect_s3_class(result, "aniframe")
 })
 

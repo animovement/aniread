@@ -92,8 +92,8 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = "fictrac",
       filename = basename(path),
       sampling_rate = sampling_rate,
@@ -111,7 +111,7 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
       )
 
     data <- data |>
-      aniframe::set_metadata(
+      anicore::set_metadata(
         unit_space = unit_ball_radius
       )
   }

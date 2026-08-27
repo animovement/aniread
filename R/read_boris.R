@@ -2,7 +2,7 @@
 #'
 #' @description Read behavioural events from a
 #'   [BORIS](https://www.boris.unito.it/) export into an
-#'   [aniframe::anievent()]. Two flat-text BORIS exports are
+#'   [anicore::anievent()]. Two flat-text BORIS exports are
 #'   supported: **aggregated events** (one row per bout, the default
 #'   export shape) and **tabular events** (one row per START / STOP /
 #'   POINT transition; paired into bouts by the reader).
@@ -11,13 +11,13 @@
 #'   `unit_time = "s"` uses `Start (s)` / `Stop (s)` and works on any
 #'   BORIS export. With `unit_time = "frame"` the reader uses the
 #'   `Image index start` / `Image index stop` columns instead; frames
-#'   stay aligned with rows of a host [aniframe::aniframe()], which
+#'   stay aligned with rows of a host [anicore::aniframe()], which
 #'   keeps event timing robust against effective-FPS drift when the
 #'   export is paired with movement data. If `"frame"` is
 #'   requested but the export carries no image-index columns, the
 #'   reader falls back to `"s"` with an informational message. FPS is
 #'   recorded as `sampling_rate` metadata without rescaling the
-#'   timestamps; call [aniframe::set_sampling_rate()] later if you
+#'   timestamps; call [anicore::set_sampling_rate()] later if you
 #'   need to convert between frames and seconds.
 #'
 #'   Channels: each row's `channel` is the value of BORIS's
@@ -25,7 +25,7 @@
 #'   literal `"behavior"` otherwise; `label` is the behaviour name,
 #'   and `type` is `"state"` or `"point"` mapped from BORIS's
 #'   `Behavior type` column. Overlap between bouts of the same channel
-#'   is permitted on the `anievent` side; [aniframe::validate_anievent()]
+#'   is permitted on the `anievent` side; [anicore::validate_anievent()]
 #'   flags overlapping state bouts with a warning rather than rejecting
 #'   them. Modifiers travel via the optional
 #'   `modifiers` list-column; the multi-column (`Modifier #1`,
@@ -41,7 +41,7 @@
 #'   uses the BORIS image-index columns; pass it when pairing the
 #'   anievent with an aniframe to keep frame-aligned semantics.
 #'
-#' @return An [aniframe::anievent()] with metadata fields `source`,
+#' @return An [anicore::anievent()] with metadata fields `source`,
 #'   `filename`, `unit_time`, and `sampling_rate` (when FPS is a
 #'   single numeric in the export) populated.
 #'
@@ -611,9 +611,9 @@ finalise_boris <- function(data, path, unit_time) {
 
   data <- drop_uninformative_boris_columns(data)
 
-  ae <- aniframe::anievent(data)
+  ae <- anicore::anievent(data)
 
-  ae <- aniframe::set_metadata(
+  ae <- anicore::set_metadata(
     ae,
     source = "boris",
     filename = basename(path),
@@ -626,7 +626,7 @@ finalise_boris <- function(data, path, unit_time) {
     coordinate_system = "unknown"
   )
   if (!is.null(fps)) {
-    ae <- aniframe::set_metadata(ae, sampling_rate = fps)
+    ae <- anicore::set_metadata(ae, sampling_rate = fps)
   }
 
   # Overlap checks: aniframe's `validate_anievent()` is intentionally
@@ -636,7 +636,7 @@ finalise_boris <- function(data, path, unit_time) {
   # durative bouts before the call so only true state-state overlaps
   # surface.
   state_only <- ae[ae$type == "state", , drop = FALSE]
-  aniframe::validate_anievent(state_only)
+  anicore::validate_anievent(state_only)
   ae
 }
 

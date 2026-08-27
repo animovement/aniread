@@ -22,14 +22,14 @@ uses the BORIS image-index columns; pass it when pairing the
 anievent with an aniframe to keep frame-aligned semantics.}
 }
 \value{
-An \code{\link[aniframe:anievent]{aniframe::anievent()}} with metadata fields \code{source},
+An \code{\link[anicore:anievent]{anicore::anievent()}} with metadata fields \code{source},
 \code{filename}, \code{unit_time}, and \code{sampling_rate} (when FPS is a
 single numeric in the export) populated.
 }
 \description{
 Read behavioural events from a
 \href{https://www.boris.unito.it/}{BORIS} export into an
-\code{\link[aniframe:anievent]{aniframe::anievent()}}. Two flat-text BORIS exports are
+\code{\link[anicore:anievent]{anicore::anievent()}}. Two flat-text BORIS exports are
 supported: \strong{aggregated events} (one row per bout, the default
 export shape) and \strong{tabular events} (one row per START / STOP /
 POINT transition; paired into bouts by the reader).
@@ -38,13 +38,13 @@ Time units come from the columns BORIS provides. The default
 \code{unit_time = "s"} uses \code{Start (s)} / \code{Stop (s)} and works on any
 BORIS export. With \code{unit_time = "frame"} the reader uses the
 \verb{Image index start} / \verb{Image index stop} columns instead; frames
-stay aligned with rows of a host \code{\link[aniframe:aniframe]{aniframe::aniframe()}}, which
+stay aligned with rows of a host \code{\link[anicore:aniframe]{anicore::aniframe()}}, which
 keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If \code{"frame"} is
 requested but the export carries no image-index columns, the
 reader falls back to \code{"s"} with an informational message. FPS is
 recorded as \code{sampling_rate} metadata without rescaling the
-timestamps; call \code{\link[aniframe:set_sampling_rate]{aniframe::set_sampling_rate()}} later if you
+timestamps; call \code{\link[anicore:set_sampling_rate]{anicore::set_sampling_rate()}} later if you
 need to convert between frames and seconds.
 
 Channels: each row's \code{channel} is the value of BORIS's
@@ -52,7 +52,7 @@ Channels: each row's \code{channel} is the value of BORIS's
 literal \code{"behavior"} otherwise; \code{label} is the behaviour name,
 and \code{type} is \code{"state"} or \code{"point"} mapped from BORIS's
 \verb{Behavior type} column. Overlap between bouts of the same channel
-is permitted on the \code{anievent} side; \code{\link[aniframe:validate_anievent]{aniframe::validate_anievent()}}
+is permitted on the \code{anievent} side; \code{\link[anicore:validate_anievent]{anicore::validate_anievent()}}
 flags overlapping state bouts with a warning rather than rejecting
 them. Modifiers travel via the optional
 \code{modifiers} list-column; the multi-column (\code{Modifier #1},

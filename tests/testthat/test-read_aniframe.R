@@ -9,17 +9,17 @@
 
 test_that("read_aniframe returns a valid aniframe", {
   path <- withr::local_tempfile(fileext = ".parquet")
-  data <- aniframe::example_aniframe()
+  data <- anicore::example_aniframe()
   write_aniframe(data, path)
 
   result <- read_aniframe(path)
 
-  expect_true(aniframe::is_aniframe(result))
+  expect_true(anicore::is_aniframe(result))
 })
 
 test_that("read_aniframe restores the aniframe class", {
   path <- withr::local_tempfile(fileext = ".parquet")
-  data <- aniframe::example_aniframe()
+  data <- anicore::example_aniframe()
   write_aniframe(data, path)
 
   result <- read_aniframe(path)
@@ -29,7 +29,7 @@ test_that("read_aniframe restores the aniframe class", {
 
 test_that("read_aniframe preserves metadata", {
   path <- withr::local_tempfile(fileext = ".parquet")
-  data <- aniframe::example_aniframe()
+  data <- anicore::example_aniframe()
   original_metadata <- attr(data, "metadata")
   write_aniframe(data, path)
 
@@ -39,7 +39,7 @@ test_that("read_aniframe preserves metadata", {
 })
 
 test_that("read_aniframe errors for non-parquet extensions", {
-  data <- aniframe::example_aniframe()
+  data <- anicore::example_aniframe()
   path_csv <- withr::local_tempfile(fileext = ".csv")
   path_tsv <- withr::local_tempfile(fileext = ".tsv")
   write_aniframe(data, path_csv) |>

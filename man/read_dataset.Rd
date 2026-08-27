@@ -20,8 +20,8 @@ only some readers take are supplied, e.g. \code{sampling_rate} for
 \code{\link[=read_trackball]{read_trackball()}} or \code{path_probabilities} for \code{\link[=read_idtracker]{read_idtracker()}}.}
 }
 \value{
-An \link[aniframe:aniframe]{aniframe} or
-\link[aniframe:anievent]{anievent}, depending on the reader.
+An \link[anicore:aniframe]{aniframe} or
+\link[anicore:anievent]{anievent}, depending on the reader.
 }
 \description{
 One entry point for every format \code{aniread} supports. By default the source
@@ -31,8 +31,8 @@ which reader a file needs before opening it.
 \details{
 \code{read_dataset()} is a dispatcher, not a new reader: it works out which
 reader to call and calls it. The object you get back is exactly what the
-underlying reader returns - an \link[aniframe:aniframe]{aniframe} for tracking
-data, or an \link[aniframe:anievent]{anievent} for behavioural events from
+underlying reader returns - an \link[anicore:aniframe]{aniframe} for tracking
+data, or an \link[anicore:anievent]{anievent} for behavioural events from
 \code{\link[=read_boris]{read_boris()}}.
 
 DeepLabCut and LightningPose CSV exports are structurally identical, so a

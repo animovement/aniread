@@ -95,8 +95,8 @@ read_fasttrack <- function(path, video_height = NULL) {
     ) |>
     dplyr::select("individual", "keypoint", "time", "x", "y", "area")
 
-  data <- aniframe::as_aniframe(data) |>
-    aniframe::set_metadata(
+  data <- anicore::as_aniframe(data) |>
+    anicore::set_metadata(
       source = "fasttrack",
       filename = basename(path)
     ) |>

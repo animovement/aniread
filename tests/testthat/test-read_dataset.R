@@ -41,7 +41,7 @@ test_that("read_dataset detects the source by default", {
   result <- read_dataset(fixture("trex", "beetle.csv"))
 
   expect_s3_class(result, "aniframe")
-  expect_identical(aniframe::get_metadata(result)$source, "trex")
+  expect_identical(anicore::get_metadata(result)$source, "trex")
 })
 
 test_that("an explicit source bypasses detection", {
@@ -51,8 +51,8 @@ test_that("an explicit source bypasses detection", {
   as_dlc <- read_dataset(path, source = "deeplabcut")
   as_lp <- read_dataset(path, source = "lightningpose")
 
-  expect_identical(aniframe::get_metadata(as_dlc)$source, "deeplabcut")
-  expect_identical(aniframe::get_metadata(as_lp)$source, "lightningpose")
+  expect_identical(anicore::get_metadata(as_dlc)$source, "deeplabcut")
+  expect_identical(anicore::get_metadata(as_lp)$source, "lightningpose")
 })
 
 test_that("an ambiguous DeepLabCut/LightningPose CSV records the ambiguity", {
@@ -70,7 +70,7 @@ test_that("an ambiguous DeepLabCut/LightningPose CSV records the ambiguity", {
       info = basename(path)
     )
     expect_identical(
-      aniframe::get_metadata(result)$source,
+      anicore::get_metadata(result)$source,
       "deeplabcut/lightningpose"
     )
   }
@@ -153,7 +153,7 @@ test_that("registry source names match the metadata the readers stamp", {
   )
 
   expect_identical(
-    aniframe::get_metadata(result)$source,
+    anicore::get_metadata(result)$source,
     "trackball_bonsai"
   )
 })

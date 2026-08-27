@@ -58,10 +58,10 @@ test_that("reflect_to_bottom_left flips y around supplied video_height", {
     x = c(1, 2, 3),
     y = c(10, 20, 30)
   ) |>
-    aniframe::as_aniframe()
+    anicore::as_aniframe()
 
   result <- reflect_to_bottom_left(data, video_height = 100)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(as.character(meta$origin), "bottom_left")
   expect_equal(meta$y_height, 100)
@@ -76,10 +76,10 @@ test_that("reflect_to_bottom_left falls back to max(y) when video_height is NULL
     x = c(1, 2, 3),
     y = c(10, 20, 30)
   ) |>
-    aniframe::as_aniframe()
+    anicore::as_aniframe()
 
   result <- reflect_to_bottom_left(data, video_height = NULL)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(as.character(meta$origin), "bottom_left")
   expect_equal(meta$y_height, 30)
@@ -94,10 +94,10 @@ test_that("reflect_to_bottom_left leaves origin unchanged when y is all NA", {
     x = c(1, 2, 3),
     y = as.numeric(c(NA, NA, NA))
   ) |>
-    aniframe::as_aniframe()
+    anicore::as_aniframe()
 
   result <- reflect_to_bottom_left(data, video_height = NULL)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(as.character(meta$origin), "top_left")
   expect_true(all(is.na(result$y)))

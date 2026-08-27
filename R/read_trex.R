@@ -58,8 +58,8 @@ read_trex <- function(path, video_height = NULL) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = "trex",
       filename = basename(path)
     ) |>

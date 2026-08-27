@@ -74,7 +74,7 @@ read_custom <- function(
 
   # Make aniframe with specified variables
   data |>
-    aniframe::as_aniframe(
+    anicore::as_aniframe(
       metadata = metadata,
       variables_what = variables_what,
       variables_when = variables_when,

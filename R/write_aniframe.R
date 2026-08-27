@@ -4,7 +4,7 @@
 #' supported formats (`parquet`, `csv`, or `tsv`). We highly recommend using `parquet`
 #' as neither `csv` or `tsv` can preserve the metadata.
 #'
-#' @param data     An **aniframe** object (see `aniframe::is_aniframe()`).
+#' @param data     An **aniframe** object (see `anicore::is_aniframe()`).
 #' @param filename Character string specifying the output file name.  The file
 #'   extension determines which writer is used.
 #' @param ...      Additional arguments passed to the format‑specific writer
@@ -22,7 +22,7 @@
 #' @examples
 #' \dontrun{
 #' ## Create a small aniframe for demonstration
-#' df <- aniframe::example_aniframe()
+#' df <- anicore::example_aniframe()
 #'
 #' ## Write the aniframe as CSV
 #' write_aniframe(df, "demo.csv")
@@ -37,7 +37,7 @@ write_aniframe <- function(data, filename, ...) {
   allowed_exts <- c("parquet", "csv", "tsv")
 
   # Input validation
-  if (!aniframe::is_aniframe(data)) {
+  if (!anicore::is_aniframe(data)) {
     cli::cli_abort("Data is not an aniframe.")
   }
   if (!ext %in% allowed_exts) {

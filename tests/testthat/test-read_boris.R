@@ -42,7 +42,7 @@ test_that("aggregated TSV reads into an anievent with expected shape", {
 
 test_that("aggregated TSV populates metadata source/filename/unit_time", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
-  md <- aniframe::get_metadata(ae)
+  md <- anicore::get_metadata(ae)
 
   expect_identical(md$source, "boris")
   expect_identical(
@@ -55,7 +55,7 @@ test_that("aggregated TSV populates metadata source/filename/unit_time", {
 
 test_that("aggregated TSV sets neutral spatial metadata where possible", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
-  md <- aniframe::get_metadata(ae)
+  md <- anicore::get_metadata(ae)
 
   expect_identical(as.character(md$unit_space), "none")
   expect_identical(as.character(md$coordinate_system), "unknown")
@@ -236,7 +236,7 @@ test_that("unit_time = 'frame' uses image-index columns when populated", {
     unit_time = "frame"
   )
   expect_identical(
-    as.character(aniframe::get_metadata(ae, "unit_time")),
+    as.character(anicore::get_metadata(ae, "unit_time")),
     "frame"
   )
   expect_equal(ae$start, c(30, 180, 225, 255))
@@ -252,7 +252,7 @@ test_that("unit_time = 'frame' falls back to 's' with cli_inform when no image-i
     "Falling back to"
   )
   expect_identical(
-    as.character(aniframe::get_metadata(ae, "unit_time")),
+    as.character(anicore::get_metadata(ae, "unit_time")),
     "s"
   )
 })
@@ -260,7 +260,7 @@ test_that("unit_time = 'frame' falls back to 's' with cli_inform when no image-i
 test_that("unit_time = 's' (default) uses Start (s) / Stop (s)", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
   expect_identical(
-    as.character(aniframe::get_metadata(ae, "unit_time")),
+    as.character(anicore::get_metadata(ae, "unit_time")),
     "s"
   )
   expect_equal(ae$start[1], 1.800)
@@ -326,7 +326,7 @@ test_that("flat tabular CSV maps Behavioral category onto channel", {
 test_that("flat tabular CSV propagates singular Image index into frame start/stop", {
   ae <- read_boris(tab_path("flat_dslr_subject.csv"), unit_time = "frame")
   expect_identical(
-    as.character(aniframe::get_metadata(ae, "unit_time")),
+    as.character(anicore::get_metadata(ae, "unit_time")),
     "frame"
   )
   expect_equal(ae$start, c(0, 0, 6000, 6300))
@@ -589,13 +589,13 @@ test_that("multiple distinct FPS values drop sampling_rate to NA", {
     )
   ))
   ae <- read_boris(path)
-  expect_true(is.na(aniframe::get_metadata(ae, "sampling_rate")))
+  expect_true(is.na(anicore::get_metadata(ae, "sampling_rate")))
 })
 
 test_that("validator surfaces overlapping same-channel bouts as a warning", {
   # Two bouts of the same behaviour on the same subject overlap in
   # time — channels are conventionally mutually exclusive, so this
-  # should trigger the aniframe::validate_anievent warning (not error).
+  # should trigger the anicore::validate_anievent warning (not error).
   path <- write_tsv_fixture(c(
     paste(
       "Observation id",
@@ -695,7 +695,7 @@ test_that("unit_time = 'frame' back-calculates a bad image index from time x fps
     "Recalculated"
   )
   expect_identical(
-    as.character(aniframe::get_metadata(ae, "unit_time")),
+    as.character(anicore::get_metadata(ae, "unit_time")),
     "frame"
   )
   expect_equal(ae$start, 2)

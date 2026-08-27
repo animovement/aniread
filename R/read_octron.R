@@ -194,11 +194,11 @@ read_octron <- function(
     variables_what <- c("label", "track", "segment", "keypoint")
   }
 
-  aniframe::as_aniframe(
+  anicore::as_aniframe(
     data,
     variables_what = variables_what
   ) |>
-    aniframe::set_metadata(
+    anicore::set_metadata(
       source = "octron",
       filename = basename(path)
     ) |>

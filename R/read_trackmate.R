@@ -91,11 +91,11 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
     "Loaded {nrow(result)} spots from {dplyr::n_distinct(result$track)} tracks."
   )
 
-  data <- aniframe::as_aniframe(
+  data <- anicore::as_aniframe(
     result,
     variables_what = c("track", "keypoint")
   ) |>
-    aniframe::set_metadata(
+    anicore::set_metadata(
       source = "trackmate",
       filename = basename(path),
       unit_time = time_units,
@@ -105,12 +105,12 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   if (length(unique(data$z)) == 1) {
     data <- data |>
       dplyr::select(-"z") |>
-      aniframe::set_metadata(
+      anicore::set_metadata(
         coordinate_system = "cartesian_2d"
       )
   } else {
     data <- data |>
-      aniframe::set_metadata(
+      anicore::set_metadata(
         coordinate_system = "cartesian_3d"
       )
   }

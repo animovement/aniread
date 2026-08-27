@@ -138,7 +138,7 @@ test_that("read_trackmate reflects to bottom_left and records y_height", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(as.character(meta$origin), "bottom_left")
   expect_equal(meta$y_height, 400)
@@ -173,7 +173,7 @@ test_that("read_trackmate `video_height` overrides ImageData height", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp, video_height = 1080)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(meta$y_height, 1080)
   expect_equal(result$y, c(1080 - 50, 1080 - 100))
@@ -204,7 +204,7 @@ test_that("read_trackmate falls back to max(y) when ImageData missing", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   # max(y_source) = 25; the maximum should map to 0 in bottom_left.
   expect_equal(meta$y_height, 25)
@@ -236,8 +236,8 @@ test_that("read_trackmate converts units correctly", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp)
-  meta <- aniframe::get_metadata(result)
-  default_meta <- aniframe::default_metadata()
+  meta <- anicore::get_metadata(result)
+  default_meta <- anicore::default_metadata()
 
   expect_equal(
     meta$unit_space,
@@ -312,7 +312,7 @@ test_that("read_trackmate assigns keypoint column as centroid", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp)
-  default_meta <- aniframe::default_metadata()
+  default_meta <- anicore::default_metadata()
 
   expect_true("keypoint" %in% names(result))
   expect_equal(
@@ -383,7 +383,7 @@ test_that("read_trackmate keeps z and sets cartesian_3d when z varies", {
   expect_true("z" %in% names(result))
   expect_equal(sort(unique(result$z)), c(3, 7))
   expect_equal(
-    as.character(aniframe::get_metadata(result, "coordinate_system")),
+    as.character(anicore::get_metadata(result, "coordinate_system")),
     "cartesian_3d"
   )
 })
@@ -418,7 +418,7 @@ test_that("read_trackmate drops z when only one unique value", {
   # `coordinate_system = "cartesian_2d"`.
   expect_false("z" %in% names(result))
   expect_equal(
-    as.character(aniframe::get_metadata(result, "coordinate_system")),
+    as.character(anicore::get_metadata(result, "coordinate_system")),
     "cartesian_2d"
   )
 })

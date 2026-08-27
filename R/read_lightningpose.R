@@ -15,7 +15,7 @@
 #' @export
 read_lightningpose <- function(path, video_height = NULL) {
   read_deeplabcut(path, video_height = video_height) |>
-    aniframe::set_metadata(
+    anicore::set_metadata(
       source = "lightningpose"
     )
 }

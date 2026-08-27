@@ -205,7 +205,7 @@ test_that("start_datetime is the wall-clock instant of t = 0", {
   )
 
   # t = 0 is the first shared sample, i.e. the later sensor's start.
-  start <- aniframe::get_metadata(result)$start_datetime
+  start <- anicore::get_metadata(result)$start_datetime
   expect_equal(
     as.numeric(start),
     1e9 + 4 + 1 / 60,

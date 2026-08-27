@@ -20,10 +20,10 @@ An aniframe with reflected y coordinates and \code{origin} set to
 \description{
 Marks the data's \code{origin} as \code{"top_left"} (so the reflection is well
 defined), applies a user-supplied \code{video_height} to the \code{y_height}
-metadata when given, then calls \code{\link[aniframe:set_origin]{aniframe::set_origin()}} to reflect
+metadata when given, then calls \code{\link[anicore:set_origin]{anicore::set_origin()}} to reflect
 y around \code{y_height}. Used by all readers whose source data is in an
 image / video coordinate system. When \code{video_height} is \code{NULL}, the
 \code{y_height} value already on the aniframe (set to \code{max(y)} by
-\code{\link[aniframe:as_aniframe]{aniframe::as_aniframe()}} when not otherwise populated) is used.
+\code{\link[anicore:as_aniframe]{anicore::as_aniframe()}} when not otherwise populated) is used.
 }
 \keyword{internal}

@@ -51,10 +51,10 @@ test_that("read_c3d sets metadata and sampling rate", {
 
   result <- read_c3d(path)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_true(!is.null(meta$source))
   expect_true(!is.null(meta$filename))
   expect_true(!is.null(meta$unit_time))
   expect_true(!is.null(meta$unit_space))
-  expect_true(!is.null(aniframe::get_metadata(result, "sampling_rate")))
+  expect_true(!is.null(anicore::get_metadata(result, "sampling_rate")))
 })

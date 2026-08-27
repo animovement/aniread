@@ -47,8 +47,8 @@ read_idtracker <- function(
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = "idtrackerai",
       filename = basename(path),
       unit_space = "px",
