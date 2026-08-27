@@ -358,3 +358,20 @@ test_that("read_custom output is grouped when identity variables specified", {
   expect_true(dplyr::is_grouped_df(result))
   expect_true("individual" %in% dplyr::group_vars(result))
 })
+
+test_that("read_custom can name the index column", {
+  # The documented example -- a frame indexed by `frame` inside `trial` --
+  # was not expressible before, because the index could only be declared
+  # through `variables_when`, where it does not belong.
+  result <- read_custom(
+    path_trial,
+    cols = c(id = "id", trial = "trial", frame = "frame", x = "x", y = "y"),
+    variables_what = "id",
+    variables_when = "trial",
+    index = "frame"
+  )
+
+  expect_equal(anicore::get_index(result), "frame")
+  expect_equal(anicore::get_metadata(result)$variables_when, "trial")
+  expect_false("time" %in% names(result))
+})

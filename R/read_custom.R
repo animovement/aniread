@@ -9,6 +9,10 @@
 #'   characters) or column positions (as integers, e.g. `c(time = 1, x = 2, y = 3)`).
 #' @param variables_what Character vector of identity columns that together
 #'   define a unique entity. Uses aniframe defaults if NULL.
+#' @param index Length-one character vector naming the column the frame is
+#'   indexed by -- the position of each row within its temporal context. If
+#'   `NULL` (the default), `"time"`. It is never a grouping variable, and is
+#'   declared separately from `variables_when`.
 #' @param variables_when Character vector of temporal columns that together
 #'   define a unique timepoint. Uses aniframe defaults if NULL.
 #' @param variables_where Character vector of spatial columns that together
@@ -42,7 +46,8 @@
 #'     y = "y_coord"
 #'   ),
 #'   variables_what = "id",
-#'   variables_when = c("trial", "frame")
+#'   variables_when = "trial",
+#'   index = "frame"
 #' )
 #'
 #' # Using column positions
@@ -55,6 +60,7 @@ read_custom <- function(
   variables_what = NULL,
   variables_when = NULL,
   variables_where = NULL,
+  index = NULL,
   metadata = list()
 ) {
   validate_files(path)
@@ -78,6 +84,7 @@ read_custom <- function(
       metadata = metadata,
       variables_what = variables_what,
       variables_when = variables_when,
-      variables_where = variables_where
+      variables_where = variables_where,
+      index = index
     )
 }
