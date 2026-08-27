@@ -52,7 +52,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="aniread-development-version">aniread (development version)<a class="anchor" aria-label="anchor" href="#aniread-development-version"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
 <ul><li>
 <code><a href="../reference/read_trackball.html">read_trackball()</a></code> and <code><a href="../reference/detect_source.html">detect_source()</a></code> cope with a run of serial-port junk before the first complete record, not just a single partial row (<a href="https://github.com/animovement/aniread/issues/94" class="external-link">#94</a>). The skip was computed from <code><a href="https://rdrr.io/r/utils/count.fields.html" class="external-link">utils::count.fields()</a></code>, which silently drops blank lines, so on a capture with blank lines among the junk it landed early — on a noise line, which was then accepted as a header, and the read failed with <code>Column index 4 is out of bounds</code>.</li>
 </ul></div>
@@ -60,38 +60,34 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.6.0" id="aniread-060-2026-08-18">aniread 0.6.0 (2026-08-18)<a class="anchor" aria-label="anchor" href="#aniread-060-2026-08-18"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-6-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-6-0"></a></h3>
+<h3 id="added-0-6-0">Added<a class="anchor" aria-label="anchor" href="#added-0-6-0"></a></h3>
 <ul><li><p><code><a href="../reference/read_dataset.html">read_dataset()</a></code> reads any supported format through one entry point, working out which source software wrote the file rather than requiring you to know in advance (<a href="https://github.com/animovement/aniread/issues/73" class="external-link">#73</a>). Pass <code>source</code> to name the format explicitly, or <code>...</code> to reach a reader’s own arguments. It returns whatever the underlying reader returns — an <code>aniframe</code>, or an <code>anievent</code> for <code><a href="../reference/read_boris.html">read_boris()</a></code>.</p></li>
 <li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> reports which software wrote a file without reading it. Candidates are narrowed by suffix, then each detector inspects the contents, which matters because twelve sources read <code>.csv</code>. DeepLabCut and LightningPose export structurally identical files, so it returns the combined name <code>"deeplabcut/lightningpose"</code> rather than guessing. Detectors needing an optional package (<code>rhdf5</code>, <code>arrow</code>, <code>xml2</code>, <code>c3dr</code>) are skipped when it is absent, and the error names what was skipped.</p></li>
+<li><p><code><a href="../reference/read_trackball.html">?read_trackball</a></code> documents the raw Bonsai layout, the requirement that <code>col_time</code> be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="breaking-changes-0-6-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-6-0"></a></h3>
+<h3 id="changed-0-6-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-6-0"></a></h3>
 <ul><li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> no longer lists <code>csv</code> as a SLEAP suffix — <code><a href="../reference/read_sleap.html">read_sleap()</a></code> cannot read it, and auto-detection would have routed such files straight into that error. Restored when the reader gains support (<a href="https://github.com/animovement/aniread/issues/87" class="external-link">#87</a>).</p></li>
 <li><p><code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> renames the <code>trackball</code> source to <code>trackball_bonsai</code>, matching the <code>source</code> metadata <code><a href="../reference/read_trackball.html">read_trackball()</a></code> actually stamps.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-6-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-6-0"></a></h3>
+<h3 id="fixed-0-6-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-6-0"></a></h3>
 <ul><li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> reads real two-sensor Bonsai optical-flow captures (<a href="https://github.com/animovement/aniread/issues/85" class="external-link">#85</a>). It previously either aborted with an error pointing nowhere near the cause, or silently returned a misaligned trajectory. Sensor alignment, <code>start_datetime</code>, corrupt rows, leading junk, microsecond clocks, gap filling and argument handling were each at fault; see the PR for the breakdown.</p></li>
 <li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> warns when <code>col_time</code> resolves to a non-datetime column and two sensors are given — a per-board counter has a sensor-local origin and cannot align two files. Warning class <code>aniread_sensor_local_clock</code>.</p></li>
 <li><p><code><a href="../reference/read_animalta.html">read_animalta()</a></code> works out which export layout a file uses instead of being told (<a href="https://github.com/animovement/aniread/issues/88" class="external-link">#88</a>). <code>detailed</code> defaults to <code>"auto"</code> and reads the answer from the header. This was the one case where <code><a href="../reference/detect_source.html">detect_source()</a></code> identified a file correctly and <code><a href="../reference/read_dataset.html">read_dataset()</a></code> then failed on it.</p></li>
 <li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> recognises a Bonsai optical-flow capture whether or not it carries a header row.</p></li>
 <li><p><code>ensure_header_match()</code> no longer rejects a character <code>col_time</code> on files that do have named headers.</p></li>
 </ul></div>
-<div class="section level3">
-<h3 id="documentation-0-6-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-6-0"></a></h3>
-<ul><li>
-<code><a href="../reference/read_trackball.html">?read_trackball</a></code> documents the raw Bonsai layout, the requirement that <code>col_time</code> be a shared clock with two sensors, and that empty time bins are filled with zero motion — an assumption about this logger rather than about optical flow generally.</li>
-</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.1" id="aniread-051">aniread 0.5.1<a class="anchor" aria-label="anchor" href="#aniread-051"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-5-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-1"></a></h3>
+<h3 id="added-0-5-1">Added<a class="anchor" aria-label="anchor" href="#added-0-5-1"></a></h3>
 <ul><li>
 <code><a href="../reference/get_supported_sources.html">get_supported_sources()</a></code> returns the source software <code>aniread</code> can read as a tibble of <code>source</code> / <code>reader</code> / <code>suffix</code>, so downstream packages can discover supported formats programmatically instead of hard-coding them. Closes <a href="https://github.com/animovement/aniread/issues/74" class="external-link">#74</a>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-5-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-1"></a></h3>
+<h3 id="fixed-0-5-1">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-5-1"></a></h3>
 <ul><li>
 <code><a href="../reference/read_octron.html">read_octron()</a></code> no longer drops frames in which nothing was detected. Octron omits such frames entirely; the reader now reinstates them as all-NA rows across the full track × frame grid (using the analysed-frame count from the CSV header) so the time axis is gap-free. Closes <a href="https://github.com/animovement/aniread/issues/80" class="external-link">#80</a>.</li>
 <li>
@@ -101,16 +97,16 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.5.0" id="aniread-050">aniread 0.5.0<a class="anchor" aria-label="anchor" href="#aniread-050"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-5-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-5-0"></a></h3>
+<h3 id="added-0-5-0">Added<a class="anchor" aria-label="anchor" href="#added-0-5-0"></a></h3>
 <ul><li>
 <code><a href="../reference/read_boris.html">read_boris()</a></code> imports behavioural events from a <a href="https://www.boris.unito.it/" class="external-link">BORIS</a> export into an <a href="https://animovement.dev/aniframe/reference/anievent.html" class="external-link"><code>aniframe::anievent()</code></a>. Supports the two flat-text BORIS exports — <strong>aggregated events</strong> (one row per bout) and <strong>tabular events</strong> (one row per START / STOP / POINT transition; paired into bouts by the reader) — and auto-detects the format from the file’s first row. Channels are taken from BORIS’s <code>Behavioral category</code> when populated, falling back to the literal <code>"behavior"</code>; modifiers travel via the <code>modifiers</code> list-column in both the newer multi-column (<code>Modifier <a href="https://github.com/animovement/aniread/issues/1" class="external-link">#1</a></code>, <code>Modifier <a href="https://github.com/animovement/aniread/issues/2" class="external-link">#2</a></code>, …) and the legacy single-column pipe-separated layouts. State-vs-point classification is recorded in <code>metadata$variables_event</code>. <code>unit_time = "s"</code> (default) reads <code>Start (s)</code> / <code>Stop (s)</code>; pass <code>unit_time = "frame"</code> to use the image-index columns instead, which keeps event timestamps row-aligned with a host aniframe (and falls back to seconds when no image-index columns are present). FPS is recorded as <code>sampling_rate</code> metadata without rescaling timestamps. Closes <a href="https://github.com/animovement/aniread/issues/76" class="external-link">#76</a>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-5-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-5-0"></a></h3>
+<h3 id="fixed-0-5-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-5-0"></a></h3>
 <ul><li>File validation no longer rejects readable files on Windows network (UNC) shares. <code><a href="https://rdrr.io/r/base/file.access.html" class="external-link">file.access()</a></code> returns false negatives for read permission on such paths; the read check now falls back to a non-destructive open attempt when <code><a href="https://rdrr.io/r/base/file.access.html" class="external-link">file.access()</a></code> reports no access.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="dependencies-0-5-0">Dependencies<a class="anchor" aria-label="anchor" href="#dependencies-0-5-0"></a></h3>
+<h3 id="changed-0-5-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-5-0"></a></h3>
 <ul><li>
 <code>aniframe (&gt;= 0.6.0)</code> is now required, since <code><a href="../reference/read_boris.html">read_boris()</a></code> produces an <code>anievent</code> object — a new class added in aniframe 0.6.0.</li>
 </ul></div>
@@ -118,19 +114,19 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="aniread-041">aniread 0.4.1<a class="anchor" aria-label="anchor" href="#aniread-041"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-4-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-1"></a></h3>
+<h3 id="added-0-4-1">Added<a class="anchor" aria-label="anchor" href="#added-0-4-1"></a></h3>
 <ul><li>
 <code><a href="../reference/read_octron.html">read_octron()</a></code> gains a <code>properties</code> argument for picking which region-property columns to read (<code>"all"</code> by default; pass a character vector for a subset or <code>NULL</code> to skip them). <code>area</code> is auto-included when <code>method = "weighted"</code>.</li>
 <li>
 <code><a href="../reference/read_octron.html">read_octron()</a></code> normalises hyphens to underscores in column names (<code>moments_hu-0</code> → <code>moments_hu_0</code>).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="performance-0-4-1">Performance<a class="anchor" aria-label="anchor" href="#performance-0-4-1"></a></h3>
+<h3 id="changed-0-4-1">Changed<a class="anchor" aria-label="anchor" href="#changed-0-4-1"></a></h3>
 <ul><li>
 <code><a href="../reference/read_octron.html">read_octron()</a></code> is now substantially faster on large multi-segment files, especially when only a few <code>properties</code> are requested.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-4-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-1"></a></h3>
+<h3 id="fixed-0-4-1">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-4-1"></a></h3>
 <ul><li>
 <code>read_octron(method = "weighted")</code> no longer silently recycles <code>v * a</code> when a row’s value and area columns have different segment counts; it falls back to the arithmetic mean for those rows and emits a single warning naming the affected <code>frame_idx</code> values.</li>
 </ul></div>
@@ -138,13 +134,13 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="aniread-040">aniread 0.4.0<a class="anchor" aria-label="anchor" href="#aniread-040"></a></h2>
 <div class="section level3">
-<h3 id="breaking-changes-0-4-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-4-0"></a></h3>
+<h3 id="changed-0-4-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-4-0"></a></h3>
 <ul><li>Readers whose source data uses image (top-left) origin now reflect <code>y</code> so the returned aniframe is in the conventional <code>bottom_left</code> origin. This fixes plots being upside-down without manual reorientation. Affects <code><a href="../reference/read_animalta.html">read_animalta()</a></code>, <code><a href="../reference/read_bonsai.html">read_bonsai()</a></code>, <code><a href="../reference/read_deeplabcut.html">read_deeplabcut()</a></code>, <code><a href="../reference/read_fasttrack.html">read_fasttrack()</a></code>, <code><a href="../reference/read_idtracker.html">read_idtracker()</a></code>, <code><a href="../reference/read_lightningpose.html">read_lightningpose()</a></code>, <code><a href="../reference/read_movement.html">read_movement()</a></code>, <code><a href="../reference/read_octron.html">read_octron()</a></code>, <code><a href="../reference/read_sleap.html">read_sleap()</a></code>, <code><a href="../reference/read_trackmate.html">read_trackmate()</a></code>, and <code><a href="../reference/read_trex.html">read_trex()</a></code> (<a href="https://github.com/animovement/aniread/issues/61" class="external-link">#61</a>).</li>
 <li>
 <code>aniframe (&gt;= 0.5.0)</code> is now required, since the reflection uses the new <code>set_origin()</code> / <code>set_y_height()</code> API.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-0-4-0">New features<a class="anchor" aria-label="anchor" href="#new-features-0-4-0"></a></h3>
+<h3 id="added-0-4-0">Added<a class="anchor" aria-label="anchor" href="#added-0-4-0"></a></h3>
 <ul><li>All affected readers gain an optional <code>video_height</code> argument for supplying the source frame height when the format does not record it (DeepLabCut, LightningPose, SLEAP, AnimalTA, Bonsai, FastTrack, TRex, idtracker.ai CSV, movement netCDF). When omitted, the reader falls back to source-extracted values where available, and finally to <code>max(y)</code>.</li>
 <li>
 <code><a href="../reference/read_idtracker.html">read_idtracker()</a></code> now reads <code>/height</code> from the trajectories h5 file by default.</li>
@@ -156,30 +152,70 @@
 <code><a href="../reference/read_octron.html">read_octron()</a></code> gains a <code>method</code> argument to handle frames where Octron emitted multiple mask segments for the same track (<a href="https://github.com/animovement/aniread/issues/67" class="external-link">#67</a>). One of <code>"weighted"</code> (default; area-weighted mean of position and shape props, sum of areas), <code>"largest"</code> (single largest segment per row), or <code>"segments"</code> (one row per segment, with a new <code>segment</code> identity variable).</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-0-4-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-4-0"></a></h3>
+<h3 id="fixed-0-4-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-4-0"></a></h3>
 <ul><li>
 <code><a href="../reference/read_idtracker.html">read_idtracker()</a></code> now accepts both the legacy <code>seconds</code> and the newer <code>time</code> leading column in idtracker.ai CSV exports (<a href="https://github.com/animovement/aniread/issues/60" class="external-link">#60</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.3.1" id="aniread-031">aniread 0.3.1<a class="anchor" aria-label="anchor" href="#aniread-031"></a></h2>
-<ul><li>Adds <code>read_aniframe</code> that allows you to read your saved aniframes (in <code>.parquet</code> format) back into R!</li>
-<li>Adds <code>read_movement</code> for importing data from the awesome <em>movement</em> Python package.</li>
-<li>Adds <code>read_c3d</code> for importing C3D motion capture data.</li>
-<li>Adds <code>read_fasttrack</code> for importing FastTrack data.</li>
-<li>Adds support for HDF5 DeepLabCut files in <code>read_deeplabcut</code>.</li>
+<h2 class="pkg-version" data-toc-text="0.3.2" id="aniread-032">aniread 0.3.2<a class="anchor" aria-label="anchor" href="#aniread-032"></a></h2>
+<div class="section level3">
+<h3 id="added-0-3-2">Added<a class="anchor" aria-label="anchor" href="#added-0-3-2"></a></h3>
+<ul><li>
+<code><a href="../reference/read_c3d.html">read_c3d()</a></code> for C3D motion-capture data, and <code><a href="../reference/read_fasttrack.html">read_fasttrack()</a></code> for FastTrack data.</li>
+<li>
+<code><a href="../reference/read_deeplabcut.html">read_deeplabcut()</a></code> reads HDF5 exports as well as CSV.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="fixed-0-3-2">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-3-2"></a></h3>
+<ul><li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> handles the newer Octron output format.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.1" id="aniread-031">aniread 0.3.1<a class="anchor" aria-label="anchor" href="#aniread-031"></a></h2>
+<div class="section level3">
+<h3 id="added-0-3-1">Added<a class="anchor" aria-label="anchor" href="#added-0-3-1"></a></h3>
+<ul><li>
+<code><a href="../reference/read_aniframe.html">read_aniframe()</a></code> reads a saved aniframe back from parquet.</li>
+<li>
+<code><a href="../reference/read_movement.html">read_movement()</a></code> imports data from the <a href="https://movement.neuroinformatics.dev" class="external-link">movement</a> Python package.</li>
+<li>
+<code><a href="../reference/read_trackmate.html">read_trackmate()</a></code> reads TrackMate XML. Adapted from the reader in TrackMateR, with thanks to <a href="https://github.com/quantixed" class="external-link">@quantixed</a>.</li>
+<li>
+<code><a href="../reference/read_octron.html">read_octron()</a></code> reads Octron CSV.</li>
+<li>
+<code><a href="../reference/calibrate_trackball.html">calibrate_trackball()</a></code> for trackball calibration.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="aniread-030">aniread 0.3.0<a class="anchor" aria-label="anchor" href="#aniread-030"></a></h2>
-<ul><li>Adapt to the tidy movement data ethos implemented in <em>aniframe</em> 0.4.0.</li>
-<li>Adds <code>read_trackmate</code> for TrackMate XML files. Thanks to <a href="https://github.com/quantixed" class="external-link">@quantixed</a> for writing the reader function in TrackMateR, which has been adapted here.</li>
-<li>Adds <code>read_octron</code> for Octron CSV files.</li>
+<div class="section level3">
+<h3 id="added-0-3-0">Added<a class="anchor" aria-label="anchor" href="#added-0-3-0"></a></h3>
+<ul><li>
+<code><a href="../reference/write_aniframe.html">write_aniframe()</a></code> writes an aniframe to parquet, and <code><a href="../reference/write_intracktive.html">write_intracktive()</a></code> exports for intracktive.</li>
+<li>
+<code><a href="../reference/read_anipose.html">read_anipose()</a></code>, <code><a href="../reference/read_fictrac.html">read_fictrac()</a></code>, <code><a href="../reference/read_freemocap.html">read_freemocap()</a></code> and <code><a href="../reference/read_custom.html">read_custom()</a></code>.</li>
+<li>
+<code><a href="../reference/get_sample_data.html">get_sample_data()</a></code> fetches example files for the readers.</li>
 </ul></div>
+<div class="section level3">
+<h3 id="changed-0-3-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-3-0"></a></h3>
+<ul><li>Adapted to the tidy movement data model introduced in aniframe 0.4.0.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.0" id="aniread-020">aniread 0.2.0<a class="anchor" aria-label="anchor" href="#aniread-020"></a></h2>
-<ul><li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
-<li>Added <code>write_aniframe</code> and tests</li>
+<div class="section level3">
+<h3 id="added-0-2-0">Added<a class="anchor" aria-label="anchor" href="#added-0-2-0"></a></h3>
+<ul><li>The first readers: <code><a href="../reference/read_deeplabcut.html">read_deeplabcut()</a></code>, <code><a href="../reference/read_sleap.html">read_sleap()</a></code>, <code><a href="../reference/read_lightningpose.html">read_lightningpose()</a></code>, <code><a href="../reference/read_trex.html">read_trex()</a></code>, <code><a href="../reference/read_idtracker.html">read_idtracker()</a></code>, <code><a href="../reference/read_animalta.html">read_animalta()</a></code>, <code><a href="../reference/read_bonsai.html">read_bonsai()</a></code>, <code><a href="../reference/read_movement.html">read_movement()</a></code> and <code><a href="../reference/read_trackball.html">read_trackball()</a></code>, with <code><a href="../reference/validate_trackball.html">validate_trackball()</a></code>.</li>
+<li>A <code>NEWS.md</code> file, to track changes to the package.</li>
 </ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="aniread-010">aniread 0.1.0<a class="anchor" aria-label="anchor" href="#aniread-010"></a></h2>
+<p>Package skeleton. No readers yet.</p>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

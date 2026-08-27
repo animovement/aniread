@@ -2,7 +2,7 @@
 
 ## aniread (development version)
 
-### Bug fixes
+### Fixed
 
 - [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   and
@@ -19,7 +19,7 @@
 
 ## aniread 0.6.0 (2026-08-18)
 
-### New features
+### Added
 
 - [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
   reads any supported format through one entry point, working out which
@@ -40,7 +40,13 @@
   `c3dr`) are skipped when it is absent, and the error names what was
   skipped.
 
-### Breaking changes
+- [`?read_trackball`](https://animovement.dev/aniread/reference/read_trackball.md)
+  documents the raw Bonsai layout, the requirement that `col_time` be a
+  shared clock with two sensors, and that empty time bins are filled
+  with zero motion — an assumption about this logger rather than about
+  optical flow generally.
+
+### Changed
 
 - [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
   no longer lists `csv` as a SLEAP suffix —
@@ -55,7 +61,7 @@
   [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   actually stamps.
 
-### Bug fixes
+### Fixed
 
 - [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   reads real two-sensor Bonsai optical-flow captures
@@ -88,17 +94,9 @@
 - `ensure_header_match()` no longer rejects a character `col_time` on
   files that do have named headers.
 
-### Documentation
-
-- [`?read_trackball`](https://animovement.dev/aniread/reference/read_trackball.md)
-  documents the raw Bonsai layout, the requirement that `col_time` be a
-  shared clock with two sensors, and that empty time bins are filled
-  with zero motion — an assumption about this logger rather than about
-  optical flow generally.
-
 ## aniread 0.5.1
 
-### New features
+### Added
 
 - [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
   returns the source software `aniread` can read as a tibble of `source`
@@ -106,7 +104,7 @@
   formats programmatically instead of hard-coding them. Closes
   [\#74](https://github.com/animovement/aniread/issues/74).
 
-### Bug fixes
+### Fixed
 
 - [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   no longer drops frames in which nothing was detected. Octron omits
@@ -122,7 +120,7 @@
 
 ## aniread 0.5.0
 
-### New features
+### Added
 
 - [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   imports behavioural events from a [BORIS](https://www.boris.unito.it/)
@@ -146,7 +144,7 @@
   recorded as `sampling_rate` metadata without rescaling timestamps.
   Closes [\#76](https://github.com/animovement/aniread/issues/76).
 
-### Bug fixes
+### Fixed
 
 - File validation no longer rejects readable files on Windows network
   (UNC) shares.
@@ -156,7 +154,7 @@
   [`file.access()`](https://rdrr.io/r/base/file.access.html) reports no
   access.
 
-### Dependencies
+### Changed
 
 - `aniframe (>= 0.6.0)` is now required, since
   [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
@@ -164,7 +162,7 @@
 
 ## aniread 0.4.1
 
-### New features
+### Added
 
 - [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   gains a `properties` argument for picking which region-property
@@ -175,13 +173,13 @@
   normalises hyphens to underscores in column names (`moments_hu-0` →
   `moments_hu_0`).
 
-### Performance
+### Changed
 
 - [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   is now substantially faster on large multi-segment files, especially
   when only a few `properties` are requested.
 
-### Bug fixes
+### Fixed
 
 - `read_octron(method = "weighted")` no longer silently recycles `v * a`
   when a row’s value and area columns have different segment counts; it
@@ -190,7 +188,7 @@
 
 ## aniread 0.4.0
 
-### Breaking changes
+### Changed
 
 - Readers whose source data uses image (top-left) origin now reflect `y`
   so the returned aniframe is in the conventional `bottom_left` origin.
@@ -212,7 +210,7 @@
 - `aniframe (>= 0.5.0)` is now required, since the reflection uses the
   new `set_origin()` / `set_y_height()` API.
 
-### New features
+### Added
 
 - All affected readers gain an optional `video_height` argument for
   supplying the source frame height when the format does not record it
@@ -238,32 +236,85 @@
   `"segments"` (one row per segment, with a new `segment` identity
   variable).
 
-### Bug fixes
+### Fixed
 
 - [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
   now accepts both the legacy `seconds` and the newer `time` leading
   column in idtracker.ai CSV exports
   ([\#60](https://github.com/animovement/aniread/issues/60)).
 
+## aniread 0.3.2
+
+### Added
+
+- [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md)
+  for C3D motion-capture data, and
+  [`read_fasttrack()`](https://animovement.dev/aniread/reference/read_fasttrack.md)
+  for FastTrack data.
+- [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md)
+  reads HDF5 exports as well as CSV.
+
+### Fixed
+
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
+  handles the newer Octron output format.
+
 ## aniread 0.3.1
 
-- Adds `read_aniframe` that allows you to read your saved aniframes (in
-  `.parquet` format) back into R!
-- Adds `read_movement` for importing data from the awesome *movement*
-  Python package.
-- Adds `read_c3d` for importing C3D motion capture data.
-- Adds `read_fasttrack` for importing FastTrack data.
-- Adds support for HDF5 DeepLabCut files in `read_deeplabcut`.
+### Added
+
+- [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)
+  reads a saved aniframe back from parquet.
+- [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  imports data from the
+  [movement](https://movement.neuroinformatics.dev) Python package.
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  reads TrackMate XML. Adapted from the reader in TrackMateR, with
+  thanks to [@quantixed](https://github.com/quantixed).
+- [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
+  reads Octron CSV.
+- [`calibrate_trackball()`](https://animovement.dev/aniread/reference/calibrate_trackball.md)
+  for trackball calibration.
 
 ## aniread 0.3.0
 
-- Adapt to the tidy movement data ethos implemented in *aniframe* 0.4.0.
-- Adds `read_trackmate` for TrackMate XML files. Thanks to
-  [@quantixed](https://github.com/quantixed) for writing the reader
-  function in TrackMateR, which has been adapted here.
-- Adds `read_octron` for Octron CSV files.
+### Added
+
+- [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
+  writes an aniframe to parquet, and
+  [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
+  exports for intracktive.
+- [`read_anipose()`](https://animovement.dev/aniread/reference/read_anipose.md),
+  [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md),
+  [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
+  and
+  [`read_custom()`](https://animovement.dev/aniread/reference/read_custom.md).
+- [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
+  fetches example files for the readers.
+
+### Changed
+
+- Adapted to the tidy movement data model introduced in aniframe 0.4.0.
 
 ## aniread 0.2.0
 
-- Added a `NEWS.md` file to track changes to the package.
-- Added `write_aniframe` and tests
+### Added
+
+- The first readers:
+  [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md),
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md),
+  [`read_lightningpose()`](https://animovement.dev/aniread/reference/read_lightningpose.md),
+  [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md),
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md),
+  [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md),
+  [`read_bonsai()`](https://animovement.dev/aniread/reference/read_bonsai.md),
+  [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  and
+  [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md),
+  with
+  [`validate_trackball()`](https://animovement.dev/aniread/reference/validate_trackball.md).
+- A `NEWS.md` file, to track changes to the package.
+
+## aniread 0.1.0
+
+Package skeleton. No readers yet.
