@@ -110,7 +110,7 @@ test_that("read_trackmate parses valid XML correctly", {
   expect_equal(result$y, c(80.0, 75.0))
 })
 
-test_that("read_trackmate reflects to bottom_left and records y_height", {
+test_that("read_trackmate turns the data the right way up and records the extent", {
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -140,8 +140,8 @@ test_that("read_trackmate reflects to bottom_left and records y_height", {
   result <- read_trackmate(tmp)
   meta <- anicore::get_metadata(result)
 
-  expect_equal(as.character(meta$origin), "bottom_left")
-  expect_equal(meta$y_height, 400)
+  expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
+  expect_equal(anicore::get_axis_extents(result), c(y = 400))
   expect_equal(result$y, c(400 - 50, 400 - 100))
 })
 
@@ -175,7 +175,7 @@ test_that("read_trackmate `video_height` overrides ImageData height", {
   result <- read_trackmate(tmp, video_height = 1080)
   meta <- anicore::get_metadata(result)
 
-  expect_equal(meta$y_height, 1080)
+  expect_equal(anicore::get_axis_extents(result), c(y = 1080))
   expect_equal(result$y, c(1080 - 50, 1080 - 100))
 })
 
@@ -207,7 +207,7 @@ test_that("read_trackmate falls back to max(y) when ImageData missing", {
   meta <- anicore::get_metadata(result)
 
   # max(y_source) = 25; the maximum should map to 0 in bottom_left.
-  expect_equal(meta$y_height, 25)
+  expect_equal(anicore::get_axis_extents(result), c(y = 25))
   expect_equal(result$y, c(25 - 20, 25 - 25))
 })
 
