@@ -237,7 +237,7 @@ test_that("read_trackmate converts units correctly", {
 
   result <- read_trackmate(tmp)
   meta <- anicore::get_metadata(result)
-  default_meta <- anicore::default_metadata()
+  default_meta <- anicore::list_default_metadata()
 
   expect_equal(
     meta$unit_space,
@@ -312,7 +312,7 @@ test_that("read_trackmate assigns keypoint column as centroid", {
   on.exit(unlink(tmp))
 
   result <- read_trackmate(tmp)
-  default_meta <- anicore::default_metadata()
+  default_meta <- anicore::list_default_metadata()
 
   expect_true("keypoint" %in% names(result))
   expect_equal(

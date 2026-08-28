@@ -114,11 +114,11 @@ test_that("read_fictrac ball_radius conversion works", {
 
   expect_equal(
     meta_radians$unit_space,
-    factor("none", levels = levels(anicore::default_metadata()$unit_space))
+    factor("none", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta_cm$unit_space,
-    factor("cm", levels = levels(anicore::default_metadata()$unit_space))
+    factor("cm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 
@@ -145,11 +145,11 @@ test_that("read_fictrac unit_ball_radius parameter works", {
 
   expect_equal(
     meta_mm$unit_space,
-    factor("mm", levels = levels(anicore::default_metadata()$unit_space))
+    factor("mm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta_m$unit_space,
-    factor("m", levels = levels(anicore::default_metadata()$unit_space))
+    factor("m", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 
@@ -168,17 +168,17 @@ test_that("read_fictrac metadata is correctly set", {
   expect_type(meta$sampling_rate, "double")
   expect_equal(
     meta$unit_space,
-    factor("none", levels = levels(anicore::default_metadata()$unit_space))
+    factor("none", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta$unit_time,
-    factor("s", levels = levels(anicore::default_metadata()$unit_time))
+    factor("s", levels = levels(anicore::list_default_metadata()$unit_time))
   )
   expect_equal(
     meta$coordinate_system,
     factor(
       "cartesian_2d",
-      levels = levels(anicore::default_metadata()$coordinate_system)
+      levels = levels(anicore::list_default_metadata()$coordinate_system)
     )
   )
 
@@ -385,7 +385,7 @@ test_that("read_fictrac with ball_radius gives correct physical units", {
   meta <- anicore::get_metadata(result)
   expect_equal(
     meta$unit_space,
-    factor("cm", levels = levels(anicore::default_metadata()$unit_space))
+    factor("cm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 

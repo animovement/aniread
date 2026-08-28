@@ -105,7 +105,7 @@ path_missing_columns <- test_files$missing_columns
 path_malformed <- test_files$malformed
 
 # Expected metadata values
-default_metadata <- anicore::default_metadata()
+default_metadata <- anicore::list_default_metadata()
 expected_source <- "freemocap"
 expected_unit_space <- factor(
   "mm",
