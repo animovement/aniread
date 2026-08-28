@@ -1,5 +1,7 @@
 # Changelog
 
+## aniread (development version)
+
 ## aniread 0.7.0 (2026-08-28)
 
 ### Added
