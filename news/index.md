@@ -1,6 +1,38 @@
 # Changelog
 
-## aniread (development version)
+## aniread 0.7.0 (2026-08-28)
+
+### Added
+
+- [`read_custom()`](https://animovement.dev/aniread/reference/read_custom.md)
+  takes an `index` argument, so a frame indexed by something other than
+  `time` can be read
+  ([\#107](https://github.com/animovement/aniread/issues/107)). The
+  index used to be smuggled in through `variables_when` and told apart
+  by the literal string `"time"`; since these became separate roles in
+  anicore,
+  [`read_custom()`](https://animovement.dev/aniread/reference/read_custom.md)’s
+  own documented example — a frame indexed by `frame` within `trial` —
+  could not be expressed at all. `c("trial", "frame")` normalised to
+  `"trial"`, leaving the frame indexed by a `time` column the data does
+  not have.
+
+### Changed
+
+- The core data structures come from `anicore`, which is what the
+  `aniframe` package was renamed to in its 0.8.0
+  (animovement/anicore#84). The `aniframe` class keeps its name; only
+  the package providing it changed, so `anicore` replaces `aniframe` in
+  `Imports` and in every `aniframe::` call.
+
+- The minimum `anicore` is 0.8.0, which is the first version published
+  under that name. The constraint read `>= 0.6.0` — a version of
+  `anicore` that never existed, carried over unchanged from `aniframe`
+  when the dependency was renamed.
+
+- Axis geometry is declared through `anicore`’s axis directions and
+  extents, replacing `set_origin()` and `set_y_height()`, and
+  `default_metadata()` follows its rename to `list_default_metadata()`.
 
 ### Fixed
 

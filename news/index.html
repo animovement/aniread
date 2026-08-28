@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,9 +50,20 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="aniread-development-version">aniread (development version)<a class="anchor" aria-label="anchor" href="#aniread-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.7.0" id="aniread-070-2026-08-28">aniread 0.7.0 (2026-08-28)<a class="anchor" aria-label="anchor" href="#aniread-070-2026-08-28"></a></h2>
 <div class="section level3">
-<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<h3 id="added-0-7-0">Added<a class="anchor" aria-label="anchor" href="#added-0-7-0"></a></h3>
+<ul><li>
+<code><a href="../reference/read_custom.html">read_custom()</a></code> takes an <code>index</code> argument, so a frame indexed by something other than <code>time</code> can be read (<a href="https://github.com/animovement/aniread/issues/107" class="external-link">#107</a>). The index used to be smuggled in through <code>variables_when</code> and told apart by the literal string <code>"time"</code>; since these became separate roles in anicore, <code><a href="../reference/read_custom.html">read_custom()</a></code>’s own documented example — a frame indexed by <code>frame</code> within <code>trial</code> — could not be expressed at all. <code>c("trial", "frame")</code> normalised to <code>"trial"</code>, leaving the frame indexed by a <code>time</code> column the data does not have.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-0-7-0">Changed<a class="anchor" aria-label="anchor" href="#changed-0-7-0"></a></h3>
+<ul><li><p>The core data structures come from <code>anicore</code>, which is what the <code>aniframe</code> package was renamed to in its 0.8.0 (animovement/anicore#84). The <code>aniframe</code> class keeps its name; only the package providing it changed, so <code>anicore</code> replaces <code>aniframe</code> in <code>Imports</code> and in every <code>aniframe::</code> call.</p></li>
+<li><p>The minimum <code>anicore</code> is 0.8.0, which is the first version published under that name. The constraint read <code>&gt;= 0.6.0</code> — a version of <code>anicore</code> that never existed, carried over unchanged from <code>aniframe</code> when the dependency was renamed.</p></li>
+<li><p>Axis geometry is declared through <code>anicore</code>’s axis directions and extents, replacing <code>set_origin()</code> and <code>set_y_height()</code>, and <code>default_metadata()</code> follows its rename to <code>list_default_metadata()</code>.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-0-7-0">Fixed<a class="anchor" aria-label="anchor" href="#fixed-0-7-0"></a></h3>
 <ul><li>
 <code><a href="../reference/read_trackball.html">read_trackball()</a></code> and <code><a href="../reference/detect_source.html">detect_source()</a></code> cope with a run of serial-port junk before the first complete record, not just a single partial row (<a href="https://github.com/animovement/aniread/issues/94" class="external-link">#94</a>). The skip was computed from <code><a href="https://rdrr.io/r/utils/count.fields.html" class="external-link">utils::count.fields()</a></code>, which silently drops blank lines, so on a capture with blank lines among the junk it landed early — on a noise line, which was then accepted as a header, and the read failed with <code>Column index 4 is out of bounds</code>.</li>
 </ul></div>
