@@ -109,16 +109,16 @@ test_that("read_fictrac ball_radius conversion works", {
   expect_equal(result_cm$y, result_radians$y * ball_radius)
 
   # Check metadata
-  meta_radians <- aniframe::get_metadata(result_radians)
-  meta_cm <- aniframe::get_metadata(result_cm)
+  meta_radians <- anicore::get_metadata(result_radians)
+  meta_cm <- anicore::get_metadata(result_cm)
 
   expect_equal(
     meta_radians$unit_space,
-    factor("none", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("none", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta_cm$unit_space,
-    factor("cm", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("cm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 
@@ -140,16 +140,16 @@ test_that("read_fictrac unit_ball_radius parameter works", {
     unit_ball_radius = "m"
   )
 
-  meta_mm <- aniframe::get_metadata(result_mm)
-  meta_m <- aniframe::get_metadata(result_m)
+  meta_mm <- anicore::get_metadata(result_mm)
+  meta_m <- anicore::get_metadata(result_m)
 
   expect_equal(
     meta_mm$unit_space,
-    factor("mm", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("mm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta_m$unit_space,
-    factor("m", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("m", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 
@@ -160,7 +160,7 @@ test_that("read_fictrac metadata is correctly set", {
   create_test_fictrac_file(temp_file, n_rows = 100)
   result <- read_fictrac(temp_file)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   # Check all metadata fields
   expect_equal(meta$source, "fictrac")
@@ -168,17 +168,17 @@ test_that("read_fictrac metadata is correctly set", {
   expect_type(meta$sampling_rate, "double")
   expect_equal(
     meta$unit_space,
-    factor("none", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("none", levels = levels(anicore::list_default_metadata()$unit_space))
   )
   expect_equal(
     meta$unit_time,
-    factor("s", levels = levels(aniframe::default_metadata()$unit_time))
+    factor("s", levels = levels(anicore::list_default_metadata()$unit_time))
   )
   expect_equal(
     meta$coordinate_system,
     factor(
       "cartesian_2d",
-      levels = levels(aniframe::default_metadata()$coordinate_system)
+      levels = levels(anicore::list_default_metadata()$coordinate_system)
     )
   )
 
@@ -235,7 +235,7 @@ test_that("read_fictrac sampling rate calculation is robust to variable interval
   )
 
   result <- read_fictrac(temp_file)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   # Should use median (7ms), so occasional long intervals don't affect it
   expect_type(meta$sampling_rate, "double")
@@ -382,10 +382,10 @@ test_that("read_fictrac with ball_radius gives correct physical units", {
   expect_equal(result$x[3], 1.0, tolerance = 1e-10)
 
   # Check metadata
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(
     meta$unit_space,
-    factor("cm", levels = levels(aniframe::default_metadata()$unit_space))
+    factor("cm", levels = levels(anicore::list_default_metadata()$unit_space))
   )
 })
 
@@ -414,7 +414,7 @@ test_that("read_fictrac handles single row file", {
   expect_equal(nrow(result), 1)
 
   # Sampling rate should be NA or handle gracefully
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_true(is.na(meta$sampling_rate) || is.numeric(meta$sampling_rate))
 })
 

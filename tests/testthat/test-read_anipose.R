@@ -107,7 +107,7 @@ path_missing_columns <- test_files$missing_columns
 path_malformed <- test_files$malformed
 
 # Expected metadata values
-default_metadata <- aniframe::default_metadata()
+default_metadata <- anicore::list_default_metadata()
 expected_source <- "anipose"
 expected_unit_space <- factor(
   "mm",
@@ -227,14 +227,14 @@ test_that("read_anipose extracts keypoint names correctly", {
 test_that("read_anipose sets correct source metadata", {
   result <- read_anipose(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$source, expected_source)
 })
 
 test_that("read_anipose sets correct unit metadata with default", {
   result <- read_anipose(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$unit_space, expected_unit_space)
   expect_equal(meta$unit_time, expected_unit_time)
 })
@@ -242,7 +242,7 @@ test_that("read_anipose sets correct unit metadata with default", {
 test_that("read_anipose accepts custom unit_space parameter", {
   result <- read_anipose(path_valid, unit_space = "cm")
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expected_cm <- factor(
     "cm",
     levels = levels(default_metadata$unit_space)
@@ -253,14 +253,14 @@ test_that("read_anipose accepts custom unit_space parameter", {
 test_that("read_anipose sets correct coordinate system", {
   result <- read_anipose(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$coordinate_system, expected_coordinate_system)
 })
 
 test_that("read_anipose sets filename in metadata", {
   result <- read_anipose(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$filename, expected_filename)
 })
 
@@ -279,8 +279,8 @@ test_that("read_anipose handles empty data gracefully", {
 test_that("read_anipose output works with aniframe functions", {
   result <- read_anipose(path_valid)
 
-  expect_no_error(aniframe::get_metadata(result))
-  expect_no_error(aniframe::set_metadata(result, source = "test"))
+  expect_no_error(anicore::get_metadata(result))
+  expect_no_error(anicore::set_metadata(result, source = "test"))
 })
 
 test_that("read_anipose preserves data relationships", {

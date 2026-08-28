@@ -18,8 +18,8 @@
 #' @details
 #' `read_dataset()` is a dispatcher, not a new reader: it works out which
 #' reader to call and calls it. The object you get back is exactly what the
-#' underlying reader returns - an [aniframe][aniframe::aniframe] for tracking
-#' data, or an [anievent][aniframe::anievent] for behavioural events from
+#' underlying reader returns - an [aniframe][anicore::aniframe] for tracking
+#' data, or an [anievent][anicore::anievent] for behavioural events from
 #' [read_boris()].
 #'
 #' DeepLabCut and LightningPose CSV exports are structurally identical, so a
@@ -28,8 +28,8 @@
 #' `source` metadata is set to `"deeplabcut/lightningpose"` to record that the
 #' distinction is undetermined. Pass `source` explicitly to override this.
 #'
-#' @return An [aniframe][aniframe::aniframe] or
-#'   [anievent][aniframe::anievent], depending on the reader.
+#' @return An [aniframe][anicore::aniframe] or
+#'   [anievent][anicore::anievent], depending on the reader.
 #'
 #' @seealso [detect_source()] to detect the format without reading,
 #'   [get_supported_sources()] for what is supported, and the individual
@@ -83,7 +83,7 @@ read_dataset <- function(paths, source = "auto", ...) {
   data <- reader(paths, ...)
 
   if (ambiguous) {
-    data <- aniframe::set_metadata(data, source = AMBIGUOUS_DLC_LP)
+    data <- anicore::set_metadata(data, source = AMBIGUOUS_DLC_LP)
   }
 
   data

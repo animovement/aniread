@@ -2,28 +2,37 @@
 % Please edit documentation in R/utils.R
 \name{reflect_to_bottom_left}
 \alias{reflect_to_bottom_left}
-\title{Reflect image-plane data from a top-left to a bottom-left origin}
+\title{Turn image-plane data the right way up}
 \usage{
 reflect_to_bottom_left(data, video_height = NULL)
 }
 \arguments{
-\item{data}{An aniframe with image-plane (top-left) coordinates.}
+\item{data}{An aniframe with image-plane coordinates.}
 
 \item{video_height}{Optional numeric height of the source video frame
-in y-axis units. When supplied, takes precedence over the existing
-\code{y_height} metadata.}
+in y-axis units. When supplied, takes precedence over the extent
+inferred from the data.}
 }
 \value{
-An aniframe with reflected y coordinates and \code{origin} set to
-\code{"bottom_left"}.
+An aniframe with y counting upward.
 }
 \description{
-Marks the data's \code{origin} as \code{"top_left"} (so the reflection is well
-defined), applies a user-supplied \code{video_height} to the \code{y_height}
-metadata when given, then calls \code{\link[aniframe:set_origin]{aniframe::set_origin()}} to reflect
-y around \code{y_height}. Used by all readers whose source data is in an
-image / video coordinate system. When \code{video_height} is \code{NULL}, the
-\code{y_height} value already on the aniframe (set to \code{max(y)} by
-\code{\link[aniframe:as_aniframe]{aniframe::as_aniframe()}} when not otherwise populated) is used.
+Image and video tooling counts y downward from the top of the frame,
+while plotting and maths count it upward. Every reader whose source is
+an image plane declares the convention its data arrived in and then
+turns the vertical axis over, so downstream sees one convention.
+}
+\details{
+The depth axis is declared too, as \code{back} — the camera on the near side
+of the scene. That is the default for these formats rather than
+something the file says, and it is what \code{\link[anicore:get_handedness]{anicore::get_handedness()}} and
+\code{\link[anicore:get_angle_direction]{anicore::get_angle_direction()}} are read from, so a recording made
+through a glass floor should say so with
+\code{anicore::set_axis_directions(data, c(z = "forward"))}.
+
+\code{anicore} no longer invents an extent to reflect around, so the reader
+supplies one: the video height when the source gives it, and otherwise
+the furthest tracked point, which is the guess \code{as_aniframe()} used to
+make on everyone's behalf.
 }
 \keyword{internal}

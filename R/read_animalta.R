@@ -56,8 +56,8 @@ read_animalta <- function(path, detailed = "auto", video_height = NULL) {
 
   # Init metadata
   data <- data |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = "animalta",
       filename = basename(path)
     ) |>

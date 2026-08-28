@@ -40,7 +40,7 @@ test_that("read_movement column types are correct", {
 test_that("read_movement populates metadata", {
   skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_false(is.null(meta$source))
   expect_false(is.null(meta$filename))

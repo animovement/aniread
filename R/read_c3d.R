@@ -28,8 +28,8 @@ read_c3d <- function(path) {
       names_from = "type"
     ) |>
     dplyr::rename(keypoint = "point", time = "frame") |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = all_data$parameters$MANUFACTURER$SOFTWARE,
       source_version = paste(
         all_data$parameters$MANUFACTURER$VERSION,
@@ -40,7 +40,7 @@ read_c3d <- function(path) {
       unit_space = all_data$parameters$POINT$UNITS
     ) |>
     dplyr::mutate(time = .data$time - 1) |>
-    aniframe::set_sampling_rate(all_data$header$framerate)
+    anicore::set_sampling_rate(all_data$header$framerate)
 
   data
 }

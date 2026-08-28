@@ -140,7 +140,7 @@ test_that("read_trackball sets metadata correctly", {
     sampling_rate = 60
   )
 
-  metadata <- aniframe::get_metadata(result)
+  metadata <- anicore::get_metadata(result)
   expect_equal(metadata$sampling_rate, 60)
 })
 

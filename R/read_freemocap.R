@@ -20,7 +20,7 @@
 #' mocap_data <- read_freemocap("path/to/data_by_frame.csv")
 #'
 #' # Check metadata
-#' aniframe::get_metadata(mocap_data)
+#' anicore::get_metadata(mocap_data)
 #' }
 #'
 #' @export
@@ -42,8 +42,8 @@ read_freemocap <- function(path) {
   }
 
   data <- data |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = "freemocap",
       filename = basename(path),
       unit_space = "mm",
@@ -53,7 +53,7 @@ read_freemocap <- function(path) {
   if (!all(is.na(data$timestamp))) {
     # Add timestamp to metadata and keep only elapsed time
     data <- data |>
-      aniframe::set_metadata(
+      anicore::set_metadata(
         start_datetime = dplyr::first(data$timestamp),
         unit_time = "s"
       ) |>
@@ -63,7 +63,7 @@ read_freemocap <- function(path) {
   } else {
     # Else just set unit_time to frame
     data <- data |>
-      aniframe::set_metadata(
+      anicore::set_metadata(
         unit_time = "frame"
       )
   }

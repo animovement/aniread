@@ -9,7 +9,7 @@
 # - Emits a "Wrote inTRACKtive CSV" message when not quiet
 
 test_that("creates track_id from all grouping columns", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     session = c(1, 1, 2, 2),
     trial = c(1, 1, 1, 1),
     model = c("a", "a", "a", "a"),
@@ -32,7 +32,7 @@ test_that("creates track_id from all grouping columns", {
 })
 
 test_that("creates track_id from subset of grouping columns", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1, 2, 2),
     keypoint = c("nose", "nose", "tail", "tail"),
     time = c(0, 1, 0, 1),
@@ -51,7 +51,7 @@ test_that("creates track_id from subset of grouping columns", {
 })
 
 test_that("includes z column when present", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1),
     time = c(0, 1),
     x = c(10, 11),
@@ -71,7 +71,7 @@ test_that("includes z column when present", {
 })
 
 test_that("excludes z column when absent", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1),
     time = c(0, 1),
     x = c(10, 11),
@@ -89,7 +89,7 @@ test_that("excludes z column when absent", {
 })
 
 test_that("renames time to t", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1),
     time = c(0, 1),
     x = c(10, 11),
@@ -110,7 +110,7 @@ test_that("renames time to t", {
 
 
 test_that("writes correct column order to file", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1),
     time = c(0, 1),
     x = c(10, 11),
@@ -139,7 +139,7 @@ test_that("errors when no grouping columns are present", {
 })
 
 test_that("emits a success message when not quiet", {
-  data <- aniframe::aniframe(
+  data <- anicore::aniframe(
     individual = c(1, 1),
     time = c(0, 1),
     x = c(10, 11),

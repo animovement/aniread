@@ -140,19 +140,20 @@ test_that("metadata is set correctly", {
   path <- test_path("data/octron", "octron_sample.csv")
   result <- read_octron(path)
 
-  metadata <- aniframe::get_metadata(result)
+  metadata <- anicore::get_metadata(result)
   expect_equal(metadata$source, "octron")
   expect_equal(metadata$filename, "octron_sample.csv")
 })
 
-test_that("read_octron reflects to bottom_left using header video_height", {
+test_that("read_octron turns the data the right way up using the header video_height", {
   path <- test_path("data/octron", "octron_sample.csv")
   result <- read_octron(path)
-  metadata <- aniframe::get_metadata(result)
+  metadata <- anicore::get_metadata(result)
 
-  expect_equal(as.character(metadata$origin), "bottom_left")
-  expect_true(is.finite(metadata$y_height))
-  expect_true(metadata$y_height >= max(result$y, na.rm = TRUE))
+  expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
+  extent <- anicore::get_axis_extents(result)[["y"]]
+  expect_true(is.finite(extent))
+  expect_true(extent >= max(result$y, na.rm = TRUE))
 })
 
 test_that("read_octron `video_height` overrides the CSV header value", {
@@ -160,12 +161,9 @@ test_that("read_octron `video_height` overrides the CSV header value", {
   default <- read_octron(path)
   override <- read_octron(path, video_height = 9999)
 
-  default_meta <- aniframe::get_metadata(default)
-  override_meta <- aniframe::get_metadata(override)
-
-  expect_equal(override_meta$y_height, 9999)
+  expect_equal(anicore::get_axis_extents(override)[["y"]], 9999)
   # Same x, shifted y by the difference between the two heights.
-  shift <- 9999 - default_meta$y_height
+  shift <- 9999 - anicore::get_axis_extents(default)[["y"]]
   expect_equal(override$y, default$y + shift)
 })
 

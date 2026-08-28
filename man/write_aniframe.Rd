@@ -7,7 +7,7 @@
 write_aniframe(data, filename, ...)
 }
 \arguments{
-\item{data}{An \strong{aniframe} object (see \code{aniframe::is_aniframe()}).}
+\item{data}{An \strong{aniframe} object (see \code{anicore::is_aniframe()}).}
 
 \item{filename}{Character string specifying the output file name.  The file
 extension determines which writer is used.}
@@ -35,7 +35,7 @@ as neither \code{csv} or \code{tsv} can preserve the metadata.
 \examples{
 \dontrun{
 ## Create a small aniframe for demonstration
-df <- aniframe::example_aniframe()
+df <- anicore::example_aniframe()
 
 ## Write the aniframe as CSV
 write_aniframe(df, "demo.csv")

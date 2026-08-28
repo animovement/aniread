@@ -30,7 +30,7 @@ read_movement <- function(path, video_height = NULL) {
   # h5ls(path)
   metadata <- rhdf5::h5readAttributes(path, "/")
 
-  # Temporary unit workaround until https://github.com/animovement/aniframe/issues/45 is solved
+  # Temporary unit workaround until https://github.com/animovement/anicore/issues/45 is solved
   if (metadata$time_unit == "seconds") {
     metadata$time_unit <- "s"
   }
@@ -56,8 +56,8 @@ read_movement <- function(path, video_height = NULL) {
     tidyr::pivot_wider(names_from = "coord", values_from = "value") |>
     dplyr::mutate(time = time[.data$time_idx]) |>
     dplyr::select("individual", "keypoint", "time", "x", "y") |>
-    aniframe::as_aniframe() |>
-    aniframe::set_metadata(
+    anicore::as_aniframe() |>
+    anicore::set_metadata(
       source = metadata$source_software,
       filename = basename(metadata$source_file),
       unit_time = metadata$time_unit,

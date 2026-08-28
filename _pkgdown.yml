@@ -46,7 +46,7 @@ reference:
 - title: "Event-data readers"
   desc: >
     Readers for behavioural-event data — these import into an
-    `aniframe::anievent()`.
+    `anicore::anievent()`.
   contents:
   - read_boris
 

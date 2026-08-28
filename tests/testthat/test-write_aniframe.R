@@ -31,7 +31,7 @@ test_that("write_aniframe() aborts when data is not an aniframe", {
 # 2️⃣  Extension validation
 # ---------------------------------------------------------------------------
 test_that("write_aniframe() aborts on unsupported file extensions", {
-  anif <- aniframe::example_aniframe()
+  anif <- anicore::example_aniframe()
 
   expect_error(
     write_aniframe(anif, "mydata.xlsx"),
@@ -43,7 +43,7 @@ test_that("write_aniframe() aborts on unsupported file extensions", {
 # 3️⃣  CSV / TSV dispatch
 # -------------------------------------------------------------------------
 test_that("CSV and TSV paths call write_aniframe_csv()", {
-  anif <- aniframe::example_aniframe()
+  anif <- anicore::example_aniframe()
 
   # -----------------------------------------------------------------------
   # Spy flag – toggled by the stubbed CSV helper
@@ -88,7 +88,7 @@ test_that("CSV and TSV paths call write_aniframe_csv()", {
 # 4️⃣  Parquet dispatch
 # -------------------------------------------------------------------------
 test_that("Parquet path calls write_aniframe_parquet()", {
-  anif <- aniframe::example_aniframe()
+  anif <- anicore::example_aniframe()
 
   parquet_called <- FALSE
 
@@ -119,7 +119,7 @@ test_that("Parquet path calls write_aniframe_parquet()", {
 # 5️⃣  Return value is invisible original object
 # ---------------------------------------------------------------------------
 test_that("write_aniframe() returns the original aniframe invisibly", {
-  anif <- aniframe::example_aniframe()
+  anif <- anicore::example_aniframe()
   out <- write_aniframe(anif, create_tmp_file("csv")) |> suppressWarnings()
 
   # The returned object should be identical (by reference) to the input

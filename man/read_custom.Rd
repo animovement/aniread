@@ -10,6 +10,7 @@ read_custom(
   variables_what = NULL,
   variables_when = NULL,
   variables_where = NULL,
+  index = NULL,
   metadata = list()
 )
 }
@@ -29,6 +30,11 @@ define a unique timepoint. Uses aniframe defaults if NULL.}
 
 \item{variables_where}{Character vector of spatial columns that together
 define position. If NULL, detected from data.}
+
+\item{index}{Length-one character vector naming the column the frame is
+indexed by -- the position of each row within its temporal context. If
+\code{NULL} (the default), \code{"time"}. It is never a grouping variable, and is
+declared separately from \code{variables_when}.}
 
 \item{metadata}{A list of metadata to attach to the resulting aniframe.
 Default is an empty list.}
@@ -63,7 +69,8 @@ read_custom(
     y = "y_coord"
   ),
   variables_what = "id",
-  variables_when = c("trial", "frame")
+  variables_when = "trial",
+  index = "frame"
 )
 
 # Using column positions

@@ -47,7 +47,7 @@ test_that("read_deeplabcut returns an aniframe", {
 
 test_that("read_deeplabcut sets correct metadata", {
   result <- read_deeplabcut(fixture_path("mouse_single.csv"))
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(meta$source, "deeplabcut")
   expect_equal(meta$filename, "mouse_single.csv")

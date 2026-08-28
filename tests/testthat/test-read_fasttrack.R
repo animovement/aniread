@@ -62,7 +62,7 @@ test_that("read_fasttrack area is only present for centroid", {
 
 test_that("read_fasttrack populates metadata", {
   result <- read_fasttrack(path)
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
 
   expect_equal(meta$source, "fasttrack")
   expect_equal(meta$filename, "fasttrack-tracking.txt")

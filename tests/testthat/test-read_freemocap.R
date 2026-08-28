@@ -105,7 +105,7 @@ path_missing_columns <- test_files$missing_columns
 path_malformed <- test_files$malformed
 
 # Expected metadata values
-default_metadata <- aniframe::default_metadata()
+default_metadata <- anicore::list_default_metadata()
 expected_source <- "freemocap"
 expected_unit_space <- factor(
   "mm",
@@ -202,28 +202,28 @@ test_that("read_freemocap converts data types correctly", {
 test_that("read_freemocap sets correct source metadata", {
   result <- read_freemocap(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$source, expected_source)
 })
 
 test_that("read_freemocap sets correct unit metadata", {
   result <- read_freemocap(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$unit_space, expected_unit_space)
 })
 
 test_that("read_freemocap sets correct coordinate system", {
   result <- read_freemocap(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$coordinate_system, expected_coordinate_system)
 })
 
 test_that("read_freemocap sets filename in metadata", {
   result <- read_freemocap(path_valid)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_equal(meta$filename, expected_filename)
 })
 
@@ -232,7 +232,7 @@ test_that("read_freemocap sets filename in metadata", {
 test_that("read_freemocap handles timestamps when present", {
   result <- read_freemocap(path_with_timestamps)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_true("start_datetime" %in% names(meta))
   expect_equal(meta$unit_time, expected_unit_time_with_timestamps)
   expect_false(timestamp_column %in% names(result))
@@ -241,7 +241,7 @@ test_that("read_freemocap handles timestamps when present", {
 test_that("read_freemocap handles missing timestamps", {
   result <- read_freemocap(path_without_timestamps)
 
-  meta <- aniframe::get_metadata(result)
+  meta <- anicore::get_metadata(result)
   expect_true("start_datetime" %in% names(meta))
   expect_equal(meta$unit_time, expected_unit_time_without_timestamps)
 })
@@ -268,5 +268,5 @@ test_that("read_freemocap handles empty data gracefully", {
 test_that("read_freemocap output works with aniframe functions", {
   result <- read_freemocap(path_valid)
 
-  expect_no_error(aniframe::get_metadata(result))
+  expect_no_error(anicore::get_metadata(result))
 })
