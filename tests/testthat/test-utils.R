@@ -126,3 +126,18 @@ test_that("reflect_to_bottom_left declares the side the camera was on", {
   below <- anicore::set_axis_directions(result, c(z = "forward"))
   expect_equal(anicore::get_angle_direction(below), "clockwise")
 })
+
+test_that("there is no extent to measure without a vertical axis", {
+  # A frame with no `y` role has nothing to reflect around, so the readers
+  # leave the data as it arrived rather than inventing a height.
+  polar <- dplyr::tibble(
+    individual = factor("ind1"),
+    keypoint = factor("centroid"),
+    time = 1:3,
+    rho = c(1, 2, 3),
+    phi = c(0, 1, 2)
+  ) |>
+    anicore::as_aniframe()
+
+  expect_null(compute_y_extent(polar))
+})
