@@ -189,10 +189,10 @@ test_that("read_custom respects variables_when", {
     variables_when = c("trial", "time")
   )
 
-  expect_equal(
-    anicore::get_metadata(result)$variables_when,
-    c("trial", "time")
-  )
+  # `variables_when` is the temporal *context*; the index is declared
+  # separately and is never one of them (animovement/anicore#109).
+  expect_equal(anicore::get_metadata(result)$variables_when, "trial")
+  expect_equal(anicore::get_index(result), "time")
   expect_true("trial" %in% dplyr::group_vars(result))
   expect_false("time" %in% dplyr::group_vars(result))
 })
@@ -218,7 +218,8 @@ test_that("read_custom works with renamed temporal column", {
   )
 
   expect_s3_class(result, "aniframe")
-  expect_equal(anicore::get_metadata(result)$variables_when, "time")
+  expect_equal(anicore::get_metadata(result)$variables_when, character(0))
+  expect_equal(anicore::get_index(result), "time")
 })
 
 # Metadata ----------------------------------------------------------------
@@ -268,7 +269,8 @@ test_that("read_custom stores variables in metadata", {
 
   meta <- anicore::get_metadata(result)
   expect_equal(meta$variables_what, "individual")
-  expect_equal(meta$variables_when, "time")
+  expect_equal(meta$variables_when, character(0))
+  expect_equal(meta$variables_index, "time")
   expect_equal(meta$variables_where, c("x", "y"))
 })
 
