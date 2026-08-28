@@ -1,14 +1,9 @@
-# Reflect image-plane data from a top-left to a bottom-left origin
+# Turn image-plane data the right way up
 
-Marks the data's `origin` as `"top_left"` (so the reflection is well
-defined), applies a user-supplied `video_height` to the `y_height`
-metadata when given, then calls
-[`aniframe::set_origin()`](https://animovement.dev/aniframe/reference/set_origin.html)
-to reflect y around `y_height`. Used by all readers whose source data is
-in an image / video coordinate system. When `video_height` is `NULL`,
-the `y_height` value already on the aniframe (set to `max(y)` by
-[`aniframe::as_aniframe()`](https://animovement.dev/aniframe/reference/as_aniframe.html)
-when not otherwise populated) is used.
+Image and video tooling counts y downward from the top of the frame,
+while plotting and maths count it upward. Every reader whose source is
+an image plane declares the convention its data arrived in and then
+turns the vertical axis over, so downstream sees one convention.
 
 ## Usage
 
@@ -20,14 +15,30 @@ reflect_to_bottom_left(data, video_height = NULL)
 
 - data:
 
-  An aniframe with image-plane (top-left) coordinates.
+  An aniframe with image-plane coordinates.
 
 - video_height:
 
   Optional numeric height of the source video frame in y-axis units.
-  When supplied, takes precedence over the existing `y_height` metadata.
+  When supplied, takes precedence over the extent inferred from the
+  data.
 
 ## Value
 
-An aniframe with reflected y coordinates and `origin` set to
-`"bottom_left"`.
+An aniframe with y counting upward.
+
+## Details
+
+The depth axis is declared too, as `back` — the camera on the near side
+of the scene. That is the default for these formats rather than
+something the file says, and it is what
+[`anicore::get_handedness()`](https://animovement.dev/anicore/reference/get_handedness.html)
+and
+[`anicore::get_angle_direction()`](https://animovement.dev/anicore/reference/get_angle_direction.html)
+are read from, so a recording made through a glass floor should say so
+with `anicore::set_axis_directions(data, c(z = "forward"))`.
+
+`anicore` no longer invents an extent to reflect around, so the reader
+supplies one: the video height when the source gives it, and otherwise
+the furthest tracked point, which is the guess `as_aniframe()` used to
+make on everyone's behalf.

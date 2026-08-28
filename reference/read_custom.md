@@ -12,6 +12,7 @@ read_custom(
   variables_what = NULL,
   variables_when = NULL,
   variables_where = NULL,
+  index = NULL,
   metadata = list()
 )
 ```
@@ -44,6 +45,13 @@ read_custom(
 
   Character vector of spatial columns that together define position. If
   NULL, detected from data.
+
+- index:
+
+  Length-one character vector naming the column the frame is indexed by
+  – the position of each row within its temporal context. If `NULL` (the
+  default), `"time"`. It is never a grouping variable, and is declared
+  separately from `variables_when`.
 
 - metadata:
 
@@ -80,7 +88,8 @@ read_custom(
     y = "y_coord"
   ),
   variables_what = "id",
-  variables_when = c("trial", "frame")
+  variables_when = "trial",
+  index = "frame"
 )
 
 # Using column positions

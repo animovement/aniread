@@ -6,7 +6,7 @@ An R package for reading and writing movement data.
 
 Useful links:
 
-- <http://animovement.dev/aniread/>
+- <https://animovement.dev/aniread/>
 
 - <https://github.com/animovement/aniread/>
 

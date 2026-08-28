@@ -16,7 +16,7 @@ write_aniframe(data, filename, ...)
 - data:
 
   An **aniframe** object (see
-  [`aniframe::is_aniframe()`](https://animovement.dev/aniframe/reference/is_aniframe.html)).
+  [`anicore::is_aniframe()`](https://animovement.dev/anicore/reference/is_aniframe.html)).
 
 - filename:
 
@@ -50,7 +50,7 @@ The original `data` object (invisibly), enabling pipe‑friendly usage.
 ``` r
 if (FALSE) { # \dontrun{
 ## Create a small aniframe for demonstration
-df <- aniframe::example_aniframe()
+df <- anicore::example_aniframe()
 
 ## Write the aniframe as CSV
 write_aniframe(df, "demo.csv")

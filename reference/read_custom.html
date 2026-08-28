@@ -22,7 +22,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-animovement" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="animovement"><span class="fa fab fa-r-project"></span> animovement</button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-animovement"><li><a class="external-link dropdown-item" href="https://animovement.dev/anicheck/">anicheck</a></li>
-    <li><a class="external-link dropdown-item" href="https://animovement.dev/aniframe/">aniframe</a></li>
+    <li><a class="external-link dropdown-item" href="https://animovement.dev/anicore/">aniframe</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animetric/">animetric</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animovement/">animovement</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/aniprocess/">aniprocess</a></li>
@@ -62,6 +62,7 @@
 <span>  variables_what <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  variables_when <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  variables_where <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  index <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  metadata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -94,6 +95,13 @@ define a unique timepoint. Uses aniframe defaults if NULL.</p></dd>
 <dt id="arg-variables-where">variables_where<a class="anchor" aria-label="anchor" href="#arg-variables-where"></a></dt>
 <dd><p>Character vector of spatial columns that together
 define position. If NULL, detected from data.</p></dd>
+
+
+<dt id="arg-index">index<a class="anchor" aria-label="anchor" href="#arg-index"></a></dt>
+<dd><p>Length-one character vector naming the column the frame is
+indexed by – the position of each row within its temporal context. If
+<code>NULL</code> (the default), <code>"time"</code>. It is never a grouping variable, and is
+declared separately from <code>variables_when</code>.</p></dd>
 
 
 <dt id="arg-metadata">metadata<a class="anchor" aria-label="anchor" href="#arg-metadata"></a></dt>
@@ -131,7 +139,8 @@ metadata.</p>
 <span class="r-in"><span>    y <span class="op">=</span> <span class="st">"y_coord"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span>,</span></span>
 <span class="r-in"><span>  variables_what <span class="op">=</span> <span class="st">"id"</span>,</span></span>
-<span class="r-in"><span>  variables_when <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trial"</span>, <span class="st">"frame"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  variables_when <span class="op">=</span> <span class="st">"trial"</span>,</span></span>
+<span class="r-in"><span>  index <span class="op">=</span> <span class="st">"frame"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Using column positions</span></span></span>

@@ -37,8 +37,8 @@ read_dataset(paths, source = "auto", ...)
 
 ## Value
 
-An [aniframe](https://animovement.dev/aniframe/reference/aniframe.html)
-or [anievent](https://animovement.dev/aniframe/reference/anievent.html),
+An [aniframe](https://animovement.dev/anicore/reference/aniframe.html)
+or [anievent](https://animovement.dev/anicore/reference/anievent.html),
 depending on the reader.
 
 ## Details
@@ -46,9 +46,9 @@ depending on the reader.
 `read_dataset()` is a dispatcher, not a new reader: it works out which
 reader to call and calls it. The object you get back is exactly what the
 underlying reader returns - an
-[aniframe](https://animovement.dev/aniframe/reference/aniframe.html) for
+[aniframe](https://animovement.dev/anicore/reference/aniframe.html) for
 tracking data, or an
-[anievent](https://animovement.dev/aniframe/reference/anievent.html) for
+[anievent](https://animovement.dev/anicore/reference/anievent.html) for
 behavioural events from
 [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md).
 

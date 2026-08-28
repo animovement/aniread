@@ -40,6 +40,6 @@ if (FALSE) { # \dontrun{
 mocap_data <- read_freemocap("path/to/data_by_frame.csv")
 
 # Check metadata
-aniframe::get_metadata(mocap_data)
+anicore::get_metadata(mocap_data)
 } # }
 ```

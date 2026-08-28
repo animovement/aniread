@@ -125,7 +125,7 @@
 - [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   imports behavioural events from a [BORIS](https://www.boris.unito.it/)
   export into an
-  [`aniframe::anievent()`](https://animovement.dev/aniframe/reference/anievent.html).
+  [`anicore::anievent()`](https://animovement.dev/anicore/reference/anievent.html).
   Supports the two flat-text BORIS exports — **aggregated events** (one
   row per bout) and **tabular events** (one row per START / STOP / POINT
   transition; paired into bouts by the reader) — and auto-detects the

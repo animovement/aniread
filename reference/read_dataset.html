@@ -26,7 +26,7 @@ which reader a file needs before opening it."><meta property="og:image" content=
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-animovement" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="animovement"><span class="fa fab fa-r-project"></span> animovement</button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-animovement"><li><a class="external-link dropdown-item" href="https://animovement.dev/anicheck/">anicheck</a></li>
-    <li><a class="external-link dropdown-item" href="https://animovement.dev/aniframe/">aniframe</a></li>
+    <li><a class="external-link dropdown-item" href="https://animovement.dev/anicore/">aniframe</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animetric/">animetric</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/animovement/">animovement</a></li>
     <li><a class="external-link dropdown-item" href="https://animovement.dev/aniprocess/">aniprocess</a></li>
@@ -89,15 +89,15 @@ only some readers take are supplied, e.g. <code>sampling_rate</code> for
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An <a href="https://animovement.dev/aniframe/reference/aniframe.html" class="external-link">aniframe</a> or
-<a href="https://animovement.dev/aniframe/reference/anievent.html" class="external-link">anievent</a>, depending on the reader.</p>
+    <p>An <a href="https://animovement.dev/anicore/reference/aniframe.html" class="external-link">aniframe</a> or
+<a href="https://animovement.dev/anicore/reference/anievent.html" class="external-link">anievent</a>, depending on the reader.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>read_dataset()</code> is a dispatcher, not a new reader: it works out which
 reader to call and calls it. The object you get back is exactly what the
-underlying reader returns - an <a href="https://animovement.dev/aniframe/reference/aniframe.html" class="external-link">aniframe</a> for tracking
-data, or an <a href="https://animovement.dev/aniframe/reference/anievent.html" class="external-link">anievent</a> for behavioural events from
+underlying reader returns - an <a href="https://animovement.dev/anicore/reference/aniframe.html" class="external-link">aniframe</a> for tracking
+data, or an <a href="https://animovement.dev/anicore/reference/anievent.html" class="external-link">anievent</a> for behavioural events from
 <code><a href="read_boris.html">read_boris()</a></code>.</p>
 <p>DeepLabCut and LightningPose CSV exports are structurally identical, so a
 file in that format cannot be attributed to one or the other. Such a file is
