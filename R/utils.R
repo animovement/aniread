@@ -30,7 +30,7 @@ reflect_to_bottom_left <- function(data, video_height = NULL) {
     axis_directions = c(x = "right", y = "down", z = "back")
   )
 
-  extent <- video_height %||% observed_y_extent(data)
+  extent <- video_height %||% compute_y_extent(data)
   # Nothing to reflect around when y is empty or all-NA, so the data is
   # left as it arrived rather than turned over on a guess.
   if (is.null(extent)) {
@@ -42,14 +42,14 @@ reflect_to_bottom_left <- function(data, video_height = NULL) {
 }
 
 
-#' How far the data runs along its vertical axis
+#' Work out how far the data runs along its vertical axis
 #'
 #' @param data An aniframe.
 #'
 #' @return A single positive number, or `NULL` when there is nothing to
 #'   measure.
 #' @keywords internal
-observed_y_extent <- function(data) {
+compute_y_extent <- function(data) {
   axes <- anicore::get_axes(data)
   if (!"y" %in% names(axes) || !axes[["y"]] %in% names(data)) {
     return(NULL)

@@ -13,7 +13,7 @@ An R package for reading and writing movement data.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{http://animovement.dev/aniread/}
+  \item \url{https://animovement.dev/aniread/}
   \item \url{https://github.com/animovement/aniread/}
   \item Report bugs at \url{https://github.com/animovement/aniread/issues}
 }
