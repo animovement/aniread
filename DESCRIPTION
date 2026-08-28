@@ -12,7 +12,7 @@ Authors@R:
       )
 Description: An R package for reading and writing movement data.
 License: MIT + file LICENSE
-URL: http://animovement.dev/aniread/, https://github.com/animovement/aniread/
+URL: https://animovement.dev/aniread/, https://github.com/animovement/aniread/
 BugReports: https://github.com/animovement/aniread/issues
 Encoding: UTF-8
 LazyData: true
