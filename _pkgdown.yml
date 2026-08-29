@@ -7,6 +7,10 @@ home:
 template:
   bootstrap: 5
   package: animovementtemplate
+  bslib:
+    primary: "#859B6C"
+    # The hue itself is too light for body text on white.
+    link_color: "#697A55"
 
 reference:
 - title: "Reading any file"
