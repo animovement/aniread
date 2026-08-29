@@ -7,3 +7,4 @@ docs
 .vscode
 /.quarto/
 **/*.quarto_ipynb
+*.conda
