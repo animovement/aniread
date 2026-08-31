@@ -2,6 +2,24 @@
 
 ## Added
 
+* `read_trex()` reads TRex's native `.npz` export (#116). It is a zip of `.npy` arrays, one file per tracked individual, so a whole recording is the vector of paths `get_sample_data("trex")` returns — which previously errored, because the registry declared TRex a CSV-only source. The arrays are parsed directly rather than through a new dependency: `.npy` is a short header over a raw buffer, and `unz()` reads zip members without unpacking.
+
+  The `.npz` carries what the CSV export does not, so three of this reader's documented limitations turn out to be limitations of the CSV rather than of TRex: `individual` is the identity TRex assigned instead of `NA`, `confidence` is its per-frame `detection_p` instead of `NA`, and the pose keypoints are present at all. The frame rate and frame size are recorded too, so `sampling_rate` is set and the reflection to `bottom_left` no longer has to guess the frame height from `max(y)`.
+
+* `read_trex()` gains a `format` argument, defaulting to `"auto"`, which reads the export from the file rather than its extension.
+
+## Changed
+
+* `get_sample_data("trex")` defaults to `"five-locusts"` (#116). The previous default, `"beetles"`, is a 19-frame CSV excerpt with one unnamed individual and no confidence — too small to carry an example or a tutorial. `"five-locusts"` is a real 2845-frame recording of five individuals with pose and detection probability. `"beetles"` is still available, and is still the fixture exercising the CSV path.
+
+* `read_trex()` treats `Inf` as missing in both exports. TRex marks a frame it could not track with an infinity rather than a `NaN` — its own documentation masks `np.inf` out before plotting — so these were reaching the aniframe and propagating through every downstream calculation. A `convert_inf_to_na()` helper sits alongside the existing `convert_nan_to_na()`.
+
+* `read_trex()` no longer requires the CSV's optional columns. `VX`, `VY` and `timestamp` were dropped by name, which errors on a file that does not have them — and which columns a TRex CSV carries is set per run by its `output_fields` parameter.
+
+* `read_trex()` declares `unit_time` as `"s"`. TRex reports seconds in both exports, and leaving it unset meant `anicore::set_sampling_rate()` treated the column as frames and divided it by the frame rate.
+
+## Added
+
 * `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.
 
 * FreeMoCap data gains a `confidence` column, from `reprojection_error` where the file has one and all-`NA` where it does not. The two run in opposite directions — an error is a distance in pixels, so zero is best, while `confidence` everywhere else in aniread comes from a likelihood or probability where larger is best — so it is mapped through `1 / (1 + error)` rather than renamed. That is monotone onto `(0, 1]`, gives 1 for a perfect reprojection, and is invertible: the original error is `1 / confidence - 1`. Renaming it would have made `aniprocess::filter_na_across(method = "confidence")` discard the best-tracked points.

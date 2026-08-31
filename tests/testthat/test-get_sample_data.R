@@ -281,8 +281,14 @@ test_that("get_sample_data distinguishes between URL and source name", {
   skip_if_no_network()
   temp_cache <- test_cache_dir()
 
-  # Download using source name
-  path1 <- get_sample_data("trex", cache_dir = temp_cache, quiet = TRUE)
+  # Download using source name. Named explicitly rather than relying on the
+  # default, which this test is not about.
+  path1 <- get_sample_data(
+    "trex",
+    dataset = "beetles",
+    cache_dir = temp_cache,
+    quiet = TRUE
+  )
 
   # Download using URL
   custom_url <- "https://raw.githubusercontent.com/animovement/movement-data/main/data/bonsai/LI850.csv"

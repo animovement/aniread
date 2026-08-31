@@ -26,7 +26,9 @@ Currently supported software names:
 \item "lightningpose": Mouse tracking from LightningPose (2 datasets)
 \item "movement": Movement package native format (2 datasets)
 \item "sleap": Animal tracking from SLEAP (3 datasets)
-\item "trex": Multi-animal tracking from TRex (returns vector of individual files)
+\item "trex": Multi-animal tracking from TRex (2 datasets). The default,
+"five-locusts", unpacks to one \code{.npz} per individual and returns a
+vector of paths, which \code{\link[=read_trex]{read_trex()}} reads as one recording
 }
 
 Alternatively, provide a URL string (starting with "http://" or "https://")
