@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">aniread</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.7.0.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,6 +51,24 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="aniread-development-version">aniread (development version)<a class="anchor" aria-label="anchor" href="#aniread-development-version"></a></h2>
+<div class="section level3">
+<h3 id="added-development-version">Added<a class="anchor" aria-label="anchor" href="#added-development-version"></a></h3>
+<ul><li><p><code><a href="../reference/read_freemocap.html">read_freemocap()</a></code> reads the 9-column tidy export (<a href="https://github.com/animovement/aniread/issues/117" class="external-link">#117</a>). FreeMoCap added a <code>reprojection_error</code> column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.</p></li>
+<li><p>FreeMoCap data gains a <code>confidence</code> column, from <code>reprojection_error</code> where the file has one and all-<code>NA</code> where it does not. The two run in opposite directions — an error is a distance in pixels, so zero is best, while <code>confidence</code> everywhere else in aniread comes from a likelihood or probability where larger is best — so it is mapped through <code>1 / (1 + error)</code> rather than renamed. That is monotone onto <code>(0, 1]</code>, gives 1 for a perfect reprojection, and is invertible: the original error is <code>1 / confidence - 1</code>. Renaming it would have made <code>aniprocess::filter_na_across(method = "confidence")</code> discard the best-tracked points.</p></li>
+<li><p><code><a href="../reference/read_freemocap.html">read_freemocap()</a></code> reads the <code>by_trajectory</code> export and the per-model wide files in <code>output_data/</code> (<code>mediapipe_body_3d_xyz.csv</code> and siblings), which it previously rejected (<a href="https://github.com/animovement/aniread/issues/117" class="external-link">#117</a>). Neither carries a frame column — the row position is the frame — and neither names its models in the data, so point names are parsed the way FreeMoCap’s own <code>DataSaver._parse_keypoint_name()</code> parses them. One recording therefore gives the same <code>model</code> and <code>keypoint</code> values whichever of the three layouts it is read from, and identical coordinates: checked across all 126,096 rows of the v1.8.0 release asset.</p></li>
+<li><p><code><a href="../reference/read_freemocap.html">read_freemocap()</a></code> gains a <code>format</code> argument, defaulting to <code>"auto"</code>, which reads the layout from the column names. It follows <code><a href="../reference/read_boris.html">read_boris()</a></code>, whose <code>format = c("auto", ...)</code> is the pattern the other readers should converge on (<a href="https://github.com/animovement/aniread/issues/118" class="external-link">#118</a>).</p></li>
+<li><p>The layout a file was read as is recorded in the <code>source_format</code> metadata field, as <code>"by_frame_8col"</code> or <code>"by_frame_9col"</code>, so drift between FreeMoCap releases is visible on the aniframe rather than only in whether reading happened to work.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
+<ul><li><p><code>detect_freemocap_format()</code> no longer mistakes a <code>by_trajectory</code> file for a wide one. It told them apart by a <code>frame</code> column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only <code>by_trajectory</code> carries.</p></li>
+<li><p><code><a href="../reference/detect_source.html">detect_source()</a></code> recognises FreeMoCap files written by v1.8.0 and later (<a href="https://github.com/animovement/aniread/issues/117" class="external-link">#117</a>). It compared the header for exact equality with the eight columns of the older export, so a file with <code>reprojection_error</code> was not identified as FreeMoCap at all and <code><a href="../reference/read_dataset.html">read_dataset()</a></code> failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/read_freemocap.html">read_freemocap()</a></code>’s error names the layout it found rather than only the one it wanted. Told a <code>by_trajectory.csv</code> or a per-model <code>mediapipe_body_3d_xyz.csv</code>, it said to look for a file ending in <code>by_frame.csv</code> — unhelpful when the recording never produced one. Neither layout is read yet; both are now recognised well enough to say so.</li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.7.0" id="aniread-070-2026-08-28">aniread 0.7.0 (2026-08-28)<a class="anchor" aria-label="anchor" href="#aniread-070-2026-08-28"></a></h2>
