@@ -12,7 +12,7 @@
 
 * `get_sample_data("trex")` defaults to `"five-locusts"` (#116). The previous default, `"beetles"`, is a 19-frame CSV excerpt with one unnamed individual and no confidence — too small to carry an example or a tutorial. `"five-locusts"` is a real 2845-frame recording of five individuals with pose and detection probability. `"beetles"` is still available, and is still the fixture exercising the CSV path.
 
-* `read_trex()` treats `Inf` as missing in both exports. TRex marks a frame it could not track with an infinity rather than a `NaN` — its own documentation masks `np.inf` out before plotting — so these were reaching the aniframe and propagating through every downstream calculation. A `convert_inf_to_na()` helper sits alongside the existing `convert_nan_to_na()`.
+* `read_trex()` treats `Inf` as missing in both exports. TRex marks a frame it could not track with an infinity rather than a `NaN` — its own documentation masks `np.inf` out before plotting — so these were reaching the aniframe and propagating through every downstream calculation. Uses `anicore::convert_inf_to_na()`, added for this.
 
 * `read_trex()` no longer requires the CSV's optional columns. `VX`, `VY` and `timestamp` were dropped by name, which errors on a file that does not have them — and which columns a TRex CSV carries is set per run by its `output_fields` parameter.
 

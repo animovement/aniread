@@ -19,7 +19,7 @@ LazyData: true
 Depends:
     R (>= 4.1.0)
 Imports: 
-    anicore (>= 0.8.0.9001),
+    anicore (>= 0.8.0.9002),
     cli,
     dplyr,
     janitor,

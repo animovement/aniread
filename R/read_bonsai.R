@@ -29,7 +29,7 @@ read_bonsai <- function(path, video_height = NULL) {
     show_col_types = FALSE
   ) |>
     suppressMessages() |>
-    convert_nan_to_na() |>
+    anicore::convert_nan_to_na() |>
     dplyr::select(tidyselect::contains(c("Timestamp", "Centroid"))) |>
     dplyr::rename(
       time = tidyselect::contains("Timestamp"),

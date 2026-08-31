@@ -182,7 +182,7 @@ read_trex_csv <- function(path) {
       confidence = as.numeric(NA),
       keypoint = factor(.data$keypoint)
     ) |>
-    convert_inf_to_na() |>
+    anicore::convert_inf_to_na() |>
     dplyr::relocate("individual", .after = "time")
 
   return(data)
@@ -252,7 +252,7 @@ read_trex_npz_file <- function(path) {
   # every field at once - coordinates and detection probability alike. Left
   # alone these propagate through every downstream calculation as Inf rather
   # than dropping out as missing.
-  out <- convert_inf_to_na(out)
+  out <- anicore::convert_inf_to_na(out)
 
   out[order(out$time, out$keypoint), , drop = FALSE]
 }
