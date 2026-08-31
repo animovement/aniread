@@ -20,7 +20,7 @@ jobs:
   pkgdown:
     uses: animovement/.github/.github/workflows/pkgdown.yml@main
     with:
-      quarto: false
+      quarto: true
     permissions:
       contents: write
     secrets: inherit
