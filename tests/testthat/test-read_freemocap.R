@@ -137,7 +137,7 @@ expected_type_x <- "double"
 expected_type_y <- "double"
 
 # Expected error messages/patterns
-error_wrong_format <- "only support FreeMoCap data in tidy format"
+error_wrong_format <- "not a FreeMoCap"
 
 # Tests -------------------------------------------------------------------
 
@@ -269,4 +269,110 @@ test_that("read_freemocap output works with aniframe functions", {
   result <- read_freemocap(path_valid)
 
   expect_no_error(anicore::get_metadata(result))
+})
+
+# Export layouts ----------------------------------------------------------
+# FreeMoCap added a reprojection_error column to the tidy export at v1.8.0,
+# so by_frame.csv exists in an 8- and a 9-column form. Both are read, and
+# the layout that was parsed is recorded rather than inferred again later.
+
+test_that("read_freemocap() reads the 9-column tidy export", {
+  path <- system.file("extdata", "freemocap.csv", package = "aniread")
+  data <- read_freemocap(path)
+
+  expect_s3_class(data, "aniframe")
+  expect_true("reprojection_error" %in% names(data))
+  expect_type(data$reprojection_error, "double")
+})
+
+test_that("read_freemocap() records which layout it read", {
+  path_9col <- system.file("extdata", "freemocap.csv", package = "aniread")
+
+  expect_equal(
+    anicore::get_metadata(read_freemocap(path_9col))$source_format,
+    "by_frame_9col"
+  )
+  expect_equal(
+    anicore::get_metadata(read_freemocap(path_valid))$source_format,
+    "by_frame_8col"
+  )
+})
+
+test_that("the 8-column export has no reprojection_error column", {
+  data <- read_freemocap(path_valid)
+
+  expect_false("reprojection_error" %in% names(data))
+  expect_equal(anicore::get_metadata(data)$source, "freemocap")
+})
+
+test_that("format = 'by_frame' reads a by_frame file", {
+  path <- system.file("extdata", "freemocap.csv", package = "aniread")
+
+  expect_s3_class(read_freemocap(path, format = "by_frame"), "aniframe")
+  expect_error(read_freemocap(path, format = "wide"), "should be one of")
+})
+
+test_that("the by_trajectory export is named in the error", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(
+    data.frame(
+      frame = 0:2,
+      nose_x = 1:3,
+      nose_y = 1:3,
+      nose_z = 1:3
+    ),
+    path,
+    delim = ","
+  )
+
+  expect_error(read_freemocap(path), "by_trajectory export")
+})
+
+test_that("a per-model wide export is named in the error", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(
+    data.frame(
+      nose_x = 1:3,
+      nose_y = 1:3,
+      nose_z = 1:3
+    ),
+    path,
+    delim = ","
+  )
+
+  expect_error(read_freemocap(path), "per-model wide export")
+})
+
+test_that("detect_freemocap_format() distinguishes the four layouts", {
+  tidy8 <- c(
+    "frame",
+    "timestamp",
+    "timestamp_by_camera",
+    "model",
+    "keypoint",
+    "x",
+    "y",
+    "z"
+  )
+
+  expect_equal(
+    detect_freemocap_format(as.data.frame(setNames(
+      rep(list(1), length(tidy8)),
+      tidy8
+    ))),
+    "by_frame_8col"
+  )
+  expect_equal(
+    detect_freemocap_format(as.data.frame(setNames(
+      rep(list(1), length(tidy8) + 1),
+      c(tidy8, "reprojection_error")
+    ))),
+    "by_frame_9col"
+  )
+  expect_equal(
+    detect_freemocap_format(data.frame(frame = 1, nose_x = 1)),
+    "by_trajectory"
+  )
+  expect_equal(detect_freemocap_format(data.frame(nose_x = 1)), "wide")
+  expect_equal(detect_freemocap_format(data.frame(a = 1)), "unknown")
 })

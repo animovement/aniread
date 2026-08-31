@@ -1,5 +1,21 @@
 # aniread (development version)
 
+## Added
+
+* `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately, and `reprojection_error` is kept as a measurement column rather than carried along unnamed.
+
+* `read_freemocap()` gains a `format` argument, defaulting to `"auto"`, which reads the layout from the column names. It follows `read_boris()`, whose `format = c("auto", ...)` is the pattern the other readers should converge on (#118).
+
+* The layout a file was read as is recorded in the `source_format` metadata field, as `"by_frame_8col"` or `"by_frame_9col"`, so drift between FreeMoCap releases is visible on the aniframe rather than only in whether reading happened to work.
+
+## Fixed
+
+* `detect_source()` recognises FreeMoCap files written by v1.8.0 and later (#117). It compared the header for exact equality with the eight columns of the older export, so a file with `reprojection_error` was not identified as FreeMoCap at all and `read_dataset()` failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.
+
+## Changed
+
+* `read_freemocap()`'s error names the layout it found rather than only the one it wanted. Told a `by_trajectory.csv` or a per-model `mediapipe_body_3d_xyz.csv`, it said to look for a file ending in `by_frame.csv` — unhelpful when the recording never produced one. Neither layout is read yet; both are now recognised well enough to say so.
+
 # aniread 0.7.0 (2026-08-28)
 
 ## Added

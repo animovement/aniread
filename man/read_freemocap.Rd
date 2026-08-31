@@ -4,34 +4,35 @@
 \alias{read_freemocap}
 \title{Read FreeMoCap motion capture data}
 \usage{
-read_freemocap(path)
+read_freemocap(path, format = c("auto", "by_frame"))
 }
 \arguments{
-\item{path}{Character string specifying the path to the FreeMoCap CSV file.
-Should be a file ending in 'by_frame.csv'.}
+\item{path}{Path to a FreeMoCap \code{by_frame.csv} file.}
+
+\item{format}{Export layout. \code{"auto"} reads it from the column names;
+\code{"by_frame"} requires that layout.}
 }
 \value{
-An aniframe object with the following characteristics:
-\itemize{
-\item Metadata indicating source as "freemocap"
-\item Spatial units in millimeters (mm)
-\item 3D Cartesian coordinate system
-\item Time units in seconds (if timestamps available) or frames (if not)
-\item Start datetime in metadata (if timestamps available)
-}
+An aniframe with \code{time}, \code{model}, \code{keypoint} and \code{x}/\code{y}/\code{z} in
+millimetres on a 3D cartesian coordinate system. A 9-column file keeps
+\code{reprojection_error} as a measurement column. \code{time} is seconds
+elapsed from \code{start_datetime} when the file carries timestamps, and
+frames when it does not.
 }
 \description{
-Imports FreeMoCap motion capture data from a CSV file and converts it to an
-aniframe format. The function expects data in tidy format (typically files ending in
-'by_frame.csv') and will error if other formats are detected.
+Reads the FreeMoCap tidy export, written as
+\verb{<recording_name>_by_frame.csv}. FreeMoCap added a \code{reprojection_error}
+column at v1.8.0, so that layout exists in an 8- and a 9-column form;
+both are read, and which one was parsed is recorded in the
+\code{source_format} metadata field.
+
+FreeMoCap also writes \verb{<recording_name>_by_trajectory.csv} and the
+per-model wide files in \verb{output_data/} (\code{mediapipe_body_3d_xyz.csv} and
+siblings). Neither is read yet; both are recognised, so the error names
+what the file is rather than what it is not.
 }
 \examples{
-\dontrun{
-# Read FreeMoCap data
-mocap_data <- read_freemocap("path/to/data_by_frame.csv")
-
-# Check metadata
-anicore::get_metadata(mocap_data)
-}
+path <- system.file("extdata", "freemocap.csv", package = "aniread")
+read_freemocap(path)
 
 }

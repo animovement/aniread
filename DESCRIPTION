@@ -19,7 +19,7 @@ LazyData: true
 Depends:
     R (>= 4.1.0)
 Imports: 
-    anicore (>= 0.8.0),
+    anicore (>= 0.8.0.9000),
     cli,
     dplyr,
     janitor,
@@ -44,3 +44,5 @@ Config/Needs/website: animovement/animovementtemplate
 Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
+Remotes:
+    animovement/anicore
