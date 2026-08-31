@@ -60,11 +60,11 @@ ensure_is_not_dir <- function(path) {
 #' @keywords internal
 ensure_file_exists_when_expected <- function(path, expected_permission) {
   if (
-    expected_permission %in% c("r", "rw") & file.access(path, mode = 0) == -1
+    expected_permission %in% c("r", "rw") && file.access(path, mode = 0) == -1
   ) {
     cli::cli_abort("File {path} does not exist.")
   } else if (
-    expected_permission %in% c("w", "rw") & file.access(path, mode = 0) == 0
+    expected_permission %in% c("w", "rw") && file.access(path, mode = 0) == 0
   ) {
     cli::cli_abort("File {path} already exists.")
   }
@@ -80,7 +80,7 @@ ensure_file_has_access_permissions <- function(path, expected_permission) {
       "Unable to read file: {path}. Make sure that you have read permissions."
     )
   } else if (
-    expected_permission %in% c("w", "rw") & file.access(path, mode = 2) == -1
+    expected_permission %in% c("w", "rw") && file.access(path, mode = 2) == -1
   ) {
     cli::cli_abort(
       "Unable to write to file: {path}. Make sure that you have write permissions."
