@@ -1,5 +1,11 @@
 # aniread (development version)
 
+## Removed
+
+* The unused output validators, `ensure_output_header_names()`, `ensure_output_header_class()` and `ensure_output_no_nan()` (#123). No reader called them — their only callers were their own tests — so nothing they promised was ever enforced, and the tests passing gave the impression that it was.
+
+  They could not be wired in as they stood: they require exactly `time`, `individual`, `keypoint`, `x`, `y` and `confidence`, which is a narrower contract than the aniframe has had for some time. Five of the seven sample sources fail it — `read_deeplabcut()` returns no `individual`, `read_anipose()` and `read_c3d()` return `z`, `read_freemocap()` returns `model`, and `read_fictrac()` and `read_c3d()` return no `confidence`. `anicore::validate_aniframe()` is the metadata-aware successor: it checks the frame against what it declares rather than against a fixed column list.
+
 ## Added
 
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
