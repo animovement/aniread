@@ -154,7 +154,7 @@ source_registry <- function() {
     list(
       source = "trex",
       reader = "read_trex",
-      suffix = "csv",
+      suffix = c("csv", "npz"),
       detector = detect_trex_file,
       requires = NULL
     )

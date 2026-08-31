@@ -15,7 +15,9 @@
 #'   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
 #'   - "movement": Movement package native format (2 datasets)
 #'   - "sleap": Animal tracking from SLEAP (3 datasets)
-#'   - "trex": Multi-animal tracking from TRex (returns vector of individual files)
+#'   - "trex": Multi-animal tracking from TRex (2 datasets). The default,
+#'     "five-locusts", unpacks to one `.npz` per individual and returns a
+#'     vector of paths, which [read_trex()] reads as one recording
 #'
 #'   Alternatively, provide a URL string (starting with "http://" or "https://")
 #'   to download a file from a custom location.
@@ -190,13 +192,16 @@ get_sample_data <- function(
       )
     ),
     trex = list(
-      "beetles" = list(
-        url = paste0(github_base, "/trex/beetle.csv"),
-        filename = "trex_sample.csv"
-      ),
+      # Listed first, so it is the default: five locusts over 2845 frames with
+      # pose keypoints, per-frame detection probability and identities, where
+      # "beetles" is a 19-frame CSV excerpt that cannot carry an example.
       "five-locusts" = list(
         url = paste0(gin_base, "/poses/TRex_five-locusts.zip"),
         filename = "trex_five-locusts.zip"
+      ),
+      "beetles" = list(
+        url = paste0(github_base, "/trex/beetle.csv"),
+        filename = "trex_sample.csv"
       )
     )
   )
