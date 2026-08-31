@@ -523,3 +523,36 @@ test_that("frames count from zero in every layout", {
     expect_equal(min(as.numeric(data$time)), 0, info = f)
   }
 })
+
+# Error messages ----------------------------------------------------------
+# The point of naming the layout that was found is that it tells you what to
+# do next. Each layout gets its own wording, so each needs exercising.
+
+test_that("a layout mismatch names the layout the file actually is", {
+  ex <- function(f) system.file("extdata", f, package = "aniread")
+
+  expect_error(
+    read_freemocap(ex("freemocap_by_trajectory.csv"), format = "by_frame"),
+    "by_trajectory export"
+  )
+  expect_error(
+    read_freemocap(ex("freemocap_wide.csv"), format = "by_frame"),
+    "per-model wide export"
+  )
+  expect_error(
+    read_freemocap(ex("freemocap.csv"), format = "wide"),
+    "9-column by_frame export"
+  )
+  # path_valid is the 8-column form, built at the top of this file.
+  expect_error(
+    read_freemocap(path_valid, format = "wide"),
+    "8-column by_frame export"
+  )
+})
+
+test_that("describe_freemocap_format() falls back for an unknown layout", {
+  expect_match(
+    describe_freemocap_format("unknown"),
+    "not a layout this reader recognises"
+  )
+})
