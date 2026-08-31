@@ -43,8 +43,11 @@ get_sample_data(
 
   - "sleap": Animal tracking from SLEAP (3 datasets)
 
-  - "trex": Multi-animal tracking from TRex (returns vector of
-    individual files)
+  - "trex": Multi-animal tracking from TRex (2 datasets). The default,
+    "five-locusts", unpacks to one `.npz` per individual and returns a
+    vector of paths, which
+    [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+    reads as one recording
 
   Alternatively, provide a URL string (starting with "http://" or
   "https://") to download a file from a custom location.

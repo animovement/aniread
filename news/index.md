@@ -4,6 +4,62 @@
 
 ### Added
 
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  reads TRex’s native `.npz` export
+  ([\#116](https://github.com/animovement/aniread/issues/116)). It is a
+  zip of `.npy` arrays, one file per tracked individual, so a whole
+  recording is the vector of paths `get_sample_data("trex")` returns —
+  which previously errored, because the registry declared TRex a
+  CSV-only source. The arrays are parsed directly rather than through a
+  new dependency: `.npy` is a short header over a raw buffer, and
+  [`unz()`](https://rdrr.io/r/base/connections.html) reads zip members
+  without unpacking.
+
+  The `.npz` carries what the CSV export does not, so three of this
+  reader’s documented limitations turn out to be limitations of the CSV
+  rather than of TRex: `individual` is the identity TRex assigned
+  instead of `NA`, `confidence` is its per-frame `detection_p` instead
+  of `NA`, and the pose keypoints are present at all. The frame rate and
+  frame size are recorded too, so `sampling_rate` is set and the
+  reflection to `bottom_left` no longer has to guess the frame height
+  from `max(y)`.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  gains a `format` argument, defaulting to `"auto"`, which reads the
+  export from the file rather than its extension.
+
+### Changed
+
+- `get_sample_data("trex")` defaults to `"five-locusts"`
+  ([\#116](https://github.com/animovement/aniread/issues/116)). The
+  previous default, `"beetles"`, is a 19-frame CSV excerpt with one
+  unnamed individual and no confidence — too small to carry an example
+  or a tutorial. `"five-locusts"` is a real 2845-frame recording of five
+  individuals with pose and detection probability. `"beetles"` is still
+  available, and is still the fixture exercising the CSV path.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  treats `Inf` as missing in both exports. TRex marks a frame it could
+  not track with an infinity rather than a `NaN` — its own documentation
+  masks `np.inf` out before plotting — so these were reaching the
+  aniframe and propagating through every downstream calculation. Uses
+  [`anicore::convert_inf_to_na()`](https://animovement.dev/anicore/reference/convert_inf_to_na.html),
+  added for this.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  no longer requires the CSV’s optional columns. `VX`, `VY` and
+  `timestamp` were dropped by name, which errors on a file that does not
+  have them — and which columns a TRex CSV carries is set per run by its
+  `output_fields` parameter.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  declares `unit_time` as `"s"`. TRex reports seconds in both exports,
+  and leaving it unset meant
+  [`anicore::set_sampling_rate()`](https://animovement.dev/anicore/reference/set_sampling_rate.html)
+  treated the column as frames and divided it by the frame rate.
+
+### Added
+
 - [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
   reads the 9-column tidy export
   ([\#117](https://github.com/animovement/aniread/issues/117)).

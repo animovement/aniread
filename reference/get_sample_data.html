@@ -84,7 +84,9 @@ Currently supported software names:</p><ul><li><p>"animalta": Data from AnimalTA
 <li><p>"lightningpose": Mouse tracking from LightningPose (2 datasets)</p></li>
 <li><p>"movement": Movement package native format (2 datasets)</p></li>
 <li><p>"sleap": Animal tracking from SLEAP (3 datasets)</p></li>
-<li><p>"trex": Multi-animal tracking from TRex (returns vector of individual files)</p></li>
+<li><p>"trex": Multi-animal tracking from TRex (2 datasets). The default,
+"five-locusts", unpacks to one <code>.npz</code> per individual and returns a
+vector of paths, which <code><a href="read_trex.html">read_trex()</a></code> reads as one recording</p></li>
 </ul><p>Alternatively, provide a URL string (starting with "http://" or "https://")
 to download a file from a custom location.</p></dd>
 

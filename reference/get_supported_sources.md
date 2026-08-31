@@ -69,7 +69,7 @@ get_supported_sources()
 #> 15 sleap            read_sleap         <chr [1]>
 #> 16 trackball_bonsai read_trackball     <chr [1]>
 #> 17 trackmate        read_trackmate     <chr [1]>
-#> 18 trex             read_trex          <chr [1]>
+#> 18 trex             read_trex          <chr [2]>
 
 # All source names:
 get_supported_sources()$source
