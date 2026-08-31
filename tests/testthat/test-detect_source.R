@@ -443,3 +443,13 @@ test_that("detect_source() recognises both FreeMoCap tidy layouts", {
   )
   expect_equal(detect_source(path_8col), "freemocap")
 })
+
+test_that("detect_source() recognises a SLEAP analysis CSV", {
+  # Identified the way sleap-io identifies it: frame_idx plus instance.score.
+  expect_equal(
+    detect_source(
+      test_path("data/sleap/SLEAP_three-mice_Aeon_mixed-labels.analysis.csv")
+    ),
+    "sleap"
+  )
+})

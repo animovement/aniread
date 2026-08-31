@@ -7,7 +7,7 @@
 read_sleap(path, video_height = NULL)
 }
 \arguments{
-\item{path}{A SLEAP analysis data frame in HDF5 (.h5) format}
+\item{path}{A SLEAP analysis file, either HDF5 (\code{.h5}) or CSV.}
 
 \item{video_height}{Optional numeric height of the source video frame
 in pixels.}
@@ -16,9 +16,19 @@ in pixels.}
 a movement dataframe
 }
 \description{
+Reads either of SLEAP's analysis exports: the HDF5 file, or the CSV
+with columns \code{track}, \code{frame_idx}, \code{instance.score} and a
+\code{.x}/\code{.y}/\code{.score} triple per node.
+}
+\details{
 SLEAP stores predictions in image (top-left) coordinates; the reader
 reflects y so the returned aniframe is in the conventional
-\code{bottom_left} origin. SLEAP's analysis h5 export does not include
-the source video resolution, so pass \code{video_height} to get an
-accurate flip — otherwise \code{max(y)} is used as a fallback.
+\code{bottom_left} origin. Neither export includes the source video
+resolution, so pass \code{video_height} to get an accurate flip — otherwise
+\code{max(y)} is used as a fallback.
+
+\code{individual} is the track name SLEAP recorded, from either export. A
+recording with no tracks - a single unnamed instance, or predictions that
+were never tracked - has no names to use, and falls back to
+\code{individual1}, \code{individual2}, and so on.
 }

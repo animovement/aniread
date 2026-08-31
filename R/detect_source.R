@@ -370,6 +370,13 @@ detect_idtrackerai_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_sleap_file <- function(path) {
+  if (identical(tolower(get_file_ext(path)), "csv")) {
+    # The analysis CSV is identified the way sleap-io identifies it: by
+    # carrying both `frame_idx` and `instance.score`.
+    header <- peek_header(path)
+    return(all(c("frame_idx", "instance.score") %in% header))
+  }
+
   all(c("tracks", "node_names") %in% peek_h5_names(path))
 }
 
