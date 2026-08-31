@@ -7,6 +7,45 @@ npz_path <- function() {
   system.file("extdata", "trex_id3.npz", package = "aniread")
 }
 
+# Rebuild an npz from a named list of arrays, so a fixture can be stripped of
+# a field to exercise what happens when a recording lacks it.
+write_npz <- function(path, arrays) {
+  dir <- withr::local_tempdir()
+  members <- vapply(
+    names(arrays),
+    function(nm) {
+      values <- arrays[[nm]]
+      descr <- if (nm == "id") "<u8" else "<f8"
+      size <- 8L
+      header <- sprintf(
+        "{'descr': '%s', 'fortran_order': False, 'shape': (%d,), }",
+        descr,
+        length(values)
+      )
+      header <- paste0(
+        header,
+        strrep(" ", 64 - ((10 + nchar(header) + 1) %% 64)),
+        "\n"
+      )
+      member <- file.path(dir, paste0(nm, ".npy"))
+      con <- file(member, open = "wb")
+      writeBin(as.raw(c(0x93, 0x4e, 0x55, 0x4d, 0x50, 0x59, 0x01, 0x00)), con)
+      writeBin(as.integer(nchar(header)), con, size = 2L, endian = "little")
+      writeBin(charToRaw(header), con)
+      if (descr == "<u8") {
+        writeBin(as.raw(c(as.integer(values[[1]]), rep(0L, 7))), con)
+      } else {
+        writeBin(as.numeric(values), con, size = size, endian = "little")
+      }
+      close(con)
+      member
+    },
+    character(1)
+  )
+  withr::with_dir(dir, zip(path, basename(members), flags = "-q"))
+  invisible(path)
+}
+
 test_that("read_trex() reads the npz export", {
   data <- read_trex(npz_path())
 
@@ -100,6 +139,32 @@ test_that("the CSV reader tolerates a file without the optional columns", {
 
   path <- withr::local_tempfile(fileext = ".csv")
   vroom::vroom_write(raw, path, delim = ",")
+
+  expect_s3_class(read_trex(path), "aniframe")
+})
+
+test_that("an npz with no pose arrays reads as centroid only", {
+  # Whether a recording has pose depends on how it was tracked, so the
+  # keypoints are discovered - and there may be none.
+  arrays <- read_npz(npz_path())
+  keep <- arrays[!grepl("^pose[XY]", names(arrays))]
+
+  path <- withr::local_tempfile(fileext = ".npz")
+  write_npz(path, keep)
+
+  data <- read_trex(path)
+  expect_setequal(levels(data$keypoint), "centroid")
+  expect_equal(nrow(data), length(arrays$time))
+})
+
+test_that("an npz with no video_size falls back to max(y)", {
+  # video_size is what lets the reflection use the real frame height; without
+  # it the reader falls back the way the CSV path always has.
+  arrays <- read_npz(npz_path())
+  keep <- arrays[names(arrays) != "video_size"]
+
+  path <- withr::local_tempfile(fileext = ".npz")
+  write_npz(path, keep)
 
   expect_s3_class(read_trex(path), "aniframe")
 })
