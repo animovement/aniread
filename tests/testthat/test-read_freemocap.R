@@ -281,8 +281,70 @@ test_that("read_freemocap() reads the 9-column tidy export", {
   data <- read_freemocap(path)
 
   expect_s3_class(data, "aniframe")
-  expect_true("reprojection_error" %in% names(data))
-  expect_type(data$reprojection_error, "double")
+  expect_true("confidence" %in% names(data))
+  expect_type(data$confidence, "double")
+  # The raw error is mapped, not carried alongside.
+  expect_false("reprojection_error" %in% names(data))
+})
+
+test_that("confidence inverts reprojection_error onto (0, 1]", {
+  path <- system.file("extdata", "freemocap.csv", package = "aniread")
+  raw <- vroom::vroom(path, show_col_types = FALSE)
+  data <- read_freemocap(path)
+
+  expect_true(all(data$confidence > 0 & data$confidence <= 1))
+
+  # The mapping is invertible, so every original error comes back.
+  # Compared as sets, because as_aniframe() reorders rows.
+  recovered <- sort(1 / data$confidence - 1)
+  expect_equal(recovered, sort(raw$reprojection_error), tolerance = 1e-9)
+})
+
+test_that("confidence decreases as reprojection error increases", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  errors <- c(0, 0.5, 2, 10, 100)
+  vroom::vroom_write(
+    data.frame(
+      frame = seq_along(errors) - 1L,
+      timestamp = NA_character_,
+      timestamp_by_camera = "{}",
+      model = "mediapipe_body",
+      keypoint = "nose",
+      x = 1,
+      y = 1,
+      z = 1,
+      reprojection_error = errors
+    ),
+    path,
+    delim = ","
+  )
+
+  # One keypoint, so row order follows `time`, which follows `frame`.
+  confidence <- read_freemocap(path)$confidence
+
+  expect_equal(confidence, 1 / (1 + errors))
+  expect_true(all(diff(confidence) < 0))
+})
+
+test_that("a zero reprojection error gives full confidence", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(
+    data.frame(
+      frame = 0:1,
+      timestamp = NA_character_,
+      timestamp_by_camera = "{}",
+      model = "mediapipe_body",
+      keypoint = c("nose", "nose"),
+      x = 1:2,
+      y = 1:2,
+      z = 1:2,
+      reprojection_error = c(0, 1)
+    ),
+    path,
+    delim = ","
+  )
+
+  expect_equal(read_freemocap(path)$confidence, c(1, 0.5))
 })
 
 test_that("read_freemocap() records which layout it read", {
@@ -298,10 +360,12 @@ test_that("read_freemocap() records which layout it read", {
   )
 })
 
-test_that("the 8-column export has no reprojection_error column", {
+test_that("the 8-column export gives all-NA confidence", {
   data <- read_freemocap(path_valid)
 
   expect_false("reprojection_error" %in% names(data))
+  expect_true("confidence" %in% names(data))
+  expect_true(all(is.na(data$confidence)))
   expect_equal(anicore::get_metadata(data)$source, "freemocap")
 })
 

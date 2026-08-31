@@ -15,11 +15,26 @@
 #' @param format Export layout. `"auto"` reads it from the column names;
 #'   `"by_frame"` requires that layout.
 #'
-#' @return An aniframe with `time`, `model`, `keypoint` and `x`/`y`/`z` in
-#'   millimetres on a 3D cartesian coordinate system. A 9-column file keeps
-#'   `reprojection_error` as a measurement column. `time` is seconds
-#'   elapsed from `start_datetime` when the file carries timestamps, and
-#'   frames when it does not.
+#' @return An aniframe with `time`, `model`, `keypoint`, `confidence` and
+#'   `x`/`y`/`z` in millimetres on a 3D cartesian coordinate system. `time`
+#'   is seconds elapsed from `start_datetime` when the file carries
+#'   timestamps, and frames when it does not.
+#'
+#' @details
+#' `confidence` comes from `reprojection_error`, which the 9-column export
+#' carries and the 8-column one does not, so an 8-column file gives all-`NA`
+#' confidence. The two run in opposite directions — a reprojection error is
+#' a distance in pixels, so zero is perfect and larger is worse, whereas
+#' every other reader in aniread fills `confidence` from a likelihood or a
+#' probability where larger is better. Storing the error unchanged would
+#' make `aniprocess::filter_na_across(method = "confidence")` drop the best
+#' points, so it is mapped through
+#'
+#' \deqn{confidence = 1 / (1 + error)}
+#'
+#' which is monotone decreasing onto \eqn{(0, 1]}: a zero error gives 1.
+#' The mapping is invertible, so the original error is recoverable as
+#' `1 / confidence - 1`.
 #'
 #' @examples
 #' path <- system.file("extdata", "freemocap.csv", package = "aniread")
@@ -47,6 +62,19 @@ read_freemocap <- function(path, format = c("auto", "by_frame")) {
   data <- data |>
     dplyr::select(-"timestamp_by_camera") |>
     dplyr::rename(time = "frame")
+
+  # A reprojection error runs the other way from a confidence, so it is
+  # inverted rather than renamed. See @details.
+  if (detected == "by_frame_9col") {
+    data <- data |>
+      dplyr::mutate(
+        confidence = 1 / (1 + .data$reprojection_error),
+        .keep = "unused"
+      )
+  } else {
+    data <- data |>
+      dplyr::mutate(confidence = as.numeric(NA))
+  }
 
   data <- data |>
     anicore::as_aniframe() |>

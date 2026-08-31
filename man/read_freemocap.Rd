@@ -13,11 +13,10 @@ read_freemocap(path, format = c("auto", "by_frame"))
 \code{"by_frame"} requires that layout.}
 }
 \value{
-An aniframe with \code{time}, \code{model}, \code{keypoint} and \code{x}/\code{y}/\code{z} in
-millimetres on a 3D cartesian coordinate system. A 9-column file keeps
-\code{reprojection_error} as a measurement column. \code{time} is seconds
-elapsed from \code{start_datetime} when the file carries timestamps, and
-frames when it does not.
+An aniframe with \code{time}, \code{model}, \code{keypoint}, \code{confidence} and
+\code{x}/\code{y}/\code{z} in millimetres on a 3D cartesian coordinate system. \code{time}
+is seconds elapsed from \code{start_datetime} when the file carries
+timestamps, and frames when it does not.
 }
 \description{
 Reads the FreeMoCap tidy export, written as
@@ -30,6 +29,22 @@ FreeMoCap also writes \verb{<recording_name>_by_trajectory.csv} and the
 per-model wide files in \verb{output_data/} (\code{mediapipe_body_3d_xyz.csv} and
 siblings). Neither is read yet; both are recognised, so the error names
 what the file is rather than what it is not.
+}
+\details{
+\code{confidence} comes from \code{reprojection_error}, which the 9-column export
+carries and the 8-column one does not, so an 8-column file gives all-\code{NA}
+confidence. The two run in opposite directions — a reprojection error is
+a distance in pixels, so zero is perfect and larger is worse, whereas
+every other reader in aniread fills \code{confidence} from a likelihood or a
+probability where larger is better. Storing the error unchanged would
+make \code{aniprocess::filter_na_across(method = "confidence")} drop the best
+points, so it is mapped through
+
+\deqn{confidence = 1 / (1 + error)}
+
+which is monotone decreasing onto \eqn{(0, 1]}: a zero error gives 1.
+The mapping is invertible, so the original error is recoverable as
+\code{1 / confidence - 1}.
 }
 \examples{
 path <- system.file("extdata", "freemocap.csv", package = "aniread")

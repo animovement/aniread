@@ -2,7 +2,9 @@
 
 ## Added
 
-* `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately, and `reprojection_error` is kept as a measurement column rather than carried along unnamed.
+* `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.
+
+* FreeMoCap data gains a `confidence` column, from `reprojection_error` where the file has one and all-`NA` where it does not. The two run in opposite directions — an error is a distance in pixels, so zero is best, while `confidence` everywhere else in aniread comes from a likelihood or probability where larger is best — so it is mapped through `1 / (1 + error)` rather than renamed. That is monotone onto `(0, 1]`, gives 1 for a perfect reprojection, and is invertible: the original error is `1 / confidence - 1`. Renaming it would have made `aniprocess::filter_na_across(method = "confidence")` discard the best-tracked points.
 
 * `read_freemocap()` gains a `format` argument, defaulting to `"auto"`, which reads the layout from the column names. It follows `read_boris()`, whose `format = c("auto", ...)` is the pattern the other readers should converge on (#118).
 
