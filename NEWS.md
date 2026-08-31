@@ -12,6 +12,12 @@
 
 * `read_sleap()` records which export it read in the `source_format` metadata field.
 
+## Changed
+
+* `read_sleap()` names individuals by the track SLEAP recorded, rather than by position (#125). The h5 reader read `track_names` only to count them and then labelled individuals `individual1`, `individual2`, …, discarding names the file already held — so `SLEAP_three-mice_Aeon_mixed-labels.analysis.h5` came back as `individual1/2/3` instead of `AEON3B_NTP/TP1/TP2`. A recording with no tracks, such as a single untracked instance, still falls back to the positional names, because there is nothing else to use.
+
+  This changes the `individual` values returned for any h5 with named tracks. Code matching on `"individual1"` will need the real name instead; `levels(data$individual)` shows them.
+
 ## Added
 
 * `read_trex()` reads TRex's native `.npz` export (#116). It is a zip of `.npy` arrays, one file per tracked individual, so a whole recording is the vector of paths `get_sample_data("trex")` returns — which previously errored, because the registry declared TRex a CSV-only source. The arrays are parsed directly rather than through a new dependency: `.npy` is a short header over a raw buffer, and `unz()` reads zip members without unpacking.

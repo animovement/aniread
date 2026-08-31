@@ -10,6 +10,11 @@
 #' resolution, so pass `video_height` to get an accurate flip — otherwise
 #' `max(y)` is used as a fallback.
 #'
+#' `individual` is the track name SLEAP recorded, from either export. A
+#' recording with no tracks - a single unnamed instance, or predictions that
+#' were never tracked - has no names to use, and falls back to
+#' `individual1`, `individual2`, and so on.
+#'
 #' @param path A SLEAP analysis file, either HDF5 (`.h5`) or CSV.
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
@@ -58,6 +63,17 @@ read_sleap_h5 <- function(path) {
   node_names <- rhdf5::h5read(path, "node_names") |>
     as.vector()
 
+  # SLEAP records the names it tracked under, and they are more use than a
+  # position in the file. A recording with no tracks - a single unnamed
+  # instance, or predictions that were never tracked - has none, and falls
+  # back to the positional name.
+  track_names <- as.vector(rhdf5::h5read(path, "track_names"))
+  individual_names <- if (length(track_names) == n_individuals) {
+    as.character(track_names)
+  } else {
+    paste0("individual", seq_len(n_individuals))
+  }
+
   data <- data.frame()
   for (i in 1:n_individuals) {
     point_scores <- rhdf5::h5read(path, "point_scores")[,, i] |>
@@ -103,7 +119,7 @@ read_sleap_h5 <- function(path) {
         dplyr::where(is.numeric),
         ~ dplyr::na_if(., NaN)
       )) |>
-      dplyr::mutate(individual = paste0("individual", i))
+      dplyr::mutate(individual = individual_names[[i]])
 
     data <- dplyr::bind_rows(data, df_temp)
   }

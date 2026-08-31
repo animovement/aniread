@@ -26,4 +26,9 @@ reflects y so the returned aniframe is in the conventional
 \code{bottom_left} origin. Neither export includes the source video
 resolution, so pass \code{video_height} to get an accurate flip — otherwise
 \code{max(y)} is used as a fallback.
+
+\code{individual} is the track name SLEAP recorded, from either export. A
+recording with no tracks - a single unnamed instance, or predictions that
+were never tracked - has no names to use, and falls back to
+\code{individual1}, \code{individual2}, and so on.
 }

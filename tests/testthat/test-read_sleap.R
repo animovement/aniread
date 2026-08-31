@@ -69,6 +69,7 @@ test_that("the CSV and the h5 of one recording read the same", {
     d <- d[order(d$time, d$individual, d$keypoint), ]
     data.frame(
       time = as.numeric(d$time),
+      individual = as.character(d$individual),
       keypoint = as.character(d$keypoint),
       x = d$x,
       y = d$y,
@@ -79,6 +80,8 @@ test_that("the CSV and the h5 of one recording read the same", {
   b <- key(csv)
 
   expect_equal(nrow(a), nrow(b))
+  # Identities included: both exports name the tracks SLEAP recorded.
+  expect_equal(a$individual, b$individual)
   expect_equal(a$keypoint, b$keypoint)
   expect_equal(a$x, b$x, tolerance = 1e-8)
   expect_equal(a$y, b$y, tolerance = 1e-8)
@@ -118,4 +121,21 @@ test_that("get_supported_sources() advertises both SLEAP suffixes", {
   sleap <- get_supported_sources()[get_supported_sources()$source == "sleap", ]
 
   expect_setequal(sleap$suffix[[1]], c("h5", "csv"))
+})
+
+test_that("the h5 reader uses the track names SLEAP recorded", {
+  path <- test_path("data/sleap/SLEAP_three-mice_Aeon_mixed-labels.analysis.h5")
+  data <- read_sleap(path)
+  track_names <- as.vector(rhdf5::h5read(path, "track_names"))
+
+  expect_setequal(levels(data$individual), track_names)
+})
+
+test_that("a recording with no tracks falls back to positional names", {
+  # SLEAP writes no track_names for a single untracked instance, so there is
+  # nothing to name it with.
+  path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
+  expect_length(as.vector(rhdf5::h5read(path, "track_names")), 0)
+
+  expect_setequal(levels(read_sleap(path)$individual), "individual1")
 })
