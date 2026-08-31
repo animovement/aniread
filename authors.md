@@ -33,6 +33,6 @@ movement data.”
       author = {Mikkel Roald-Arbøl},
       year = {2026},
       doi = {10.5281/zenodo.17352842},
-      version = {0.7.0.9001},
+      version = {0.7.0.9002},
       url = {https://animovement.dev/aniread/},
     }
