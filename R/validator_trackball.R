@@ -36,12 +36,12 @@ ensure_trackball_setup <- function(setup) {
 
 #' @inheritParams validate_trackball
 ensure_number_of_files <- function(paths, setup) {
-  if (setup == "of_free" & length(paths) != 2) {
+  if (setup == "of_free" && length(paths) != 2) {
     cli::cli_abort(
       "For setup {setup} expected 2 files, but got {length(paths)} files instead."
     )
   }
-  if (setup == "of_fixed" & !length(paths) %in% c(1, 2)) {
+  if (setup == "of_fixed" && !length(paths) %in% c(1, 2)) {
     cli::cli_abort(
       "For setup {setup} expected 1 or 2 files, but got {length(paths)} files instead."
     )
