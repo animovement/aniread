@@ -2,6 +2,89 @@
 
 ## aniread (development version)
 
+### Removed
+
+- The unused output validators, `ensure_output_header_names()`,
+  `ensure_output_header_class()` and `ensure_output_no_nan()`
+  ([\#123](https://github.com/animovement/aniread/issues/123)). No
+  reader called them — their only callers were their own tests — so
+  nothing they promised was ever enforced, and the tests passing gave
+  the impression that it was.
+
+  They could not be wired in as they stood: they require exactly `time`,
+  `individual`, `keypoint`, `x`, `y` and `confidence`, which is a
+  narrower contract than the aniframe has had for some time. Five of the
+  seven sample sources fail it —
+  [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md)
+  returns no `individual`,
+  [`read_anipose()`](https://animovement.dev/aniread/reference/read_anipose.md)
+  and
+  [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md)
+  return `z`,
+  [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
+  returns `model`, and
+  [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
+  and
+  [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md)
+  return no `confidence`.
+  [`anicore::validate_aniframe()`](https://animovement.dev/anicore/reference/validate_aniframe.html)
+  is the metadata-aware successor: it checks the frame against what it
+  declares rather than against a fixed column list.
+
+### Added
+
+- [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  reads SLEAP’s analysis CSV export
+  ([\#87](https://github.com/animovement/aniread/issues/87)).
+  [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
+  advertised `csv` for SLEAP while the reader aborted with “We hope to
+  support SLEAP CSV import soon!”, so the registry had been narrowed to
+  `h5` as a stopgap; it advertises both again.
+
+  The columns are `track`, `frame_idx`, `instance.score` and a
+  `.x`/`.y`/`.score` triple per node, which is how sleap-io defines the
+  format. Node names are read from the columns rather than assumed,
+  since a recording has whatever skeleton it was tracked with, and
+  `instance.score` is dropped rather than becoming a keypoint called
+  `instance` — it scores the whole instance, where the h5 reader takes
+  confidence from the per-node scores.
+
+  One recording reads the same from either export, checked against the
+  h5 it was generated from. Two things make that true: `time` counts
+  from 1 as it does for the h5, where `frame_idx` counts from 0; and a
+  frame in which an instance was not detected comes back as an all-`NA`
+  row rather than being absent, since the CSV holds a row per *instance*
+  and omits those entirely — the same reinstatement
+  [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
+  does.
+
+- [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+  recognises a SLEAP analysis CSV, by the `frame_idx` and
+  `instance.score` columns sleap-io uses to identify one. It previously
+  inspected only HDF5 names, so a SLEAP CSV was not detected at all and
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  could not route it.
+
+- [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  records which export it read in the `source_format` metadata field.
+
+### Changed
+
+- [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  names individuals by the track SLEAP recorded, rather than by position
+  ([\#125](https://github.com/animovement/aniread/issues/125)). The h5
+  reader read `track_names` only to count them and then labelled
+  individuals `individual1`, `individual2`, …, discarding names the file
+  already held — so `SLEAP_three-mice_Aeon_mixed-labels.analysis.h5`
+  came back as `individual1/2/3` instead of `AEON3B_NTP/TP1/TP2`. A
+  recording with no tracks, such as a single untracked instance, still
+  falls back to the positional names, because there is nothing else to
+  use.
+
+  This changes the `individual` values returned for any h5 with named
+  tracks. Code matching on `"individual1"` will need the real name
+  instead; `levels(data$individual)` shows them.
+
 ### Added
 
 - [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)

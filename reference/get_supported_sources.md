@@ -66,7 +66,7 @@ get_supported_sources()
 #> 12 lightningpose    read_lightningpose <chr [1]>
 #> 13 movement         read_movement      <chr [2]>
 #> 14 octron           read_octron        <chr [1]>
-#> 15 sleap            read_sleap         <chr [1]>
+#> 15 sleap            read_sleap         <chr [2]>
 #> 16 trackball_bonsai read_trackball     <chr [1]>
 #> 17 trackmate        read_trackmate     <chr [1]>
 #> 18 trex             read_trex          <chr [2]>
