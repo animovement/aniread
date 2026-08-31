@@ -373,38 +373,33 @@ test_that("format = 'by_frame' reads a by_frame file", {
   path <- system.file("extdata", "freemocap.csv", package = "aniread")
 
   expect_s3_class(read_freemocap(path, format = "by_frame"), "aniframe")
-  expect_error(read_freemocap(path, format = "wide"), "should be one of")
+  expect_error(read_freemocap(path, format = "nonsense"), "should be one of")
+  # A valid layout name that does not match the file is a different error.
+  expect_error(read_freemocap(path, format = "wide"), "not a FreeMoCap")
 })
 
-test_that("the by_trajectory export is named in the error", {
-  path <- withr::local_tempfile(fileext = ".csv")
-  vroom::vroom_write(
-    data.frame(
-      frame = 0:2,
-      nose_x = 1:3,
-      nose_y = 1:3,
-      nose_z = 1:3
-    ),
-    path,
-    delim = ","
+test_that("the by_trajectory export is read", {
+  path <- system.file(
+    "extdata",
+    "freemocap_by_trajectory.csv",
+    package = "aniread"
   )
+  data <- read_freemocap(path)
 
-  expect_error(read_freemocap(path), "by_trajectory export")
+  expect_s3_class(data, "aniframe")
+  expect_equal(anicore::get_metadata(data)$source_format, "by_trajectory")
+  expect_true(all(c("model", "keypoint", "x", "y", "z") %in% names(data)))
+  expect_true(all(is.na(data$confidence)))
 })
 
-test_that("a per-model wide export is named in the error", {
-  path <- withr::local_tempfile(fileext = ".csv")
-  vroom::vroom_write(
-    data.frame(
-      nose_x = 1:3,
-      nose_y = 1:3,
-      nose_z = 1:3
-    ),
-    path,
-    delim = ","
-  )
+test_that("a per-model wide export is read", {
+  path <- system.file("extdata", "freemocap_wide.csv", package = "aniread")
+  data <- read_freemocap(path)
 
-  expect_error(read_freemocap(path), "per-model wide export")
+  expect_s3_class(data, "aniframe")
+  expect_equal(anicore::get_metadata(data)$source_format, "wide")
+  expect_setequal(as.character(unique(data$model)), "mediapipe_body")
+  expect_true(all(is.na(data$confidence)))
 })
 
 test_that("detect_freemocap_format() distinguishes the four layouts", {
@@ -433,10 +428,98 @@ test_that("detect_freemocap_format() distinguishes the four layouts", {
     ))),
     "by_frame_9col"
   )
+  # by_trajectory has no frame column: the row position is the frame. It is
+  # told from the wide files by the timestamps, which only it carries.
   expect_equal(
-    detect_freemocap_format(data.frame(frame = 1, nose_x = 1)),
+    detect_freemocap_format(
+      data.frame(timestamp = NA, timestamp_by_camera = "{}", body_nose_x = 1)
+    ),
     "by_trajectory"
   )
-  expect_equal(detect_freemocap_format(data.frame(nose_x = 1)), "wide")
+  expect_equal(detect_freemocap_format(data.frame(body_nose_x = 1)), "wide")
   expect_equal(detect_freemocap_format(data.frame(a = 1)), "unknown")
+})
+
+# Layout equivalence ------------------------------------------------------
+# The point of parsing names the way FreeMoCap's own data saver does: one
+# recording read through different layouts must give the same aniframe.
+
+test_that("point names parse the way FreeMoCap parses them", {
+  # Mirrors DataSaver._parse_keypoint_name(). The hands are the special case:
+  # they share one model rather than becoming mediapipe_left / mediapipe_right.
+  points <- c(
+    "body_nose",
+    "face_0000",
+    "left_hand_0000",
+    "right_hand_0012",
+    "com_full"
+  )
+
+  expect_equal(
+    parse_freemocap_model(points),
+    c(
+      "mediapipe_body",
+      "mediapipe_face",
+      "mediapipe_hand",
+      "mediapipe_hand",
+      "mediapipe_com"
+    )
+  )
+  expect_equal(
+    parse_freemocap_keypoint(points),
+    c("nose", "0000", "left_0000", "right_0012", "full")
+  )
+})
+
+test_that("a name with no underscore keeps the bare model", {
+  expect_equal(parse_freemocap_model("nose"), "mediapipe")
+  expect_equal(parse_freemocap_keypoint("nose"), "nose")
+})
+
+test_that("by_frame and by_trajectory agree on the same recording", {
+  # Both fixtures are excerpts of the same v1.8.0 release asset, so every
+  # keypoint they share must carry identical coordinates at the same frame.
+  bf <- read_freemocap(
+    system.file("extdata", "freemocap.csv", package = "aniread")
+  )
+  bt <- read_freemocap(
+    system.file(
+      "extdata",
+      "freemocap_by_trajectory.csv",
+      package = "aniread"
+    )
+  )
+
+  key <- function(d) {
+    data.frame(
+      time = as.numeric(d$time),
+      model = as.character(d$model),
+      keypoint = as.character(d$keypoint),
+      x = d$x,
+      y = d$y,
+      z = d$z
+    )
+  }
+  joined <- merge(
+    key(bf),
+    key(bt),
+    by = c("time", "model", "keypoint"),
+    suffixes = c("_bf", "_bt")
+  )
+
+  expect_gt(nrow(joined), 0)
+  expect_equal(joined$x_bf, joined$x_bt, tolerance = 1e-9)
+  expect_equal(joined$y_bf, joined$y_bt, tolerance = 1e-9)
+  expect_equal(joined$z_bf, joined$z_bt, tolerance = 1e-9)
+})
+
+test_that("frames count from zero in every layout", {
+  for (f in c(
+    "freemocap.csv",
+    "freemocap_by_trajectory.csv",
+    "freemocap_wide.csv"
+  )) {
+    data <- read_freemocap(system.file("extdata", f, package = "aniread"))
+    expect_equal(min(as.numeric(data$time)), 0, info = f)
+  }
 })
