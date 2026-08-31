@@ -79,6 +79,26 @@ convert_nan_to_na <- function(data) {
   )
 }
 
+#' Convert Inf to NA in numeric columns
+#'
+#' The sibling of [convert_nan_to_na()], for sources that mark a missing
+#' observation with an infinity rather than a `NaN`. TRex is one: its own
+#' documentation masks `np.inf` out before plotting, and its `missing` flag
+#' is 1 in exactly those frames.
+#'
+#' @param data A data frame.
+#' @return A data frame with `Inf` and `-Inf` replaced by `NA` in numeric
+#'   columns.
+#' @keywords internal
+convert_inf_to_na <- function(data) {
+  dplyr::mutate(
+    data,
+    dplyr::across(dplyr::where(is.numeric), function(x) {
+      ifelse(is.infinite(x), NA, x)
+    })
+  )
+}
+
 # For TRex files
 #' @keywords internal
 get_individual_from_path <- function(path) {

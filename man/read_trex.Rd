@@ -4,7 +4,7 @@
 \alias{read_trex}
 \title{Read TRex Movement Tracking Data}
 \usage{
-read_trex(path, video_height = NULL)
+read_trex(path, format = c("auto", "csv", "npz"), video_height = NULL)
 }
 \arguments{
 \item{path}{Character string specifying the path to a TRex CSV file.
@@ -15,27 +15,38 @@ The file should contain columns for:
 \item x and y coordinates for centroid (x_number_wcentroid_cm, y_number_wcentroid_cm)
 }}
 
+\item{format}{Which export to read. \code{"auto"} (default) reads it from the
+file: the \code{.npz} export is a zip of \code{.npy} arrays, the CSV export is not.}
+
 \item{video_height}{Optional numeric height of the source video frame
 in the same spatial units as the tracking output (TRex defaults to
-centimetres). TRex's CSV export does not record this, so without it
-\code{max(y)} is used as a fallback when reflecting to \code{bottom_left}.}
+centimetres). The \code{.npz} export records this as \code{video_size} and it is
+used automatically; TRex's CSV export does not, so without it \code{max(y)}
+is used as a fallback when reflecting to \code{bottom_left}.}
 }
 \value{
 A data frame containing movement data with the following columns:
 \itemize{
 \item \code{time}: Time values from the tracking
-\item \code{individual}: Factor (set to NA, as TRex tracks one individual)
+\item \code{individual}: Factor. The identity TRex assigned, from the \code{.npz}
+export; \code{NA} from the CSV export, which does not record it
 \item \code{keypoint}: Factor identifying tracked points (e.g., "head", "centroid")
 \item \code{x}: x-coordinates in centimeters
 \item \code{y}: y-coordinates in centimeters
-\item \code{confidence}: Numeric confidence values (set to NA as TRex doesn't provide these)
+\item \code{confidence}: Numeric. TRex's per-frame \code{detection_p} from the \code{.npz}
+export; \code{NA} from the CSV export, which does not record it
 }
 }
 \description{
-Reads and formats movement tracking data exported from TRex (Walter & Couzin, 2021).
-TRex is a software for tracking animal movement in videos, which exports
-coordinate data in CSV format. This function processes these files into
-a standardized movement data format.
+Reads movement tracking data exported from TRex (Walter & Couzin, 2021),
+from either of its two exports.
+
+The \code{.npz} export is TRex's native one: a zip of \code{.npy} arrays, one file
+per tracked individual, so a whole recording is a vector of paths. It
+carries the pose keypoints, a per-frame detection probability, the
+identity, and the recording's frame rate and frame size. The CSV export
+carries the centroid and midline of a single individual and none of that
+metadata, so several columns come back \code{NA}.
 }
 \details{
 The function performs several processing steps:
@@ -48,9 +59,13 @@ The function performs several processing steps:
 }
 }
 \examples{
+# TRex's native export: one .npz per tracked individual
+path <- system.file("extdata", "trex_id3.npz", package = "aniread")
+read_trex(path)
+
 \dontrun{
-# Read a TRex CSV file
-data <- read_trex("path/to/trex_export.csv")
+# A whole recording is the vector of paths get_sample_data() returns
+read_trex(get_sample_data("trex"))
 }
 
 }

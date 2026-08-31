@@ -253,6 +253,14 @@ detect_octron_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_trex_file <- function(path) {
+  # TRex's native export is an .npz of .npy arrays, one per field. It is
+  # identified by the fields it carries rather than by its extension, since
+  # .npz is a generic NumPy container.
+  if (is_npz_file(path)) {
+    members <- sub("\\.npy$", "", utils::unzip(path, list = TRUE)$Name)
+    return(all(c("X", "Y", "frame", "time") %in% members))
+  }
+
   header <- peek_header(path)
   length(header) > 1 &&
     identical(header[[1]], "frame") &&

@@ -24,9 +24,11 @@ Imports:
     dplyr,
     janitor,
     rlang,
+    stats,
     stringr,
     tidyr,
     tidyselect,
+    utils,
     vroom
 Suggests:
     arrow,
