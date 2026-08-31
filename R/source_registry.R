@@ -132,7 +132,7 @@ source_registry <- function() {
     list(
       source = "sleap",
       reader = "read_sleap",
-      suffix = "h5",
+      suffix = c("h5", "csv"),
       detector = detect_sleap_file,
       requires = c(h5 = "rhdf5")
     ),

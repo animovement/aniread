@@ -158,10 +158,10 @@ test_that("registry source names match the metadata the readers stamp", {
   )
 })
 
-test_that("the registry no longer advertises SLEAP CSV", {
-  # read_sleap() aborts on CSV input (#87); the registry must not claim
-  # otherwise, or auto-detection would route CSVs straight into that error.
+test_that("the registry advertises both SLEAP suffixes", {
+  # The registry was narrowed to h5 while read_sleap() aborted on CSV input;
+  # the reader landed in #87, so csv is advertised again.
   sleap <- get_supported_sources()[get_supported_sources()$source == "sleap", ]
 
-  expect_identical(sleap$suffix[[1]], "h5")
+  expect_setequal(sleap$suffix[[1]], c("h5", "csv"))
 })

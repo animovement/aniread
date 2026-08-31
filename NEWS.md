@@ -2,6 +2,18 @@
 
 ## Added
 
+* `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
+
+  The columns are `track`, `frame_idx`, `instance.score` and a `.x`/`.y`/`.score` triple per node, which is how sleap-io defines the format. Node names are read from the columns rather than assumed, since a recording has whatever skeleton it was tracked with, and `instance.score` is dropped rather than becoming a keypoint called `instance` — it scores the whole instance, where the h5 reader takes confidence from the per-node scores.
+
+  One recording reads the same from either export, checked against the h5 it was generated from. Two things make that true: `time` counts from 1 as it does for the h5, where `frame_idx` counts from 0; and a frame in which an instance was not detected comes back as an all-`NA` row rather than being absent, since the CSV holds a row per *instance* and omits those entirely — the same reinstatement `read_octron()` does.
+
+* `detect_source()` recognises a SLEAP analysis CSV, by the `frame_idx` and `instance.score` columns sleap-io uses to identify one. It previously inspected only HDF5 names, so a SLEAP CSV was not detected at all and `read_dataset()` could not route it.
+
+* `read_sleap()` records which export it read in the `source_format` metadata field.
+
+## Added
+
 * `read_trex()` reads TRex's native `.npz` export (#116). It is a zip of `.npy` arrays, one file per tracked individual, so a whole recording is the vector of paths `get_sample_data("trex")` returns — which previously errored, because the registry declared TRex a CSV-only source. The arrays are parsed directly rather than through a new dependency: `.npy` is a short header over a raw buffer, and `unz()` reads zip members without unpacking.
 
   The `.npz` carries what the CSV export does not, so three of this reader's documented limitations turn out to be limitations of the CSV rather than of TRex: `individual` is the identity TRex assigned instead of `NA`, `confidence` is its per-frame `detection_p` instead of `NA`, and the pose keypoints are present at all. The frame rate and frame size are recorded too, so `sampling_rate` is set and the reflection to `bottom_left` no longer has to guess the frame height from `max(y)`.
