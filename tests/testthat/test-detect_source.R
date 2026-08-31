@@ -420,3 +420,26 @@ test_that("read_dataset gives the same result either way", {
     as.data.frame(from_headered)
   )
 })
+
+test_that("detect_source() recognises both FreeMoCap tidy layouts", {
+  path_9col <- system.file("extdata", "freemocap.csv", package = "aniread")
+  expect_equal(detect_source(path_9col), "freemocap")
+
+  # The 8-column form, which is what FreeMoCap wrote before v1.8.0.
+  path_8col <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(
+    data.frame(
+      frame = 0L,
+      timestamp = NA_character_,
+      timestamp_by_camera = "{}",
+      model = "mediapipe_body",
+      keypoint = "nose",
+      x = 1,
+      y = 2,
+      z = 3
+    ),
+    path_8col,
+    delim = ","
+  )
+  expect_equal(detect_source(path_8col), "freemocap")
+})

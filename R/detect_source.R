@@ -224,8 +224,10 @@ detect_boris_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_freemocap_file <- function(path) {
-  identical(
-    peek_header(path),
+  # Matched by inclusion rather than identity: FreeMoCap added a
+  # `reprojection_error` column at v1.8.0, and an exact match would stop
+  # recognising the format the next time a column is appended.
+  all(
     c(
       "frame",
       "timestamp",
@@ -235,7 +237,8 @@ detect_freemocap_file <- function(path) {
       "x",
       "y",
       "z"
-    )
+    ) %in%
+      peek_header(path)
   )
 }
 

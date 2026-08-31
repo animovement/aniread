@@ -4,34 +4,64 @@
 \alias{read_freemocap}
 \title{Read FreeMoCap motion capture data}
 \usage{
-read_freemocap(path)
+read_freemocap(path, format = c("auto", "by_frame", "by_trajectory", "wide"))
 }
 \arguments{
-\item{path}{Character string specifying the path to the FreeMoCap CSV file.
-Should be a file ending in 'by_frame.csv'.}
+\item{path}{Path to a FreeMoCap CSV.}
+
+\item{format}{Export layout. \code{"auto"} reads it from the column names;
+naming one requires that layout and errors on anything else.}
 }
 \value{
-An aniframe object with the following characteristics:
-\itemize{
-\item Metadata indicating source as "freemocap"
-\item Spatial units in millimeters (mm)
-\item 3D Cartesian coordinate system
-\item Time units in seconds (if timestamps available) or frames (if not)
-\item Start datetime in metadata (if timestamps available)
-}
+An aniframe with \code{time}, \code{model}, \code{keypoint}, \code{confidence} and
+\code{x}/\code{y}/\code{z} in millimetres on a 3D cartesian coordinate system. \code{time}
+is seconds elapsed from \code{start_datetime} where the layout carries
+timestamps, and frames where it does not.
 }
 \description{
-Imports FreeMoCap motion capture data from a CSV file and converts it to an
-aniframe format. The function expects data in tidy format (typically files ending in
-'by_frame.csv') and will error if other formats are detected.
+Reads all three layouts FreeMoCap writes, dispatching on the
+column names:
+\itemize{
+\item \verb{<recording>_by_frame.csv} — the tidy export. FreeMoCap added a
+\code{reprojection_error} column at v1.8.0, so this exists in an 8- and a
+9-column form; both are read.
+\item \verb{<recording>_by_trajectory.csv} — one column triple per tracked point,
+with the camera timestamps alongside.
+\item \verb{output_data/mediapipe_*_3d_xyz.csv} — the per-model wide files, one
+model each and no timestamps.
+}
+
+Which layout was read is recorded in the \code{source_format} metadata field.
+Point names are parsed the way FreeMoCap's own data saver parses them, so
+the same recording gives the same \code{model} and \code{keypoint} values whichever
+layout it is read from.
+}
+\details{
+\code{confidence} comes from \code{reprojection_error}, which only the 9-column
+\code{by_frame} export carries; every other layout gives all-\code{NA} confidence.
+The two run in opposite directions — a reprojection error is a distance in
+pixels, so zero is perfect and larger is worse, whereas every other reader
+in aniread fills \code{confidence} from a likelihood or a probability where
+larger is better. Storing the error unchanged would make
+\code{aniprocess::filter_na_across(method = "confidence")} drop the best
+points, so it is mapped through
+
+\deqn{confidence = 1 / (1 + error)}
+
+which is monotone decreasing onto \eqn{(0, 1]}: a zero error gives 1.
+The mapping is invertible, so the original error is recoverable as
+\code{1 / confidence - 1}.
 }
 \examples{
-\dontrun{
-# Read FreeMoCap data
-mocap_data <- read_freemocap("path/to/data_by_frame.csv")
+path <- system.file("extdata", "freemocap.csv", package = "aniread")
+read_freemocap(path)
 
-# Check metadata
-anicore::get_metadata(mocap_data)
-}
+# The same recording in its by_trajectory form
+path <- system.file(
+  "extdata",
+  "freemocap_by_trajectory.csv",
+  package = "aniread"
+)
+read_freemocap(path)
 
 }

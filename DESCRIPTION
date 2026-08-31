@@ -1,7 +1,7 @@
 Package: aniread
 Type: Package
 Title: An R package for reading and writing movement data
-Version: 0.7.0.9000
+Version: 0.7.0.9001
 Authors@R: 
     person(
       "Mikkel", 
@@ -19,7 +19,7 @@ LazyData: true
 Depends:
     R (>= 4.1.0)
 Imports: 
-    anicore (>= 0.8.0),
+    anicore (>= 0.8.0.9001),
     cli,
     dplyr,
     janitor,
