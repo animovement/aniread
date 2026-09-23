@@ -34,13 +34,13 @@ test_that("reflect_to_bottom_left flips y around supplied video_height", {
     x = c(1, 2, 3),
     y = c(10, 20, 30)
   ) |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   result <- reflect_to_bottom_left(data, video_height = 100)
   meta <- anicore::get_metadata(result)
 
   expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
-  expect_equal(anicore::get_axis_extents(result), c(y = 100))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 100))
   expect_equal(result$y, c(90, 80, 70))
 })
 
@@ -52,13 +52,13 @@ test_that("reflect_to_bottom_left falls back to the furthest point when video_he
     x = c(1, 2, 3),
     y = c(10, 20, 30)
   ) |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   result <- reflect_to_bottom_left(data, video_height = NULL)
   meta <- anicore::get_metadata(result)
 
   expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
-  expect_equal(anicore::get_axis_extents(result), c(y = 30))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 30))
   expect_equal(result$y, c(20, 10, 0))
 })
 
@@ -70,13 +70,13 @@ test_that("reflect_to_bottom_left leaves the data alone when y is all NA", {
     x = c(1, 2, 3),
     y = as.numeric(c(NA, NA, NA))
   ) |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   result <- reflect_to_bottom_left(data, video_height = NULL)
   meta <- anicore::get_metadata(result)
 
   expect_equal(anicore::get_axis_directions(result)[["y"]], "down")
-  expect_length(anicore::get_axis_extents(result), 0)
+  expect_length(anicore::get_metadata(result, "axis_extents"), 0)
   expect_true(all(is.na(result$y)))
 })
 
@@ -91,7 +91,7 @@ test_that("reflect_to_bottom_left declares the side the camera was on", {
     x = c(1, 2, 3),
     y = c(10, 20, 30)
   ) |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   result <- reflect_to_bottom_left(data, video_height = 100)
 
@@ -113,7 +113,7 @@ test_that("there is no extent to measure without a vertical axis", {
     rho = c(1, 2, 3),
     phi = c(0, 1, 2)
   ) |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   expect_null(compute_y_extent(polar))
 })

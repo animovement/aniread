@@ -91,7 +91,7 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
     "Loaded {nrow(result)} spots from {dplyr::n_distinct(result$track)} tracks."
   )
 
-  data <- anicore::as_aniframe(
+  data <- anicore::as_anipoint(
     result,
     variables_what = c("track", "keypoint")
   ) |>

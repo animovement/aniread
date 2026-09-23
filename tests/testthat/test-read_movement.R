@@ -18,7 +18,7 @@ path <- tryCatch(
 test_that("read_movement returns an aniframe", {
   skip_if(is.null(path), "movement sample download unavailable")
   result <- read_movement(path)
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 test_that("read_movement has required columns", {

@@ -19,7 +19,7 @@ test_that("read_idtracker reads CSV with legacy `seconds` column", {
     path_probabilities = probabilities
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(
     c("time", "individual", "x", "y", "confidence") %in% names(result)
   ))
@@ -55,7 +55,7 @@ test_that("read_idtracker reads CSV with renamed `time` column", {
     path_probabilities = probabilities
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(
     c("time", "individual", "x", "y", "confidence") %in% names(result)
   ))

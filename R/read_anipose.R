@@ -75,7 +75,7 @@ read_anipose <- function(path, unit_space = "mm") {
       names_from = "coordinate"
     ) |>
     dplyr::rename(confidence = "score") |>
-    anicore::as_aniframe()
+    anicore::as_anipoint()
 
   # Set metadata
   data <- data |>

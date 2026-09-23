@@ -161,7 +161,7 @@ test_that("read_freemocap rejects incorrect file format", {
 test_that("read_freemocap successfully imports valid data", {
   result <- read_freemocap(path_valid)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
 })
@@ -233,7 +233,7 @@ test_that("read_freemocap handles timestamps when present", {
   result <- read_freemocap(path_with_timestamps)
 
   meta <- anicore::get_metadata(result)
-  expect_true("start_datetime" %in% names(meta))
+  expect_true("start_datetime" %in% names(meta$time))
   expect_equal(meta$unit_time, expected_unit_time_with_timestamps)
   expect_false(timestamp_column %in% names(result))
 })
@@ -242,7 +242,7 @@ test_that("read_freemocap handles missing timestamps", {
   result <- read_freemocap(path_without_timestamps)
 
   meta <- anicore::get_metadata(result)
-  expect_true("start_datetime" %in% names(meta))
+  expect_true("start_datetime" %in% names(meta$time))
   expect_equal(meta$unit_time, expected_unit_time_without_timestamps)
 })
 
@@ -260,7 +260,7 @@ test_that("read_freemocap converts elapsed time correctly", {
 test_that("read_freemocap handles empty data gracefully", {
   result <- read_freemocap(path_empty)
   expect_equal(nrow(result), 0)
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 # Integration tests -------------------------------------------------------
@@ -280,7 +280,7 @@ test_that("read_freemocap() reads the 9-column tidy export", {
   path <- system.file("extdata", "freemocap.csv", package = "aniread")
   data <- read_freemocap(path)
 
-  expect_s3_class(data, "aniframe")
+  expect_s3_class(data, "anipoint")
   expect_true("confidence" %in% names(data))
   expect_type(data$confidence, "double")
   # The raw error is mapped, not carried alongside.
@@ -372,7 +372,7 @@ test_that("the 8-column export gives all-NA confidence", {
 test_that("format = 'by_frame' reads a by_frame file", {
   path <- system.file("extdata", "freemocap.csv", package = "aniread")
 
-  expect_s3_class(read_freemocap(path, format = "by_frame"), "aniframe")
+  expect_s3_class(read_freemocap(path, format = "by_frame"), "anipoint")
   expect_error(read_freemocap(path, format = "nonsense"), "should be one of")
   # A valid layout name that does not match the file is a different error.
   expect_error(read_freemocap(path, format = "wide"), "not a FreeMoCap")
@@ -386,7 +386,7 @@ test_that("the by_trajectory export is read", {
   )
   data <- read_freemocap(path)
 
-  expect_s3_class(data, "aniframe")
+  expect_s3_class(data, "anipoint")
   expect_equal(anicore::get_metadata(data)$source_format, "by_trajectory")
   expect_true(all(c("model", "keypoint", "x", "y", "z") %in% names(data)))
   expect_true(all(is.na(data$confidence)))
@@ -396,7 +396,7 @@ test_that("a per-model wide export is read", {
   path <- system.file("extdata", "freemocap_wide.csv", package = "aniread")
   data <- read_freemocap(path)
 
-  expect_s3_class(data, "aniframe")
+  expect_s3_class(data, "anipoint")
   expect_equal(anicore::get_metadata(data)$source_format, "wide")
   expect_setequal(as.character(unique(data$model)), "mediapipe_body")
   expect_true(all(is.na(data$confidence)))

@@ -92,7 +92,7 @@ read_freemocap <- function(
   )
 
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "freemocap",
       source_format = detected,

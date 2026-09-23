@@ -20,7 +20,7 @@ only some readers take are supplied, e.g. \code{sampling_rate} for
 \code{\link[=read_trackball]{read_trackball()}} or \code{path_probabilities} for \code{\link[=read_idtracker]{read_idtracker()}}.}
 }
 \value{
-An \link[anicore:aniframe]{aniframe} or
+An \link[anicore:anipoint]{anipoint} or
 \link[anicore:anievent]{anievent}, depending on the reader.
 }
 \description{
@@ -31,7 +31,7 @@ which reader a file needs before opening it.
 \details{
 \code{read_dataset()} is a dispatcher, not a new reader: it works out which
 reader to call and calls it. The object you get back is exactly what the
-underlying reader returns - an \link[anicore:aniframe]{aniframe} for tracking
+underlying reader returns - an \link[anicore:anipoint]{anipoint} for tracking
 data, or an \link[anicore:anievent]{anievent} for behavioural events from
 \code{\link[=read_boris]{read_boris()}}.
 

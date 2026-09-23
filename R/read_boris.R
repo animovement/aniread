@@ -11,13 +11,13 @@
 #'   `unit_time = "s"` uses `Start (s)` / `Stop (s)` and works on any
 #'   BORIS export. With `unit_time = "frame"` the reader uses the
 #'   `Image index start` / `Image index stop` columns instead; frames
-#'   stay aligned with rows of a host [anicore::aniframe()], which
+#'   stay aligned with rows of a host [anicore::anipoint()], which
 #'   keeps event timing robust against effective-FPS drift when the
 #'   export is paired with movement data. If `"frame"` is
 #'   requested but the export carries no image-index columns, the
 #'   reader falls back to `"s"` with an informational message. FPS is
 #'   recorded as `sampling_rate` metadata without rescaling the
-#'   timestamps; call [anicore::set_sampling_rate()] later if you
+#'   timestamps; call [anicore::convert_unit_time()] later if you
 #'   need to convert between frames and seconds.
 #'
 #'   Channels: each row's `channel` is the value of BORIS's
@@ -39,7 +39,7 @@
 #'   file.
 #' @param unit_time One of `"s"`, `"frame"`. Default `"s"`. `"frame"`
 #'   uses the BORIS image-index columns; pass it when pairing the
-#'   anievent with an aniframe to keep frame-aligned semantics.
+#'   anievent with an anipoint to keep frame-aligned semantics.
 #'
 #' @return An [anicore::anievent()] with metadata fields `source`,
 #'   `filename`, `unit_time`, and `sampling_rate` (when FPS is a
@@ -617,19 +617,13 @@ finalise_boris <- function(data, path, unit_time) {
     ae,
     source = "boris",
     filename = basename(path),
-    unit_time = unit_time,
-    # Spatial fields are inherited from the shared metadata substrate
-    # but don't apply to event data. Set what we can to neutral values
-    # (`none` / `unknown`); the rest stay at the aniframe default
-    # until animovement/aniframe#73 lands.
-    unit_space = "none",
-    coordinate_system = "unknown"
+    unit_time = unit_time
   )
   if (!is.null(fps)) {
     ae <- anicore::set_metadata(ae, sampling_rate = fps)
   }
 
-  # Overlap checks: aniframe's `validate_anievent()` is intentionally
+  # Overlap checks: anicore's `validate_anievent()` is intentionally
   # lenient on the anievent side - it warns on overlapping bouts within
   # a channel rather than rejecting them. Point events legitimately
   # coexist with a containing state bout in BORIS, though, so filter to

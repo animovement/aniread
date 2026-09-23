@@ -161,7 +161,7 @@ read_trackball <- function(
 
   # Init metadata
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "trackball_bonsai",
       filename = paths,

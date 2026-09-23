@@ -6,7 +6,7 @@
 #'
 #' @param path Path to a Parquet file.
 #'
-#' @return An aniframe object.
+#' @return An anipoint, or an anievent if that is what was written.
 #' @export
 #'
 #' @examples
@@ -44,8 +44,15 @@ read_aniframe <- function(path) {
     )
   }
 
-  # Restore the aniframe class (arrow strips custom classes)
-  class(data) <- c("aniframe", class(data))
+  # arrow keeps the class of an ungrouped frame but strips it from a grouped one
+  if (!anicore::is_aniframe(data)) {
+    class(data) <- c("aniframe", class(data))
+    interval <- anicore::get_metadata(data, "variables")$when$interval
+    class(data) <- c(
+      if (is.null(interval)) "anipoint" else "anievent",
+      class(data)
+    )
+  }
 
   data
 }

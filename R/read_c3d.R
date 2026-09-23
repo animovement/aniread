@@ -7,7 +7,7 @@
 #'
 #' @return An aniframe with columns `time`, `keypoint`, `x`, `y`, and `z`.
 #'   Metadata includes source software, filename, time/space units, and
-#'   sampling rate. Time is 0-indexed (in frames).
+#'   sampling rate. Time is in seconds, starting at 0.
 #'
 #' @seealso [c3dr::c3d_read()] for lower-level C3D access.
 #'
@@ -28,7 +28,7 @@ read_c3d <- function(path) {
       names_from = "type"
     ) |>
     dplyr::rename(keypoint = "point", time = "frame") |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = all_data$parameters$MANUFACTURER$SOFTWARE,
       source_version = paste(
@@ -40,7 +40,8 @@ read_c3d <- function(path) {
       unit_space = all_data$parameters$POINT$UNITS
     ) |>
     dplyr::mutate(time = .data$time - 1) |>
-    anicore::set_sampling_rate(all_data$header$framerate)
+    anicore::set_metadata(sampling_rate = all_data$header$framerate) |>
+    anicore::convert_unit_time("s")
 
   data
 }

@@ -56,7 +56,7 @@ read_movement <- function(path, video_height = NULL) {
     tidyr::pivot_wider(names_from = "coord", values_from = "value") |>
     dplyr::mutate(time = time[.data$time_idx]) |>
     dplyr::select("individual", "keypoint", "time", "x", "y") |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = metadata$source_software,
       filename = basename(metadata$source_file),

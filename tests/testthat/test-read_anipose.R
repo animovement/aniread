@@ -150,7 +150,7 @@ test_that("read_anipose validates file existence", {
 test_that("read_anipose successfully imports valid data", {
   result <- read_anipose(path_valid)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
 })
@@ -270,7 +270,7 @@ test_that("read_anipose handles empty data gracefully", {
   result <- read_anipose(path_empty)
 
   expect_equal(nrow(result), 0)
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(required_columns %in% names(result)))
 })
 

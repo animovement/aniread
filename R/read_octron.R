@@ -194,7 +194,7 @@ read_octron <- function(
     variables_what <- c("label", "track", "segment", "keypoint")
   }
 
-  anicore::as_aniframe(
+  anicore::as_anipoint(
     data,
     variables_what = variables_what
   ) |>

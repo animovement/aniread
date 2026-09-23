@@ -45,7 +45,7 @@ test_that("read_trackball works with of_free setup and two sensors", {
     sampling_rate = 10
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(c("time", "x", "y", "keypoint") %in% names(result)))
 })
 
@@ -71,7 +71,7 @@ test_that("read_trackball works with of_fixed setup and two sensors", {
     counts_per_rotation = 1000
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(c("time", "x", "y", "keypoint") %in% names(result)))
 })
 
@@ -91,7 +91,7 @@ test_that("read_trackball works with of_fixed setup and one sensor", {
     counts_per_rotation = 1000
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(c("time", "x", "y", "keypoint") %in% names(result)))
 })
 
@@ -195,7 +195,7 @@ test_that("read_trackball respects custom column names", {
     col_dy = "dy"
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 test_that("read_trackball errors on non-csv files", {
@@ -384,7 +384,7 @@ test_that("read_trackball() reads a capture behind leading junk", {
     col_time = 4
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_gt(nrow(result), 0)
   expect_false(anyNA(result$x))
 })

@@ -53,12 +53,12 @@ test_that("aggregated TSV populates metadata source/filename/unit_time", {
   expect_equal(md$sampling_rate, 25)
 })
 
-test_that("aggregated TSV sets neutral spatial metadata where possible", {
+test_that("aggregated TSV carries no spatial metadata", {
   ae <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
   md <- anicore::get_metadata(ae)
 
-  expect_identical(as.character(md$unit_space), "none")
-  expect_identical(as.character(md$coordinate_system), "unknown")
+  expect_null(md$unit_space)
+  expect_null(md$coordinate_system)
 })
 
 test_that("aggregated TSV drops fps and total_length columns from data", {

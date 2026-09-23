@@ -33,7 +33,7 @@ read_sleap <- function(path, video_height = NULL) {
 
   # Init metadata
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "sleap",
       source_format = file_ext,

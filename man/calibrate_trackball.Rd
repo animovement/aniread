@@ -27,7 +27,7 @@ calibrate_trackball(
 A list with two elements:
 \itemize{
 \item \code{counts_per_rotation}: Sensor counts per full rotation (for \code{ball_calibration} in \code{read_trackball}).
-\item \code{calibration_factor}: Distance per sensor count (for \code{set_unit_space}).
+\item \code{calibration_factor}: Distance per sensor count (for \code{anicore::convert_unit_space()}).
 }
 }
 \description{

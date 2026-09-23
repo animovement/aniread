@@ -59,7 +59,7 @@ test_that("read_fictrac basic functionality works", {
   result <- read_fictrac(temp_file)
 
   # Check structure
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_s3_class(result, "tbl_df")
 
   # Check columns

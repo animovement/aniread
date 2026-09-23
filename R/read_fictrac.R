@@ -92,7 +92,7 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
 
   # Init metadata
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "fictrac",
       filename = basename(path),

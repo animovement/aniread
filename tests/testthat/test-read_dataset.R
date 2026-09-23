@@ -40,7 +40,7 @@ test_that("read_dataset returns what the direct reader returns", {
 test_that("read_dataset detects the source by default", {
   result <- read_dataset(fixture("trex", "beetle.csv"))
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_identical(anicore::get_metadata(result)$source, "trex")
 })
 

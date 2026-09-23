@@ -31,7 +31,7 @@ read_deeplabcut <- function(path, video_height = NULL) {
 
   # Init metadata
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "deeplabcut",
       filename = basename(path)

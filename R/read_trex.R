@@ -94,11 +94,9 @@ read_trex <- function(
   }
 
   # TRex reports `time` in seconds in both exports, so `unit_time` is
-  # declared rather than derived. That matters: set_sampling_rate() converts
-  # the index when unit_time is "frame" or "unknown", which would divide an
-  # already-seconds column by the frame rate.
+  # declared rather than derived.
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "trex",
       source_format = format,

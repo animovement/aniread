@@ -22,7 +22,7 @@
 #' @examples
 #' \dontrun{
 #' ## Create a small aniframe for demonstration
-#' df <- anicore::example_aniframe()
+#' df <- anicore::example_anipoint()
 #'
 #' ## Write the aniframe as CSV
 #' write_aniframe(df, "demo.csv")

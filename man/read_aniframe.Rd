@@ -10,7 +10,7 @@ read_aniframe(path)
 \item{path}{Path to a Parquet file.}
 }
 \value{
-An aniframe object.
+An anipoint, or an anievent if that is what was written.
 }
 \description{
 Reads movement data from a Parquet file and returns an aniframe object.

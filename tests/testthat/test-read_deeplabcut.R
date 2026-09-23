@@ -42,7 +42,7 @@ test_that("read_deeplabcut rejects non-existent files", {
 test_that("read_deeplabcut returns an aniframe", {
   result <- read_deeplabcut(fixture_path("mouse_single.csv"))
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 test_that("read_deeplabcut sets correct metadata", {
@@ -56,7 +56,7 @@ test_that("read_deeplabcut sets correct metadata", {
 test_that("read_deeplabcut dispatches to CSV reader for .csv files", {
   result <- read_deeplabcut(fixture_path("mouse_single.csv"))
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true("time" %in% names(result))
 })
 
@@ -66,7 +66,7 @@ test_that("read_deeplabcut dispatches to H5 reader for .h5 files", {
 
   result <- read_deeplabcut(h5_path)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true("time" %in% names(result))
 })
 

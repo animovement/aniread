@@ -102,7 +102,7 @@ test_that("read_custom requires cols argument", {
 test_that("read_custom successfully imports valid data", {
   result <- read_custom(path_valid, cols = c(time = "time", x = "x", y = "y"))
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_s3_class(result, "data.frame")
   expect_true(nrow(result) > 0)
 })
@@ -154,7 +154,7 @@ test_that("read_custom handles numeric indices correctly", {
     cols = c(time = 1, x = 2, y = 3)
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(c("time", "x", "y") %in% names(result)))
 })
 
@@ -178,7 +178,7 @@ test_that("read_custom respects variables_what", {
   )
 
   expect_true("individual" %in% dplyr::group_vars(result))
-  expect_equal(anicore::get_metadata(result)$variables_what, "individual")
+  expect_equal(anicore::get_variables(result, "what"), "individual")
 })
 
 test_that("read_custom respects variables_when", {
@@ -191,7 +191,7 @@ test_that("read_custom respects variables_when", {
 
   # `variables_when` is the temporal *context*; the index is declared
   # separately and is never one of them (animovement/anicore#109).
-  expect_equal(anicore::get_metadata(result)$variables_when, "trial")
+  expect_equal(anicore::get_variables(result, "when", "keys"), "trial")
   expect_equal(anicore::get_index(result), "time")
   expect_true("trial" %in% dplyr::group_vars(result))
   expect_false("time" %in% dplyr::group_vars(result))
@@ -204,7 +204,10 @@ test_that("read_custom respects variables_where", {
     variables_where = c("x", "y", "z")
   )
 
-  expect_equal(anicore::get_metadata(result)$variables_where, c("x", "y", "z"))
+  expect_equal(
+    unname(anicore::get_variables(result, "where", "position")),
+    c("x", "y", "z")
+  )
   expect_equal(
     as.character(anicore::get_metadata(result)$coordinate_system),
     "cartesian_3d"
@@ -217,8 +220,8 @@ test_that("read_custom works with renamed temporal column", {
     cols = c(time = "frame", x = "pos_x", y = "pos_y")
   )
 
-  expect_s3_class(result, "aniframe")
-  expect_equal(anicore::get_metadata(result)$variables_when, character(0))
+  expect_s3_class(result, "anipoint")
+  expect_equal(anicore::get_variables(result, "when", "keys"), character(0))
   expect_equal(anicore::get_index(result), "time")
 })
 
@@ -243,7 +246,7 @@ test_that("read_custom works with empty metadata list", {
     metadata = list()
   )
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_no_error(anicore::get_metadata(result))
 })
 
@@ -268,10 +271,13 @@ test_that("read_custom stores variables in metadata", {
   )
 
   meta <- anicore::get_metadata(result)
-  expect_equal(meta$variables_what, "individual")
-  expect_equal(meta$variables_when, character(0))
-  expect_equal(meta$variables_index, "time")
-  expect_equal(meta$variables_where, c("x", "y"))
+  expect_equal(anicore::get_variables(result, "what"), "individual")
+  expect_equal(anicore::get_variables(result, "when", "keys"), character(0))
+  expect_equal(anicore::get_index(result), "time")
+  expect_equal(
+    unname(anicore::get_variables(result, "where", "position")),
+    c("x", "y")
+  )
 })
 
 # Error handling ----------------------------------------------------------
@@ -313,7 +319,7 @@ test_that("read_custom handles empty data gracefully", {
   )
 
   expect_equal(nrow(result), 0)
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_true(all(required_base_columns %in% names(result)))
 })
 
@@ -344,7 +350,7 @@ test_that("read_custom output works with aniframe functions", {
   result <- read_custom(path_valid, cols = c(time = "time", x = "x", y = "y"))
 
   expect_no_error(anicore::get_metadata(result))
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 
@@ -372,6 +378,6 @@ test_that("read_custom can name the index column", {
   )
 
   expect_equal(anicore::get_index(result), "frame")
-  expect_equal(anicore::get_metadata(result)$variables_when, "trial")
+  expect_equal(anicore::get_variables(result, "when", "keys"), "trial")
   expect_false("time" %in% names(result))
 })
