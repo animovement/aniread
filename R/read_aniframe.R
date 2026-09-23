@@ -34,8 +34,9 @@ read_aniframe <- function(path) {
   # Read file
   data <- arrow::read_parquet(path)
 
-  # Check for aniframe metadata (class is stripped by arrow, but metadata survives)
+  # Arrow strips the class but keeps the attribute, so presence is all there is to test.
   if (is.null(attr(data, "metadata"))) {
+    # anicore: allow-metadata
     cli::cli_abort(
       c(
         "File does not contain a valid aniframe.",
