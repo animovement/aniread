@@ -2,9 +2,10 @@
 #'
 #' This helper loads a FicTrac ``*.dat`` file, keeps the timestamp, the 2‑D
 #' fictive path and the animal's heading, converts the timestamps to seconds,
-#' and returns the result as an anipoint. The heading is declared as the
-#' frame's orientation (`yaw`, in radians, from `x` toward `y`). FicTrac's
-#' movement direction is the direction of travel, not orientation, and is not
+#' and returns the result as an anipoint. FicTrac's "integrated animal
+#' heading" (the direction the animal faces) becomes `yaw` and is declared as
+#' the frame's orientation, in radians from `x` toward `y`. FicTrac's movement
+#' direction is the direction of travel, derivable from the path, and is not
 #' kept. If the physical ball radius is supplied, the positions are scaled
 #' accordingly and the spatial unit metadata is set.
 #'
@@ -14,7 +15,7 @@
 #' @param unit_ball_radius Character. Unit of ``ball_radius`` (e.g., `"cm"` or
 #'   `"mm"`). Defaults to `"cm"`. Ignored when ``ball_radius`` is `NULL`.
 #'
-#' @return An anipoint with columns `time`, `x`, `y` and `heading`. Metadata
+#' @return An anipoint with columns `time`, `x`, `y` and `yaw`. Metadata
 #'   includes the source (`"fictrac"`), original filename, sampling rate,
 #'   time unit (`"s"`), space unit (either `"none"` or the value of
 #'   `unit_ball_radius`), and a Cartesian 2‑D coordinate system.
@@ -83,7 +84,8 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
     dplyr::rename(
       time = "alt_timestamp",
       x = "pos_x",
-      y = "pos_y"
+      y = "pos_y",
+      yaw = "heading"
     )
 
   # Calculate median sampling rate
@@ -97,7 +99,7 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
   # heading is anicore's yaw: the body axis, from x toward y.
   data <- data |>
     anicore::as_anipoint() |>
-    anicore::set_variables(where = list(orientation = c(yaw = "heading"))) |>
+    anicore::set_variables(where = list(orientation = c(yaw = "yaw"))) |>
     anicore::set_metadata(
       source = "fictrac",
       filename = basename(path),

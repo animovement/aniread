@@ -103,3 +103,39 @@ test_that("the CSV reader tolerates a file without the optional columns", {
 
   expect_s3_class(read_trex(path), "anipoint")
 })
+
+test_that("read_trex keeps ANGLE as a yaw reflected with y", {
+  path <- system.file("extdata", "trex.csv", package = "aniread")
+  raw <- utils::read.csv(path, check.names = FALSE)
+  result <- read_trex(path)
+  expect_equal(
+    anicore::get_variables(result, "where", "orientation"),
+    c(yaw = "yaw")
+  )
+  centroid <- result[result$keypoint == "centroid", ]
+  # The y reflection turns an angle from x toward y into its negative.
+  expect_equal(
+    centroid$yaw,
+    (-raw$ANGLE[match(centroid$time, raw$time)]) %% (2 * pi)
+  )
+})
+
+test_that("read_trex reads ANGLE from the npz export when it is there", {
+  path <- system.file("extdata", "trex_id3.npz", package = "aniread")
+  without <- read_trex(path)
+  expect_false("yaw" %in% names(without))
+  expect_length(anicore::get_variables(without, "where", "orientation"), 0)
+
+  original <- read_npz
+  local_mocked_bindings(read_npz = function(path) {
+    arrays <- original(path)
+    arrays$ANGLE <- seq_along(arrays$time) / 100
+    arrays
+  })
+  with <- read_trex(path)
+  expect_equal(
+    anicore::get_variables(with, "where", "orientation"),
+    c(yaw = "yaw")
+  )
+  expect_true(all(!is.na(with$yaw[with$keypoint == "centroid"])))
+})

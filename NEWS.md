@@ -4,7 +4,11 @@
 
 ## Added
 
-* `read_fictrac()` keeps the animal's heading as a `heading` column and declares it as the frame's orientation (`yaw`; animovement/anicore#46), so turning is available alongside the fictive path. FicTrac's movement direction is the direction of travel, not orientation, and is still not kept.
+* Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
+  * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
+  * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
+  * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
+  * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
 
 ## Removed
 
