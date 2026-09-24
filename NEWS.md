@@ -2,6 +2,10 @@
 
 * Works with anicore's `anipoint` class and rebuilt accessor API (animovement/anicore#154). Readers return an `anipoint`, `read_aniframe()` restores an `anievent` as well as an `anipoint`, and `read_boris()` no longer sets spatial metadata on its `anievent`.
 
+## Added
+
+* `read_fictrac()` keeps the animal's heading as a `heading` column and declares it as the frame's orientation (`yaw`; animovement/anicore#46), so turning is available alongside the fictive path. FicTrac's movement direction is the direction of travel, not orientation, and is still not kept.
+
 ## Removed
 
 * The unused output validators, `ensure_output_header_names()`, `ensure_output_header_class()` and `ensure_output_no_nan()` (#123). No reader called them — their only callers were their own tests — so nothing they promised was ever enforced, and the tests passing gave the impression that it was.

@@ -446,9 +446,22 @@ test_that("read_fictrac column selection is correct", {
 
   result <- read_fictrac(temp_file)
 
-  # Should have 4 columns: keypoint, time, x, y
-  expect_equal(ncol(result), 4)
-  # expect_named(result, c("time", "x", "y"))
+  expect_named(result, c("keypoint", "time", "x", "y", "heading"))
+})
 
-  # All other 22 columns should be dropped
+test_that("read_fictrac declares the heading as the orientation", {
+  temp_file <- tempfile(fileext = ".dat")
+  on.exit(unlink(temp_file))
+  set.seed(1)
+  create_test_fictrac_file(temp_file, n_rows = 20)
+  raw <- utils::read.csv(temp_file, header = FALSE)
+
+  result <- read_fictrac(temp_file)
+  expect_equal(
+    anicore::get_variables(result, "where", "orientation"),
+    c(yaw = "heading")
+  )
+  expect_equal(result$heading, raw[[17]])
+  expect_false("direction" %in% names(result))
+  expect_equal(as.character(anicore::get_metadata(result, "unit_angle")), "rad")
 })

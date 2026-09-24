@@ -1,9 +1,12 @@
 #' Read projected FicTrac data
 #'
-#' This helper loads a FicTrac ``*.dat`` file, keeps only the timestamp and
-#' 2‑D position columns, converts the timestamps to seconds, and returns the
-#' result as an **aniframe** object.  If the physical ball radius is supplied,
-#' the positions are scaled accordingly and the spatial unit metadata is set.
+#' This helper loads a FicTrac ``*.dat`` file, keeps the timestamp, the 2‑D
+#' fictive path and the animal's heading, converts the timestamps to seconds,
+#' and returns the result as an anipoint. The heading is declared as the
+#' frame's orientation (`yaw`, in radians, from `x` toward `y`). FicTrac's
+#' movement direction is the direction of travel, not orientation, and is not
+#' kept. If the physical ball radius is supplied, the positions are scaled
+#' accordingly and the spatial unit metadata is set.
 #'
 #' @param path Character. Path to the FicTrac ``*.dat`` file.
 #' @param ball_radius Numeric (optional). Physical radius of the tracking ball.
@@ -11,7 +14,7 @@
 #' @param unit_ball_radius Character. Unit of ``ball_radius`` (e.g., `"cm"` or
 #'   `"mm"`). Defaults to `"cm"`. Ignored when ``ball_radius`` is `NULL`.
 #'
-#' @return An **aniframe** object with columns `time`, `x`, and `y`.  Metadata
+#' @return An anipoint with columns `time`, `x`, `y` and `heading`. Metadata
 #'   includes the source (`"fictrac"`), original filename, sampling rate,
 #'   time unit (`"s"`), space unit (either `"none"` or the value of
 #'   `unit_ball_radius`), and a Cartesian 2‑D coordinate system.
@@ -70,7 +73,7 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
   names(data) <- fictrac_headers
 
   data <- data |>
-    dplyr::select(c("alt_timestamp", "pos_x", "pos_y")) |>
+    dplyr::select(c("alt_timestamp", "pos_x", "pos_y", "heading")) |>
     dplyr::mutate(
       alt_timestamp = (.data$alt_timestamp -
         dplyr::first(.data$alt_timestamp)) /
@@ -90,9 +93,11 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
 
   sampling_rate <- 1 / median_dt
 
-  # Init metadata
+  # Each path step is the forward/side motion rotated by the heading, so the
+  # heading is anicore's yaw: the body axis, from x toward y.
   data <- data |>
     anicore::as_anipoint() |>
+    anicore::set_variables(where = list(orientation = c(yaw = "heading"))) |>
     anicore::set_metadata(
       source = "fictrac",
       filename = basename(path),
