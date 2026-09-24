@@ -6,8 +6,10 @@
 #' segments. Attach it to a frame with [anicore::set_structure()].
 #'
 #' * `read_structure_deeplabcut()` reads a DeepLabCut project's
-#'   `config.yaml`: `bodyparts` (or, in a multi-animal project,
-#'   `multianimalbodyparts` and `uniquebodyparts`) and `skeleton`.
+#'   `config.yaml`: `bodyparts`, or `multianimalbodyparts` in a multi-animal
+#'   project, and `skeleton`. A multi-animal project's `uniquebodyparts` are
+#'   left out: DeepLabCut assigns them to a separate `"single"` individual,
+#'   not to each animal's body.
 #' * `read_structure_sleap()` reads a SLEAP `.slp` file (project or
 #'   predictions) or an analysis `.h5` export. Only body edges become
 #'   segments; SLEAP's symmetry edges pair left and right keypoints and are
@@ -61,12 +63,14 @@ read_structure_deeplabcut <- function(path) {
   rlang::check_installed("yaml", reason = "to read a DeepLabCut config.")
   config <- yaml::read_yaml(path)
 
-  points <- if (length(config$multianimalbodyparts) > 0L) {
-    c(config$multianimalbodyparts, config$uniquebodyparts)
+  # As DeepLabCut's own `bodyparts_list`: a multi-animal project lists the
+  # animals' parts in `multianimalbodyparts`, with `bodyparts: MULTI!`.
+  points <- if (isTRUE(config$multianimalproject)) {
+    config$multianimalbodyparts
   } else {
     config$bodyparts
   }
-  points <- as.character(unlist(points))
+  points <- setdiff(as.character(unlist(points)), "MULTI!")
   pairs <- lapply(config$skeleton %||% list(), function(p) {
     as.character(unlist(p))
   })
@@ -120,9 +124,10 @@ read_structure_sleap <- function(path, skeleton = NULL) {
     chosen <- skeletons[[skeleton]]
   }
 
-  # Following sleap-io's reader: a skeleton's nodes point into the file's
-  # node list, and a link's type is its EdgeType (1 = body, 2 = symmetry),
-  # written in full the first time and as a reference after.
+  # As sleap-io's SkeletonSLPDecoder: a skeleton's nodes index the file's
+  # node list, and a link's type is an EdgeType (1 = body, 2 = symmetry),
+  # written in full ("py/reduce") the first time and then referenced by a
+  # "py/id" numbering those definitions from 1, per skeleton.
   node_names <- vapply(labels$nodes, function(n) n$name, character(1))
   points <- vapply(
     chosen$nodes,
@@ -132,18 +137,22 @@ read_structure_sleap <- function(path, skeleton = NULL) {
     },
     character(1)
   )
-  link_type <- function(link) {
-    type <- link$type
-    if (!is.null(type[["py/reduce"]])) {
-      type[["py/reduce"]][[2]][["py/tuple"]][[1]]
-    } else {
-      type[["py/id"]]
-    }
-  }
-  body <- Filter(
-    function(link) identical(as.integer(link_type(link)), 1L),
-    chosen$links
+  defined <- integer()
+  types <- vapply(
+    chosen$links,
+    function(link) {
+      type <- link$type
+      if (!is.null(type[["py/reduce"]])) {
+        value <- as.integer(type[["py/reduce"]][[2]][["py/tuple"]][[1]])
+        defined <<- c(defined, value)
+        return(value)
+      }
+      id <- as.integer(type[["py/id"]])
+      if (id <= length(defined)) defined[[id]] else id
+    },
+    integer(1)
   )
+  body <- chosen$links[types == 1L]
   pairs <- lapply(body, function(link) points[c(link$source, link$target) + 1L])
 
   structure_from_edges(

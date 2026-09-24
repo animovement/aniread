@@ -87,7 +87,7 @@ test_that("a DeepLabCut config becomes points and directed segments", {
   expect_equal(s$source, "DeepLabCut project mouse")
 })
 
-test_that("a multi-animal config combines its body part lists", {
+test_that("a multi-animal config reads the animals' body parts, not the unique ones", {
   path <- write_config(c(
     "multianimalproject: true",
     "bodyparts: MULTI!",
@@ -99,7 +99,7 @@ test_that("a multi-animal config combines its body part lists", {
     "- [tail, tip]"
   ))
   s <- read_structure(path)
-  expect_equal(s$points, c("head", "tail", "food", "tip"))
+  expect_equal(s$points, c("head", "tail", "tip"))
   expect_equal(nrow(s$segments), 2L)
 })
 
@@ -164,4 +164,22 @@ test_that("read_structure() says what it cannot read", {
   expect_error(read_structure("x.yaml", source = c("a", "b")), "single source")
   path <- write_config("bodyparts: [a]")
   expect_error(read_structure(path, source = "trex"), "Unsupported")
+})
+
+test_that("link types are resolved in the order they are defined, as sleap-io does", {
+  skip_if_not_installed("rhdf5")
+  # The first link is a symmetry edge, so py/id 1 refers to SYMMETRY here.
+  mirrored <- list(
+    graph = list(name = "mirrored"),
+    nodes = list(list(id = 0L), list(id = 1L), list(id = 2L), list(id = 3L)),
+    links = list(
+      list(source = 2L, target = 3L, type = symmetry),
+      list(source = 0L, target = 1L, type = body),
+      list(source = 3L, target = 2L, type = list("py/id" = 1L)),
+      list(source = 1L, target = 2L, type = list("py/id" = 2L))
+    )
+  )
+  s <- read_structure_sleap(write_slp(sleap_labels(list(mirrored))))
+  expect_equal(s$segments$from, c("head", "thorax"))
+  expect_equal(s$segments$to, c("thorax", "ear_l"))
 })

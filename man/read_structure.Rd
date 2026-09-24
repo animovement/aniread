@@ -30,8 +30,10 @@ the edges between them — as an \code{\link[anicore:anistructure]{anicore::anis
 segments. Attach it to a frame with \code{\link[anicore:set_structure]{anicore::set_structure()}}.
 \itemize{
 \item \code{read_structure_deeplabcut()} reads a DeepLabCut project's
-\code{config.yaml}: \code{bodyparts} (or, in a multi-animal project,
-\code{multianimalbodyparts} and \code{uniquebodyparts}) and \code{skeleton}.
+\code{config.yaml}: \code{bodyparts}, or \code{multianimalbodyparts} in a multi-animal
+project, and \code{skeleton}. A multi-animal project's \code{uniquebodyparts} are
+left out: DeepLabCut assigns them to a separate \code{"single"} individual,
+not to each animal's body.
 \item \code{read_structure_sleap()} reads a SLEAP \code{.slp} file (project or
 predictions) or an analysis \code{.h5} export. Only body edges become
 segments; SLEAP's symmetry edges pair left and right keypoints and are
