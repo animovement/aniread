@@ -36,6 +36,8 @@ Suggests:
     curl,
     knitr,
     rhdf5,
+    jsonlite,
+    yaml,
     xml2,
     c3dr,
     testthat (>= 3.0.0),
