@@ -10,7 +10,7 @@ npz_path <- function() {
 test_that("read_trex() reads the npz export", {
   data <- read_trex(npz_path())
 
-  expect_s3_class(data, "aniframe")
+  expect_s3_class(data, "anipoint")
   expect_equal(anicore::get_metadata(data)$source_format, "npz")
   expect_equal(anicore::get_metadata(data)$source, "trex")
 })
@@ -101,5 +101,5 @@ test_that("the CSV reader tolerates a file without the optional columns", {
   path <- withr::local_tempfile(fileext = ".csv")
   vroom::vroom_write(raw, path, delim = ",")
 
-  expect_s3_class(read_trex(path), "aniframe")
+  expect_s3_class(read_trex(path), "anipoint")
 })

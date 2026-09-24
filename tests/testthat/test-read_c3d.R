@@ -26,7 +26,7 @@ test_that("read_c3d returns an aniframe with expected structure", {
 
   result <- read_c3d(path)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_named(
     result,
     c("time", "keypoint", "x", "y", "z"),

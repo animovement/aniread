@@ -49,7 +49,7 @@ read_bonsai <- function(path, video_height = NULL) {
 
   # Set aniframe class and metadata
   data <- data |>
-    anicore::as_aniframe() |>
+    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "bonsai",
       filename = basename(path),

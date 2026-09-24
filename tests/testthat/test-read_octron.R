@@ -41,7 +41,7 @@ test_that("read_octron returns an aniframe with correct structure", {
   path <- test_path("data/octron", "octron_sample.csv")
   result <- read_octron(path)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_named(
     result,
     c(
@@ -151,7 +151,7 @@ test_that("read_octron turns the data the right way up using the header video_he
   metadata <- anicore::get_metadata(result)
 
   expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
-  extent <- anicore::get_axis_extents(result)[["y"]]
+  extent <- anicore::get_metadata(result, "axis_extents")[["y"]]
   expect_true(is.finite(extent))
   expect_true(extent >= max(result$y, na.rm = TRUE))
 })
@@ -161,9 +161,9 @@ test_that("read_octron `video_height` overrides the CSV header value", {
   default <- read_octron(path)
   override <- read_octron(path, video_height = 9999)
 
-  expect_equal(anicore::get_axis_extents(override)[["y"]], 9999)
+  expect_equal(anicore::get_metadata(override, "axis_extents")[["y"]], 9999)
   # Same x, shifted y by the difference between the two heights.
-  shift <- 9999 - anicore::get_axis_extents(default)[["y"]]
+  shift <- 9999 - anicore::get_metadata(default, "axis_extents")[["y"]]
   expect_equal(override$y, default$y + shift)
 })
 
@@ -176,7 +176,7 @@ test_that("read_octron handles newer format without shape descriptors", {
   path <- test_path("data/octron", "octron_sample_bytetrack.csv")
   result <- read_octron(path)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_named(
     result,
     c(

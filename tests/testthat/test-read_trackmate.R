@@ -101,7 +101,7 @@ test_that("read_trackmate parses valid XML correctly", {
 
   result <- read_trackmate(tmp)
 
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_equal(nrow(result), 2)
   expect_true(all(c("time", "x", "y") %in% names(result)))
   expect_equal(result$x, c(10.0, 15.0))
@@ -141,7 +141,7 @@ test_that("read_trackmate turns the data the right way up and records the extent
   meta <- anicore::get_metadata(result)
 
   expect_equal(anicore::get_axis_directions(result)[["y"]], "up")
-  expect_equal(anicore::get_axis_extents(result), c(y = 400))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 400))
   expect_equal(result$y, c(400 - 50, 400 - 100))
 })
 
@@ -175,7 +175,7 @@ test_that("read_trackmate `video_height` overrides ImageData height", {
   result <- read_trackmate(tmp, video_height = 1080)
   meta <- anicore::get_metadata(result)
 
-  expect_equal(anicore::get_axis_extents(result), c(y = 1080))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 1080))
   expect_equal(result$y, c(1080 - 50, 1080 - 100))
 })
 
@@ -207,7 +207,7 @@ test_that("read_trackmate falls back to max(y) when ImageData missing", {
   meta <- anicore::get_metadata(result)
 
   # max(y_source) = 25; the maximum should map to 0 in bottom_left.
-  expect_equal(anicore::get_axis_extents(result), c(y = 25))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 25))
   expect_equal(result$y, c(25 - 20, 25 - 25))
 })
 

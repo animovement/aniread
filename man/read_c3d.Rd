@@ -12,7 +12,7 @@ read_c3d(path)
 \value{
 An aniframe with columns \code{time}, \code{keypoint}, \code{x}, \code{y}, and \code{z}.
 Metadata includes source software, filename, time/space units, and
-sampling rate. Time is 0-indexed (in frames).
+sampling rate. Time is in seconds, starting at 0.
 }
 \description{
 Reads a C3D file and returns the data as an aniframe with associated

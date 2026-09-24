@@ -14,15 +14,15 @@
 #'
 #' `anicore` no longer invents an extent to reflect around, so the reader
 #' supplies one: the video height when the source gives it, and otherwise
-#' the furthest tracked point, which is the guess `as_aniframe()` used to
+#' the furthest tracked point, which is the guess `as_anipoint()` used to
 #' make on everyone's behalf.
 #'
-#' @param data An aniframe with image-plane coordinates.
+#' @param data An anipoint with image-plane coordinates.
 #' @param video_height Optional numeric height of the source video frame
 #'   in y-axis units. When supplied, takes precedence over the extent
 #'   inferred from the data.
 #'
-#' @return An aniframe with y counting upward.
+#' @return An anipoint with y counting upward.
 #' @keywords internal
 reflect_to_bottom_left <- function(data, video_height = NULL) {
   data <- anicore::set_metadata(
@@ -37,14 +37,14 @@ reflect_to_bottom_left <- function(data, video_height = NULL) {
     return(data)
   }
 
-  data <- anicore::set_axis_extents(data, stats::setNames(extent, "y"))
-  anicore::set_axis_directions(data, c(y = "up"))
+  data <- anicore::set_metadata(data, axis_extents = c(y = extent))
+  anicore::reflect_axis(data, "y")
 }
 
 
 #' Work out how far the data runs along its vertical axis
 #'
-#' @param data An aniframe.
+#' @param data An anipoint.
 #'
 #' @return A single positive number, or `NULL` when there is nothing to
 #'   measure.

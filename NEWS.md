@@ -1,5 +1,7 @@
 # aniread (development version)
 
+* Works with anicore's `anipoint` class and rebuilt accessor API (animovement/anicore#154). Readers return an `anipoint`, `read_aniframe()` restores an `anievent` as well as an `anipoint`, and `read_boris()` no longer sets spatial metadata on its `anievent`.
+
 ## Removed
 
 * The unused output validators, `ensure_output_header_names()`, `ensure_output_header_class()` and `ensure_output_no_nan()` (#123). No reader called them — their only callers were their own tests — so nothing they promised was ever enforced, and the tests passing gave the impression that it was.

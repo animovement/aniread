@@ -18,7 +18,7 @@
 #' @details
 #' `read_dataset()` is a dispatcher, not a new reader: it works out which
 #' reader to call and calls it. The object you get back is exactly what the
-#' underlying reader returns - an [aniframe][anicore::aniframe] for tracking
+#' underlying reader returns - an [anipoint][anicore::anipoint] for tracking
 #' data, or an [anievent][anicore::anievent] for behavioural events from
 #' [read_boris()].
 #'
@@ -28,7 +28,7 @@
 #' `source` metadata is set to `"deeplabcut/lightningpose"` to record that the
 #' distinction is undetermined. Pass `source` explicitly to override this.
 #'
-#' @return An [aniframe][anicore::aniframe] or
+#' @return An [anipoint][anicore::anipoint] or
 #'   [anievent][anicore::anievent], depending on the reader.
 #'
 #' @seealso [detect_source()] to detect the format without reading,

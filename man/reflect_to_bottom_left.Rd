@@ -7,14 +7,14 @@
 reflect_to_bottom_left(data, video_height = NULL)
 }
 \arguments{
-\item{data}{An aniframe with image-plane coordinates.}
+\item{data}{An anipoint with image-plane coordinates.}
 
 \item{video_height}{Optional numeric height of the source video frame
 in y-axis units. When supplied, takes precedence over the extent
 inferred from the data.}
 }
 \value{
-An aniframe with y counting upward.
+An anipoint with y counting upward.
 }
 \description{
 Image and video tooling counts y downward from the top of the frame,
@@ -32,7 +32,7 @@ through a glass floor should say so with
 
 \code{anicore} no longer invents an extent to reflect around, so the reader
 supplies one: the video height when the source gives it, and otherwise
-the furthest tracked point, which is the guess \code{as_aniframe()} used to
+the furthest tracked point, which is the guess \code{as_anipoint()} used to
 make on everyone's behalf.
 }
 \keyword{internal}

@@ -7,7 +7,7 @@
 compute_y_extent(data)
 }
 \arguments{
-\item{data}{An aniframe.}
+\item{data}{An anipoint.}
 }
 \value{
 A single positive number, or \code{NULL} when there is nothing to

@@ -23,7 +23,7 @@ sleap_csv <- function() {
 test_that("read_sleap() reads the analysis CSV", {
   data <- read_sleap(sleap_csv())
 
-  expect_s3_class(data, "aniframe")
+  expect_s3_class(data, "anipoint")
   expect_equal(anicore::get_metadata(data)$source, "sleap")
   expect_equal(anicore::get_metadata(data)$source_format, "csv")
   expect_true(all(

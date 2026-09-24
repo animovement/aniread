@@ -13,7 +13,7 @@ path <- testthat::test_path("data/fasttrack/fasttrack-tracking.txt")
 
 test_that("read_fasttrack returns an aniframe", {
   result <- read_fasttrack(path)
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })
 
 test_that("read_fasttrack has required columns", {

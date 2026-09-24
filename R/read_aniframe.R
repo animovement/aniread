@@ -6,7 +6,7 @@
 #'
 #' @param path Path to a Parquet file.
 #'
-#' @return An aniframe object.
+#' @return An anipoint, or an anievent if that is what was written.
 #' @export
 #'
 #' @examples
@@ -34,8 +34,9 @@ read_aniframe <- function(path) {
   # Read file
   data <- arrow::read_parquet(path)
 
-  # Check for aniframe metadata (class is stripped by arrow, but metadata survives)
+  # Arrow strips the class but keeps the attribute, so presence is all there is to test.
   if (is.null(attr(data, "metadata"))) {
+    # anicore: allow-metadata
     cli::cli_abort(
       c(
         "File does not contain a valid aniframe.",
@@ -44,8 +45,15 @@ read_aniframe <- function(path) {
     )
   }
 
-  # Restore the aniframe class (arrow strips custom classes)
-  class(data) <- c("aniframe", class(data))
+  # arrow keeps the class of an ungrouped frame but strips it from a grouped one
+  if (!anicore::is_aniframe(data)) {
+    class(data) <- c("aniframe", class(data))
+    interval <- anicore::get_metadata(data, "variables")$when$interval
+    class(data) <- c(
+      if (is.null(interval)) "anipoint" else "anievent",
+      class(data)
+    )
+  }
 
   data
 }

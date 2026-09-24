@@ -18,7 +18,7 @@ test_that("the detailed layout is detected without being told", {
   )
 
   expect_no_error(result <- read_animalta(path))
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
   expect_equal(
     as.data.frame(result),
     as.data.frame(read_animalta(path, detailed = TRUE))
@@ -49,5 +49,5 @@ test_that("read_dataset reads a detailed export", {
 
   expect_equal(detect_source(path), "animalta")
   expect_no_error(result <- read_dataset(path))
-  expect_s3_class(result, "aniframe")
+  expect_s3_class(result, "anipoint")
 })

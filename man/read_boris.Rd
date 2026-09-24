@@ -19,7 +19,7 @@ file.}
 
 \item{unit_time}{One of \code{"s"}, \code{"frame"}. Default \code{"s"}. \code{"frame"}
 uses the BORIS image-index columns; pass it when pairing the
-anievent with an aniframe to keep frame-aligned semantics.}
+anievent with an anipoint to keep frame-aligned semantics.}
 }
 \value{
 An \code{\link[anicore:anievent]{anicore::anievent()}} with metadata fields \code{source},
@@ -38,13 +38,13 @@ Time units come from the columns BORIS provides. The default
 \code{unit_time = "s"} uses \code{Start (s)} / \code{Stop (s)} and works on any
 BORIS export. With \code{unit_time = "frame"} the reader uses the
 \verb{Image index start} / \verb{Image index stop} columns instead; frames
-stay aligned with rows of a host \code{\link[anicore:aniframe]{anicore::aniframe()}}, which
+stay aligned with rows of a host \code{\link[anicore:anipoint]{anicore::anipoint()}}, which
 keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If \code{"frame"} is
 requested but the export carries no image-index columns, the
 reader falls back to \code{"s"} with an informational message. FPS is
 recorded as \code{sampling_rate} metadata without rescaling the
-timestamps; call \code{\link[anicore:set_sampling_rate]{anicore::set_sampling_rate()}} later if you
+timestamps; call \code{\link[anicore:convert_unit_time]{anicore::convert_unit_time()}} later if you
 need to convert between frames and seconds.
 
 Channels: each row's \code{channel} is the value of BORIS's
