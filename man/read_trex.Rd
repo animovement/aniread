@@ -35,6 +35,10 @@ export; \code{NA} from the CSV export, which does not record it
 \item \code{y}: y-coordinates in centimeters
 \item \code{confidence}: Numeric. TRex's per-frame \code{detection_p} from the \code{.npz}
 export; \code{NA} from the CSV export, which does not record it
+\item \code{yaw}: TRex's \code{ANGLE}, the direction the individual faces, from its
+posture, when the export includes it. Declared as the frame's
+orientation, so it is reflected with \code{y}; the same value on every
+keypoint of an individual.
 }
 }
 \description{

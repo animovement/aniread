@@ -10,6 +10,12 @@
 
 ## Added
 
+* Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
+  * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
+  * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
+  * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
+  * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
+
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
 
   The columns are `track`, `frame_idx`, `instance.score` and a `.x`/`.y`/`.score` triple per node, which is how sleap-io defines the format. Node names are read from the columns rather than assumed, since a recording has whatever skeleton it was tracked with, and `instance.score` is dropped rather than becoming a keypoint called `instance` — it scores the whole instance, where the h5 reader takes confidence from the per-node scores.

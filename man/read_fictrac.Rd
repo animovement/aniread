@@ -16,16 +16,20 @@ When supplied the \code{x} and \code{y} coordinates are multiplied by this value
 \code{"mm"}). Defaults to \code{"cm"}. Ignored when \code{ball_radius} is \code{NULL}.}
 }
 \value{
-An \strong{aniframe} object with columns \code{time}, \code{x}, and \code{y}.  Metadata
+An anipoint with columns \code{time}, \code{x}, \code{y} and \code{yaw}. Metadata
 includes the source (\code{"fictrac"}), original filename, sampling rate,
 time unit (\code{"s"}), space unit (either \code{"none"} or the value of
 \code{unit_ball_radius}), and a Cartesian 2‑D coordinate system.
 }
 \description{
-This helper loads a FicTrac \verb{*.dat} file, keeps only the timestamp and
-2‑D position columns, converts the timestamps to seconds, and returns the
-result as an \strong{aniframe} object.  If the physical ball radius is supplied,
-the positions are scaled accordingly and the spatial unit metadata is set.
+This helper loads a FicTrac \verb{*.dat} file, keeps the timestamp, the 2‑D
+fictive path and the animal's heading, converts the timestamps to seconds,
+and returns the result as an anipoint. FicTrac's "integrated animal
+heading" (the direction the animal faces) becomes \code{yaw} and is declared as
+the frame's orientation, in radians from \code{x} toward \code{y}. FicTrac's movement
+direction is the direction of travel, derivable from the path, and is not
+kept. If the physical ball radius is supplied, the positions are scaled
+accordingly and the spatial unit metadata is set.
 }
 \examples{
 \dontrun{

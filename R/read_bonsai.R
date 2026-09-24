@@ -8,6 +8,12 @@
 #' so pass `video_height` to get an accurate flip — otherwise `max(y)`
 #' is used as a fallback.
 #'
+#' When the workflow records the blob's `Orientation`, it is kept as
+#' `orientation_axis`: the angle of the blob's long axis, in radians from `x`
+#' toward `y`, in `(-pi/2, pi/2]`. It is axial — the blob has no front — so it
+#' is not declared as the frame's orientation (a `yaw`), and it is turned with
+#' `y` when y is reflected.
+#'
 #' @param path Path to a Bonsai data file
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
@@ -30,11 +36,15 @@ read_bonsai <- function(path, video_height = NULL) {
   ) |>
     suppressMessages() |>
     anicore::convert_nan_to_na() |>
-    dplyr::select(tidyselect::contains(c("Timestamp", "Centroid"))) |>
+    dplyr::select(
+      tidyselect::contains(c("Timestamp", "Centroid")),
+      tidyselect::ends_with(".Orientation")
+    ) |>
     dplyr::rename(
       time = tidyselect::contains("Timestamp"),
-      x = tidyselect::contains("X"),
-      y = tidyselect::contains("Y")
+      x = tidyselect::contains("Centroid.X"),
+      y = tidyselect::contains("Centroid.Y"),
+      orientation_axis = tidyselect::ends_with(".Orientation")
     ) |>
     dplyr::mutate(
       keypoint = factor("centroid"),
@@ -59,5 +69,16 @@ read_bonsai <- function(path, video_height = NULL) {
       time = as.numeric(.data$time - min(.data$time, na.rm = TRUE))
     ) |>
     reflect_to_bottom_left(video_height = video_height)
+
+  # Reflecting y reverses any angle measured from x toward y; an axial angle
+  # is then brought back into (-pi/2, pi/2].
+  reflected <- identical(
+    unname(anicore::get_axis_directions(data)["y"]),
+    "up"
+  )
+  if (reflected && "orientation_axis" %in% names(data)) {
+    turned <- -data$orientation_axis
+    data$orientation_axis <- ifelse(turned <= -pi / 2, turned + pi, turned)
+  }
   return(data)
 }
