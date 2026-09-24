@@ -183,3 +183,18 @@ test_that("link types are resolved in the order they are defined, as sleap-io do
   expect_equal(s$segments$from, c("head", "thorax"))
   expect_equal(s$segments$to, c("thorax", "ear_l"))
 })
+
+test_that("a reference to an undefined link type is read as the type itself", {
+  skip_if_not_installed("rhdf5")
+  bare <- list(
+    graph = list(name = "bare"),
+    nodes = list(list(id = 0L), list(id = 1L), list(id = 2L)),
+    links = list(
+      list(source = 0L, target = 1L, type = list("py/id" = 1L)),
+      list(source = 1L, target = 2L, type = list("py/id" = 2L))
+    )
+  )
+  s <- read_structure_sleap(write_slp(sleap_labels(list(bare))))
+  expect_equal(s$segments$from, "head")
+  expect_equal(s$segments$to, "thorax")
+})
