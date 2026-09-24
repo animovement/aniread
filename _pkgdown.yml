@@ -54,6 +54,13 @@ reference:
   contents:
   - read_boris
 
+- title: "Skeletons"
+  desc: >
+    Read the skeleton a pose-estimation project defines as an
+    `anicore::anistructure()`, to attach with `anicore::set_structure()`.
+  contents:
+  - read_structure
+
 - title: "Writer functions"
   desc: These functions are allow you to save your data.
   contents:
