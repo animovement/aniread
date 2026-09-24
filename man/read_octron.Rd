@@ -58,7 +58,7 @@ area-weighted mean has no meaning otherwise) and an info message
 is emitted.}
 }
 \value{
-An aniframe
+An anipoint
 }
 \description{
 Reads CSV files exported from Octron video segmentation software.
@@ -78,6 +78,14 @@ the same track in a single frame. The \code{method} argument controls
 how those rows are reduced to scalar values, or whether they are
 expanded into one row per segment.
 }
+\section{Orientation}{
+
+Octron's \code{orientation} is scikit-image's region property: the angle of the
+mask's long axis, axial (the mask has no front), measured from the image's
+row axis. It is kept as Octron wrote it, in image coordinates: it is not
+reflected with \code{y} and not declared as the frame's orientation.
+}
+
 \examples{
 path <- system.file("extdata", "octron.csv", package = "aniread")
 read_octron(path)

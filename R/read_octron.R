@@ -56,7 +56,13 @@
 #'   area-weighted mean has no meaning otherwise) and an info message
 #'   is emitted.
 #'
-#' @return An aniframe
+#' @section Orientation:
+#' Octron's `orientation` is scikit-image's region property: the angle of the
+#' mask's long axis, axial (the mask has no front), measured from the image's
+#' row axis. It is kept as Octron wrote it, in image coordinates: it is not
+#' reflected with `y` and not declared as the frame's orientation.
+#'
+#' @return An anipoint
 #'
 #' @examples
 #' path <- system.file("extdata", "octron.csv", package = "aniread")

@@ -23,6 +23,12 @@ conventional \code{bottom_left} origin. Bonsai workflows are
 user-defined and the output CSV does not record video resolution,
 so pass \code{video_height} to get an accurate flip — otherwise \code{max(y)}
 is used as a fallback.
+
+When the workflow records the blob's \code{Orientation}, it is kept as
+\code{orientation_axis}: the angle of the blob's long axis, in radians from \code{x}
+toward \code{y}, in \verb{(-pi/2, pi/2]}. It is axial — the blob has no front — so it
+is not declared as the frame's orientation (a \code{yaw}), and it is turned with
+\code{y} when y is reflected.
 }
 \examples{
 path <- system.file("extdata", "bonsai.csv", package = "aniread")

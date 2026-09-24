@@ -10,6 +10,12 @@
 
 ## Added
 
+* Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
+  * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
+  * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
+  * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
+  * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
+
 * `read_structure()` reads a pose-estimation project's skeleton as an `anicore::anistructure()`, detecting the tool from the file, alongside `read_structure_deeplabcut()` (a project's `config.yaml`, including multi-animal projects) and `read_structure_sleap()` (a `.slp` file or an analysis `.h5`; body edges only, since symmetry edges are not segments). Attach it with `anicore::set_structure()`; the frame readers do not attach skeletons themselves.
 
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.

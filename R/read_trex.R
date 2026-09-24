@@ -26,6 +26,10 @@
 #'   - `y`: y-coordinates in centimeters
 #'   - `confidence`: Numeric. TRex's per-frame `detection_p` from the `.npz`
 #'     export; `NA` from the CSV export, which does not record it
+#'   - `yaw`: TRex's `ANGLE`, the direction the individual faces, from its
+#'     posture, when the export includes it. Declared as the frame's
+#'     orientation, so it is reflected with `y`; the same value on every
+#'     keypoint of an individual.
 #'
 #' @details
 #' The function performs several processing steps:
@@ -95,8 +99,15 @@ read_trex <- function(
 
   # TRex reports `time` in seconds in both exports, so `unit_time` is
   # declared rather than derived.
+  data <- anicore::as_anipoint(data)
+  # Declared before the y reflection below, so the angle is turned with it.
+  if ("yaw" %in% names(data)) {
+    data <- anicore::set_variables(
+      data,
+      where = list(orientation = c(yaw = "yaw"))
+    )
+  }
   data <- data |>
-    anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "trex",
       source_format = format,
@@ -154,7 +165,10 @@ read_trex_csv <- function(path) {
   ) |>
     suppressMessages() |>
     janitor::clean_names() |>
-    dplyr::select(tidyselect::contains(c("x_", "y_", "time"))) |>
+    dplyr::select(
+      tidyselect::contains(c("x_", "y_", "time")),
+      tidyselect::any_of("angle")
+    ) |>
     # Which columns a TRex CSV carries is set per run by its `output_fields`
     # parameter, so these are dropped if present rather than required.
     dplyr::select(!tidyselect::any_of(c("vx_cm_s", "vy_cm_s", "timestamp"))) |>
@@ -165,13 +179,13 @@ read_trex_csv <- function(path) {
       y_head = "y_cm"
     ) |>
     tidyr::pivot_longer(
-      cols = !"time",
+      cols = !tidyselect::any_of(c("time", "angle")),
       names_sep = "_",
       names_to = c("pos", "keypoint"),
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = c("time", "keypoint"),
+      id_cols = tidyselect::any_of(c("time", "keypoint", "angle")),
       names_from = "pos",
       values_from = "val"
     ) |>
@@ -180,6 +194,7 @@ read_trex_csv <- function(path) {
       confidence = as.numeric(NA),
       keypoint = factor(.data$keypoint)
     ) |>
+    dplyr::rename(tidyselect::any_of(c(yaw = "angle"))) |>
     anicore::convert_inf_to_na() |>
     dplyr::relocate("individual", .after = "time")
 
@@ -240,6 +255,9 @@ read_trex_npz_file <- function(path) {
   )
 
   out <- rbind(centroid, pose)
+  if (!is.null(arrays[["ANGLE"]])) {
+    out$yaw <- arrays[["ANGLE"]][match(out$time, time)]
+  }
   out$individual <- as.character(arrays[["id"]] %||% NA)
   out$confidence <- rep(
     arrays[["detection_p"]] %||% NA_real_,
