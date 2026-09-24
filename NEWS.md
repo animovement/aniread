@@ -2,14 +2,6 @@
 
 * Works with anicore's `anipoint` class and rebuilt accessor API (animovement/anicore#154). Readers return an `anipoint`, `read_aniframe()` restores an `anievent` as well as an `anipoint`, and `read_boris()` no longer sets spatial metadata on its `anievent`.
 
-## Added
-
-* Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
-  * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
-  * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
-  * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
-  * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
-
 ## Removed
 
 * The unused output validators, `ensure_output_header_names()`, `ensure_output_header_class()` and `ensure_output_no_nan()` (#123). No reader called them — their only callers were their own tests — so nothing they promised was ever enforced, and the tests passing gave the impression that it was.
@@ -17,6 +9,12 @@
   They could not be wired in as they stood: they require exactly `time`, `individual`, `keypoint`, `x`, `y` and `confidence`, which is a narrower contract than the aniframe has had for some time. Five of the seven sample sources fail it — `read_deeplabcut()` returns no `individual`, `read_anipose()` and `read_c3d()` return `z`, `read_freemocap()` returns `model`, and `read_fictrac()` and `read_c3d()` return no `confidence`. `anicore::validate_aniframe()` is the metadata-aware successor: it checks the frame against what it declares rather than against a fixed column list.
 
 ## Added
+
+* Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
+  * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
+  * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
+  * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
+  * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
 
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
 
