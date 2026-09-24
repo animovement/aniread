@@ -18,7 +18,7 @@ read_aniframe(path)
 
 ## Value
 
-An aniframe object.
+An anipoint, or an anievent if that is what was written.
 
 ## Examples
 

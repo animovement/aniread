@@ -115,6 +115,10 @@ export; <code>NA</code> from the CSV export, which does not record it</p></li>
 <li><p><code>y</code>: y-coordinates in centimeters</p></li>
 <li><p><code>confidence</code>: Numeric. TRex's per-frame <code>detection_p</code> from the <code>.npz</code>
 export; <code>NA</code> from the CSV export, which does not record it</p></li>
+<li><p><code>yaw</code>: TRex's <code>ANGLE</code>, the direction the individual faces, from its
+posture, when the export includes it. Declared as the frame's
+orientation, so it is reflected with <code>y</code>; the same value on every
+keypoint of an individual.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

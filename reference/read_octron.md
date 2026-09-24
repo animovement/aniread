@@ -78,7 +78,7 @@ read_octron(
 
 ## Value
 
-An aniframe
+An anipoint
 
 ## Details
 
@@ -89,6 +89,14 @@ detects multiple disconnected mask segments belonging to the same track
 in a single frame. The `method` argument controls how those rows are
 reduced to scalar values, or whether they are expanded into one row per
 segment.
+
+## Orientation
+
+Octron's `orientation` is scikit-image's region property: the angle of
+the mask's long axis, axial (the mask has no front), measured from the
+image's row axis. It is kept as Octron wrote it, in image coordinates:
+it is not reflected with `y` and not declared as the frame's
+orientation.
 
 ## Examples
 

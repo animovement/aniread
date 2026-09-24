@@ -5,13 +5,23 @@ the reader reflects y so the returned aniframe is in the
 conventional bottom_left origin. Bonsai workflows are
 user-defined and the output CSV does not record video resolution,
 so pass video_height to get an accurate flip — otherwise max(y)
-is used as a fallback."><meta property="og:description" content="Read a Bonsai data frame. Bonsai centroid coordinates
+is used as a fallback.
+When the workflow records the blob's Orientation, it is kept as
+orientation_axis: the angle of the blob's long axis, in radians from x
+toward y, in (-pi/2, pi/2]. It is axial — the blob has no front — so it
+is not declared as the frame's orientation (a yaw), and it is turned with
+y when y is reflected."><meta property="og:description" content="Read a Bonsai data frame. Bonsai centroid coordinates
 come from camera/video pipelines that use image (top-left) origin;
 the reader reflects y so the returned aniframe is in the
 conventional bottom_left origin. Bonsai workflows are
 user-defined and the output CSV does not record video resolution,
 so pass video_height to get an accurate flip — otherwise max(y)
-is used as a fallback."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"></head><body>
+is used as a fallback.
+When the workflow records the blob's Orientation, it is kept as
+orientation_axis: the angle of the blob's long axis, in radians from x
+toward y, in (-pi/2, pi/2]. It is axial — the blob has no front — so it
+is not declared as the frame's orientation (a yaw), and it is turned with
+y when y is reflected."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -70,6 +80,11 @@ conventional <code>bottom_left</code> origin. Bonsai workflows are
 user-defined and the output CSV does not record video resolution,
 so pass <code>video_height</code> to get an accurate flip — otherwise <code>max(y)</code>
 is used as a fallback.</p>
+<p>When the workflow records the blob's <code>Orientation</code>, it is kept as
+<code>orientation_axis</code>: the angle of the blob's long axis, in radians from <code>x</code>
+toward <code>y</code>, in <code>(-pi/2, pi/2]</code>. It is axial — the blob has no front — so it
+is not declared as the frame's orientation (a <code>yaw</code>), and it is turned with
+<code>y</code> when y is reflected.</p>
     </div>
 
     <div class="section level2">
@@ -101,18 +116,18 @@ in pixels.</p></dd>
 <span class="r-in"><span><span class="fu">read_bonsai</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Individuals: NA</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:   centroid</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    individual keypoint   time     x      y confidence</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> <span style="color: #BB0000;">NA</span>         centroid 0       153.  0.828         <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> <span style="color: #BB0000;">NA</span>         centroid 0.023<span style="text-decoration: underline;">4</span>  153. 49.6           <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> <span style="color: #BB0000;">NA</span>         centroid 0.055<span style="text-decoration: underline;">4</span>  153. 50.4           <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> <span style="color: #BB0000;">NA</span>         centroid 0.085<span style="text-decoration: underline;">9</span>  153. 48.7           <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> <span style="color: #BB0000;">NA</span>         centroid 0.117   153. 40.9           <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> <span style="color: #BB0000;">NA</span>         centroid 0.162   153. 40.0           <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> <span style="color: #BB0000;">NA</span>         centroid 0.194   154.  0.666         <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> <span style="color: #BB0000;">NA</span>         centroid 0.226   153.  0.583         <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> <span style="color: #BB0000;">NA</span>         centroid 0.260   153.  0             <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> <span style="color: #BB0000;">NA</span>         centroid 0.292   154.  0.281         <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    individual keypoint   time     x      y confidence orientation_axis</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> <span style="color: #BB0000;">NA</span>         centroid 0       153.  0.828         <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.035</span><span style="color: #BB0000; text-decoration: underline;">6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> <span style="color: #BB0000;">NA</span>         centroid 0.023<span style="text-decoration: underline;">4</span>  153. 49.6           <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.213</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> <span style="color: #BB0000;">NA</span>         centroid 0.055<span style="text-decoration: underline;">4</span>  153. 50.4           <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.220</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> <span style="color: #BB0000;">NA</span>         centroid 0.085<span style="text-decoration: underline;">9</span>  153. 48.7           <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.207</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> <span style="color: #BB0000;">NA</span>         centroid 0.117   153. 40.9           <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.176</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> <span style="color: #BB0000;">NA</span>         centroid 0.162   153. 40.0           <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.191</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> <span style="color: #BB0000;">NA</span>         centroid 0.194   154.  0.666         <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.029</span><span style="color: #BB0000; text-decoration: underline;">6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> <span style="color: #BB0000;">NA</span>         centroid 0.226   153.  0.583         <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.036</span><span style="color: #BB0000; text-decoration: underline;">5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> <span style="color: #BB0000;">NA</span>         centroid 0.260   153.  0             <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.034</span><span style="color: #BB0000; text-decoration: underline;">4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> <span style="color: #BB0000;">NA</span>         centroid 0.292   154.  0.281         <span style="color: #BB0000;">NA</span>          -<span style="color: #BB0000;">0.034</span><span style="color: #BB0000; text-decoration: underline;">4</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

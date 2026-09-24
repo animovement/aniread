@@ -73,7 +73,7 @@ turns the vertical axis over, so downstream sees one convention.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>An aniframe with image-plane coordinates.</p></dd>
+<dd><p>An anipoint with image-plane coordinates.</p></dd>
 
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>
@@ -84,7 +84,7 @@ inferred from the data.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An aniframe with y counting upward.</p>
+    <p>An anipoint with y counting upward.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -96,7 +96,7 @@ through a glass floor should say so with
 <code>anicore::set_axis_directions(data, c(z = "forward"))</code>.</p>
 <p><code>anicore</code> no longer invents an extent to reflect around, so the reader
 supplies one: the video height when the source gives it, and otherwise
-the furthest tracked point, which is the guess <code>as_aniframe()</code> used to
+the furthest tracked point, which is the guess <code>as_anipoint()</code> used to
 make on everyone's behalf.</p>
     </div>
 

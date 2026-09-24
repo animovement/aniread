@@ -12,7 +12,7 @@ compute_y_extent(data)
 
 - data:
 
-  An aniframe.
+  An anipoint.
 
 ## Value
 

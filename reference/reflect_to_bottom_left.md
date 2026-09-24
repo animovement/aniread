@@ -15,7 +15,7 @@ reflect_to_bottom_left(data, video_height = NULL)
 
 - data:
 
-  An aniframe with image-plane coordinates.
+  An anipoint with image-plane coordinates.
 
 - video_height:
 
@@ -25,7 +25,7 @@ reflect_to_bottom_left(data, video_height = NULL)
 
 ## Value
 
-An aniframe with y counting upward.
+An anipoint with y counting upward.
 
 ## Details
 
@@ -40,5 +40,5 @@ with `anicore::set_axis_directions(data, c(z = "forward"))`.
 
 `anicore` no longer invents an extent to reflect around, so the reader
 supplies one: the video height when the source gives it, and otherwise
-the furthest tracked point, which is the guess `as_aniframe()` used to
+the furthest tracked point, which is the guess `as_anipoint()` used to
 make on everyone's behalf.

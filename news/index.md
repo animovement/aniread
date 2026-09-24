@@ -2,6 +2,13 @@
 
 ## aniread (development version)
 
+- Works with anicore’s `anipoint` class and rebuilt accessor API
+  (animovement/anicore#154). Readers return an `anipoint`,
+  [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)
+  restores an `anievent` as well as an `anipoint`, and
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  no longer sets spatial metadata on its `anievent`.
+
 ### Removed
 
 - The unused output validators, `ensure_output_header_names()`,
@@ -27,11 +34,42 @@
   and
   [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md)
   return no `confidence`.
-  [`anicore::validate_aniframe()`](https://animovement.dev/anicore/reference/validate_aniframe.html)
+  [`anicore::validate_aniframe()`](https://animovement.dev/anicore/reference/anicore-deprecated.html)
   is the metadata-aware successor: it checks the frame against what it
   declares rather than against a fixed column list.
 
 ### Added
+
+- Readers keep orientation where the source records it rather than
+  deriving it from positions (animovement/anicore#46):
+
+  - [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
+    keeps FicTrac’s “integrated animal heading” as `yaw` and declares it
+    as the frame’s orientation. Its movement direction, which follows
+    from the path, is still not kept.
+  - [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+    keeps TRex’s `ANGLE`, the direction an individual faces from its
+    posture, as a declared `yaw`, reflected with `y` like the positions.
+    It is read from either export when the run included it.
+  - [`read_bonsai()`](https://animovement.dev/aniread/reference/read_bonsai.md)
+    keeps the blob’s `Orientation` as `orientation_axis`: the angle of
+    its long axis, axial rather than a heading, so it is not declared as
+    orientation. It is turned with `y` when y is reflected.
+  - [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
+    documents that its `orientation` is scikit-image’s axial angle in
+    image coordinates.
+
+- [`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md)
+  reads a pose-estimation project’s skeleton as an
+  [`anicore::anistructure()`](https://animovement.dev/anicore/reference/anistructure.html),
+  detecting the tool from the file, alongside
+  [`read_structure_deeplabcut()`](https://animovement.dev/aniread/reference/read_structure.md)
+  (a project’s `config.yaml`, including multi-animal projects) and
+  [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md)
+  (a `.slp` file or an analysis `.h5`; body edges only, since symmetry
+  edges are not segments). Attach it with
+  [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html);
+  the frame readers do not attach skeletons themselves.
 
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   reads SLEAP’s analysis CSV export
@@ -137,9 +175,8 @@
 
 - [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
   declares `unit_time` as `"s"`. TRex reports seconds in both exports,
-  and leaving it unset meant
-  [`anicore::set_sampling_rate()`](https://animovement.dev/anicore/reference/set_sampling_rate.html)
-  treated the column as frames and divided it by the frame rate.
+  and leaving it unset meant `anicore::set_sampling_rate()` treated the
+  column as frames and divided it by the frame rate.
 
 ### Added
 

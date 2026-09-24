@@ -45,7 +45,7 @@ A list with two elements:
   `ball_calibration` in `read_trackball`).
 
 - `calibration_factor`: Distance per sensor count (for
-  `set_unit_space`).
+  [`anicore::convert_unit_space()`](https://animovement.dev/anicore/reference/convert_unit_space.html)).
 
 ## Examples
 

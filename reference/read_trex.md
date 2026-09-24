@@ -62,6 +62,11 @@ A data frame containing movement data with the following columns:
 - `confidence`: Numeric. TRex's per-frame `detection_p` from the `.npz`
   export; `NA` from the CSV export, which does not record it
 
+- `yaw`: TRex's `ANGLE`, the direction the individual faces, from its
+  posture, when the export includes it. Declared as the frame's
+  orientation, so it is reflected with `y`; the same value on every
+  keypoint of an individual.
+
 ## Details
 
 The function performs several processing steps:

@@ -1,10 +1,13 @@
 # Read projected FicTrac data
 
-This helper loads a FicTrac `*.dat` file, keeps only the timestamp and
-2‑D position columns, converts the timestamps to seconds, and returns
-the result as an **aniframe** object. If the physical ball radius is
-supplied, the positions are scaled accordingly and the spatial unit
-metadata is set.
+This helper loads a FicTrac `*.dat` file, keeps the timestamp, the 2‑D
+fictive path and the animal's heading, converts the timestamps to
+seconds, and returns the result as an anipoint. FicTrac's "integrated
+animal heading" (the direction the animal faces) becomes `yaw` and is
+declared as the frame's orientation, in radians from `x` toward `y`.
+FicTrac's movement direction is the direction of travel, derivable from
+the path, and is not kept. If the physical ball radius is supplied, the
+positions are scaled accordingly and the spatial unit metadata is set.
 
 ## Usage
 
@@ -30,9 +33,9 @@ read_fictrac(path, ball_radius = NULL, unit_ball_radius = "cm")
 
 ## Value
 
-An **aniframe** object with columns `time`, `x`, and `y`. Metadata
-includes the source (`"fictrac"`), original filename, sampling rate,
-time unit (`"s"`), space unit (either `"none"` or the value of
+An anipoint with columns `time`, `x`, `y` and `yaw`. Metadata includes
+the source (`"fictrac"`), original filename, sampling rate, time unit
+(`"s"`), space unit (either `"none"` or the value of
 `unit_ball_radius`), and a Cartesian 2‑D coordinate system.
 
 ## Examples

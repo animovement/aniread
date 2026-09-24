@@ -137,7 +137,7 @@ is emitted.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An aniframe</p>
+    <p>An anipoint</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -148,6 +148,15 @@ when YOLO detects multiple disconnected mask segments belonging to
 the same track in a single frame. The <code>method</code> argument controls
 how those rows are reduced to scalar values, or whether they are
 expanded into one row per segment.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="orientation">Orientation<a class="anchor" aria-label="anchor" href="#orientation"></a></h2>
+
+
+<p>Octron's <code>orientation</code> is scikit-image's region property: the angle of the
+mask's long axis, axial (the mask has no front), measured from the image's
+row axis. It is kept as Octron wrote it, in image coordinates: it is not
+reflected with <code>y</code> and not declared as the frame's orientation.</p>
     </div>
 
     <div class="section level2">

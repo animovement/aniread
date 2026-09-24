@@ -12,13 +12,13 @@ Time units come from the columns BORIS provides. The default
 export. With `unit_time = "frame"` the reader uses the
 `Image index start` / `Image index stop` columns instead; frames stay
 aligned with rows of a host
-[`anicore::aniframe()`](https://animovement.dev/anicore/reference/aniframe.html),
+[`anicore::anipoint()`](https://animovement.dev/anicore/reference/anipoint.html),
 which keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If `"frame"` is requested but the
 export carries no image-index columns, the reader falls back to `"s"`
 with an informational message. FPS is recorded as `sampling_rate`
 metadata without rescaling the timestamps; call
-[`anicore::set_sampling_rate()`](https://animovement.dev/anicore/reference/set_sampling_rate.html)
+[`anicore::convert_unit_time()`](https://animovement.dev/anicore/reference/convert_unit_time.html)
 later if you need to convert between frames and seconds.
 
 Channels: each row's `channel` is the value of BORIS's
@@ -59,7 +59,7 @@ read_boris(
 
   One of `"s"`, `"frame"`. Default `"s"`. `"frame"` uses the BORIS
   image-index columns; pass it when pairing the anievent with an
-  aniframe to keep frame-aligned semantics.
+  anipoint to keep frame-aligned semantics.
 
 ## Value
 

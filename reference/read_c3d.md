@@ -19,7 +19,7 @@ read_c3d(path)
 
 An aniframe with columns `time`, `keypoint`, `x`, `y`, and `z`. Metadata
 includes source software, filename, time/space units, and sampling rate.
-Time is 0-indexed (in frames).
+Time is in seconds, starting at 0.
 
 ## See also
 
