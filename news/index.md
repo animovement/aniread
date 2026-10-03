@@ -178,6 +178,20 @@
 
 ### Changed
 
+- Functions carry a lifecycle badge when they are not stable
+  (animovement/.github#46).
+  [`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md),
+  [`read_structure_deeplabcut()`](https://animovement.dev/aniread/reference/read_structure.md)
+  and
+  [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md),
+  which are new in this release, and
+  [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)’s
+  new `format` argument are experimental: they may still change without
+  a deprecation cycle while their design settles
+  ([\#118](https://github.com/animovement/aniread/issues/118)). Every
+  function without a badge is stable, and changes only through a
+  deprecation cycle.
+
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   names individuals by the track SLEAP recorded, rather than by position
   ([\#125](https://github.com/animovement/aniread/issues/125)). The h5

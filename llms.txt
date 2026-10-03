@@ -127,7 +127,7 @@ to attach with
 - [`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md)
   [`read_structure_deeplabcut()`](https://animovement.dev/aniread/reference/read_structure.md)
   [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md)
-  : Read a skeleton as an anistructure
+  **\[experimental\]** : Read a skeleton as an anistructure
 
 ## Writer functions
 

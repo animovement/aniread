@@ -1,5 +1,7 @@
 # Read a skeleton as an anistructure
 
+**\[experimental\]**
+
 Reads the skeleton a pose-estimation project defines — its keypoints and
 the edges between them — as an
 [`anicore::anistructure()`](https://animovement.dev/anicore/reference/anistructure.html)

@@ -93,7 +93,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="changed-development-version">Changed<a class="anchor" aria-label="anchor" href="#changed-development-version"></a></h3>
-<ul><li>
+<ul><li><p>Functions carry a lifecycle badge when they are not stable (animovement/.github#46). <code><a href="../reference/read_structure.html">read_structure()</a></code>, <code><a href="../reference/read_structure.html">read_structure_deeplabcut()</a></code> and <code><a href="../reference/read_structure.html">read_structure_sleap()</a></code>, which are new in this release, and <code><a href="../reference/read_freemocap.html">read_freemocap()</a></code>’s new <code>format</code> argument are experimental: they may still change without a deprecation cycle while their design settles (<a href="https://github.com/animovement/aniread/issues/118" class="external-link">#118</a>). Every function without a badge is stable, and changes only through a deprecation cycle.</p></li>
+<li>
 <p><code><a href="../reference/read_sleap.html">read_sleap()</a></code> names individuals by the track SLEAP recorded, rather than by position (<a href="https://github.com/animovement/aniread/issues/125" class="external-link">#125</a>). The h5 reader read <code>track_names</code> only to count them and then labelled individuals <code>individual1</code>, <code>individual2</code>, …, discarding names the file already held — so <code>SLEAP_three-mice_Aeon_mixed-labels.analysis.h5</code> came back as <code>individual1/2/3</code> instead of <code>AEON3B_NTP/TP1/TP2</code>. A recording with no tracks, such as a single untracked instance, still falls back to the positional names, because there is nothing else to use.</p>
 <p>This changes the <code>individual</code> values returned for any h5 with named tracks. Code matching on <code>"individual1"</code> will need the real name instead; <code>levels(data$individual)</code> shows them.</p>
 </li>
