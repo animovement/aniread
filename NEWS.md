@@ -46,6 +46,8 @@
 
 ## Changed
 
+* Functions carry a lifecycle badge when they are not stable (animovement/.github#46). `read_structure()`, `read_structure_deeplabcut()` and `read_structure_sleap()`, which are new in this release, and `read_freemocap()`'s new `format` argument are experimental: they may still change without a deprecation cycle while their design settles (#118). Every function without a badge is stable, and changes only through a deprecation cycle.
+
 * `read_sleap()` names individuals by the track SLEAP recorded, rather than by position (#125). The h5 reader read `track_names` only to count them and then labelled individuals `individual1`, `individual2`, …, discarding names the file already held — so `SLEAP_three-mice_Aeon_mixed-labels.analysis.h5` came back as `individual1/2/3` instead of `AEON3B_NTP/TP1/TP2`. A recording with no tracks, such as a single untracked instance, still falls back to the positional names, because there is nothing else to use.
 
   This changes the `individual` values returned for any h5 with named tracks. Code matching on `"individual1"` will need the real name instead; `levels(data$individual)` shows them.
