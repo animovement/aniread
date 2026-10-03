@@ -129,7 +129,7 @@ The two run in opposite directions — a reprojection error is a distance in
 pixels, so zero is perfect and larger is worse, whereas every other reader
 in aniread fills <code>confidence</code> from a likelihood or a probability where
 larger is better. Storing the error unchanged would make
-<code>aniprocess::filter_na_across(method = "confidence")</code> drop the best
+<code>aniprocess::mask_na_across(method = "confidence")</code> mask the best
 points, so it is mapped through</p>
 <p>$$confidence = 1 / (1 + error)$$</p>
 <p>which is monotone decreasing onto \((0, 1]\): a zero error gives 1.
