@@ -25,6 +25,8 @@ one to read.}
 An \code{\link[anicore:anistructure]{anicore::anistructure()}}.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Reads the skeleton a pose-estimation project defines — its keypoints and
 the edges between them — as an \code{\link[anicore:anistructure]{anicore::anistructure()}} with points and
 segments. Attach it to a frame with \code{\link[anicore:set_structure]{anicore::set_structure()}}.

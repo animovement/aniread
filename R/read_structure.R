@@ -1,6 +1,8 @@
 #' Read a skeleton as an anistructure
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads the skeleton a pose-estimation project defines — its keypoints and
 #' the edges between them — as an [anicore::anistructure()] with points and
 #' segments. Attach it to a frame with [anicore::set_structure()].

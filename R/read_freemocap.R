@@ -17,8 +17,11 @@
 #' layout it is read from.
 #'
 #' @param path Path to a FreeMoCap CSV.
-#' @param format Export layout. `"auto"` reads it from the column names;
-#'   naming one requires that layout and errors on anything else.
+#' @param format `r lifecycle::badge("experimental")` Export layout.
+#'   `"auto"` (default) reads it from the column names; naming one requires
+#'   that layout and errors on anything else. The layout names may change
+#'   while one convention for readers of a source with several export layouts
+#'   is settled ([#118](https://github.com/animovement/aniread/issues/118)).
 #'
 #' @return An aniframe with `time`, `model`, `keypoint`, `confidence` and
 #'   `x`/`y`/`z` in millimetres on a 3D cartesian coordinate system. `time`

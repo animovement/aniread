@@ -9,8 +9,11 @@ read_freemocap(path, format = c("auto", "by_frame", "by_trajectory", "wide"))
 \arguments{
 \item{path}{Path to a FreeMoCap CSV.}
 
-\item{format}{Export layout. \code{"auto"} reads it from the column names;
-naming one requires that layout and errors on anything else.}
+\item{format}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Export layout.
+\code{"auto"} (default) reads it from the column names; naming one requires
+that layout and errors on anything else. The layout names may change
+while one convention for readers of a source with several export layouts
+is settled (\href{https://github.com/animovement/aniread/issues/118}{#118}).}
 }
 \value{
 An aniframe with \code{time}, \code{model}, \code{keypoint}, \code{confidence} and
