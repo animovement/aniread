@@ -23,6 +23,7 @@ Imports:
     cli,
     dplyr,
     janitor,
+    lifecycle,
     rlang,
     stats,
     stringr,
