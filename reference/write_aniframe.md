@@ -40,7 +40,8 @@ The original `data` object (invisibly), enabling pipe‑friendly usage.
   highly recommend using `parquet` as neither `csv` or `tsv` can
   preserve the metadata.
 
-- CSV/TSV files are written with the *vroom* for fast I/O.
+- CSV/TSV files are written with *vroom* for fast I/O: `.csv`
+  comma-separated and `.tsv` tab-separated, unless `delim` is passed.
 
 - Parquet files are written with the *arrow* package is installed
   (install‑on‑demand if missing).

@@ -93,7 +93,8 @@ include <code>delim</code>, <code>col_names</code>, <code>compression</code>, et
 
 <ul><li><p><strong>Supported extensions</strong> are <code>"parquet"</code>, <code>"csv"</code> and <code>"tsv"</code>. We highly recommend using <code>parquet</code>
 as neither <code>csv</code> or <code>tsv</code> can preserve the metadata.</p></li>
-<li><p>CSV/TSV files are written with the <em>vroom</em> for fast I/O.</p></li>
+<li><p>CSV/TSV files are written with <em>vroom</em> for fast I/O: <code>.csv</code> comma-separated
+and <code>.tsv</code> tab-separated, unless <code>delim</code> is passed.</p></li>
 <li><p>Parquet files are written with the <em>arrow</em> package is installed (install‑on‑demand if missing).</p></li>
 </ul></div>
 

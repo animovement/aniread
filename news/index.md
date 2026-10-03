@@ -243,6 +243,15 @@
 
 ### Fixed
 
+- [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
+  writes `.csv` files comma-separated
+  ([\#136](https://github.com/animovement/aniread/issues/136)). It
+  passed the call to
+  [`vroom::vroom_write()`](https://vroom.tidyverse.org/reference/vroom_write.html),
+  whose default delimiter is a tab, so `.csv` and `.tsv` both came out
+  tab-separated. The delimiter now follows the extension — a comma for
+  `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
+
 - `detect_freemocap_format()` no longer mistakes a `by_trajectory` file
   for a wide one. It told them apart by a `frame` column that FreeMoCap
   does not write in either; they are distinguished by the timestamps,
