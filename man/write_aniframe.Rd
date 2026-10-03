@@ -28,7 +28,8 @@ as neither \code{csv} or \code{tsv} can preserve the metadata.
 \itemize{
 \item \strong{Supported extensions} are \code{"parquet"}, \code{"csv"} and \code{"tsv"}. We highly recommend using \code{parquet}
 as neither \code{csv} or \code{tsv} can preserve the metadata.
-\item CSV/TSV files are written with the \emph{vroom} for fast I/O.
+\item CSV/TSV files are written with \emph{vroom} for fast I/O: \code{.csv} comma-separated
+and \code{.tsv} tab-separated, unless \code{delim} is passed.
 \item Parquet files are written with the \emph{arrow} package is installed (install‑on‑demand if missing).
 }
 }

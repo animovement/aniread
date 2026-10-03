@@ -64,6 +64,8 @@
 
 ## Fixed
 
+* `write_aniframe()` writes `.csv` files comma-separated (#136). It passed the call to `vroom::vroom_write()`, whose default delimiter is a tab, so `.csv` and `.tsv` both came out tab-separated. The delimiter now follows the extension — a comma for `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
+
 * `detect_freemocap_format()` no longer mistakes a `by_trajectory` file for a wide one. It told them apart by a `frame` column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only `by_trajectory` carries.
 
 * `detect_source()` recognises FreeMoCap files written by v1.8.0 and later (#117). It compared the header for exact equality with the eight columns of the older export, so a file with `reprojection_error` was not identified as FreeMoCap at all and `read_dataset()` failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.

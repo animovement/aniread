@@ -16,7 +16,8 @@
 #' @details
 #' * **Supported extensions** are `"parquet"`, `"csv"` and `"tsv"`. We highly recommend using `parquet`
 #' as neither `csv` or `tsv` can preserve the metadata.
-#' * CSV/TSV files are written with the *vroom* for fast I/O.
+#' * CSV/TSV files are written with *vroom* for fast I/O: `.csv` comma-separated
+#'   and `.tsv` tab-separated, unless `delim` is passed.
 #' * Parquet files are written with the *arrow* package is installed (install‑on‑demand if missing).
 #'
 #' @examples
@@ -60,14 +61,15 @@ write_aniframe <- function(data, filename, ...) {
 }
 
 #' @keywords internal
-write_aniframe_csv <- function(data, filename, ...) {
-  dot_args <- list(...)
-
+write_aniframe_csv <- function(data, filename, delim = NULL, ...) {
   # Validate filename
   ensure_file_has_expected_suffix(filename, c("csv", "tsv"))
 
+  # vroom's own default is a tab whatever the extension (#136)
+  delim <- delim %||% if (get_file_ext(filename) == "csv") "," else "\t"
+
   # Write data
-  vroom::vroom_write(data, filename, ...) |>
+  vroom::vroom_write(data, filename, delim = delim, ...) |>
     suppressWarnings()
 }
 

@@ -130,3 +130,39 @@ test_that("write_aniframe() returns the original aniframe invisibly", {
   expect_warning(write_aniframe(anif, create_tmp_file("csv")))
   expect_silent(write_aniframe(anif, create_tmp_file("parquet")))
 })
+
+# ---------------------------------------------------------------------------
+# The delimiter follows the extension (#136)
+# ---------------------------------------------------------------------------
+test_that("write_aniframe() writes .csv comma- and .tsv tab-separated", {
+  anif <- anicore::as_anipoint(data.frame(
+    individual = "a",
+    keypoint = "head",
+    time = 1:2,
+    x = c(1.5, 2),
+    y = c(0, 1)
+  ))
+
+  csv_file <- create_tmp_file("csv")
+  suppressWarnings(write_aniframe(anif, csv_file))
+  csv_header <- readLines(csv_file, n = 1)
+  expect_match(csv_header, "individual,keypoint,time,x,y", fixed = TRUE)
+  expect_no_match(csv_header, "\t", fixed = TRUE)
+
+  tsv_file <- create_tmp_file("tsv")
+  suppressWarnings(write_aniframe(anif, tsv_file))
+  expect_match(
+    readLines(tsv_file, n = 1),
+    "individual\tkeypoint\ttime\tx\ty",
+    fixed = TRUE
+  )
+
+  # An explicit delimiter still wins
+  semi_file <- create_tmp_file("csv")
+  suppressWarnings(write_aniframe(anif, semi_file, delim = ";"))
+  expect_match(
+    readLines(semi_file, n = 1),
+    "individual;keypoint;time;x;y",
+    fixed = TRUE
+  )
+})
