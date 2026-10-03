@@ -28,31 +28,11 @@
 
 * `read_sleap()` records which export it read in the `source_format` metadata field.
 
-## Changed
-
-* `read_sleap()` names individuals by the track SLEAP recorded, rather than by position (#125). The h5 reader read `track_names` only to count them and then labelled individuals `individual1`, `individual2`, …, discarding names the file already held — so `SLEAP_three-mice_Aeon_mixed-labels.analysis.h5` came back as `individual1/2/3` instead of `AEON3B_NTP/TP1/TP2`. A recording with no tracks, such as a single untracked instance, still falls back to the positional names, because there is nothing else to use.
-
-  This changes the `individual` values returned for any h5 with named tracks. Code matching on `"individual1"` will need the real name instead; `levels(data$individual)` shows them.
-
-## Added
-
 * `read_trex()` reads TRex's native `.npz` export (#116). It is a zip of `.npy` arrays, one file per tracked individual, so a whole recording is the vector of paths `get_sample_data("trex")` returns — which previously errored, because the registry declared TRex a CSV-only source. The arrays are parsed directly rather than through a new dependency: `.npy` is a short header over a raw buffer, and `unz()` reads zip members without unpacking.
 
   The `.npz` carries what the CSV export does not, so three of this reader's documented limitations turn out to be limitations of the CSV rather than of TRex: `individual` is the identity TRex assigned instead of `NA`, `confidence` is its per-frame `detection_p` instead of `NA`, and the pose keypoints are present at all. The frame rate and frame size are recorded too, so `sampling_rate` is set and the reflection to `bottom_left` no longer has to guess the frame height from `max(y)`.
 
 * `read_trex()` gains a `format` argument, defaulting to `"auto"`, which reads the export from the file rather than its extension.
-
-## Changed
-
-* `get_sample_data("trex")` defaults to `"five-locusts"` (#116). The previous default, `"beetles"`, is a 19-frame CSV excerpt with one unnamed individual and no confidence — too small to carry an example or a tutorial. `"five-locusts"` is a real 2845-frame recording of five individuals with pose and detection probability. `"beetles"` is still available, and is still the fixture exercising the CSV path.
-
-* `read_trex()` treats `Inf` as missing in both exports. TRex marks a frame it could not track with an infinity rather than a `NaN` — its own documentation masks `np.inf` out before plotting — so these were reaching the aniframe and propagating through every downstream calculation. Uses `anicore::convert_inf_to_na()`, added for this.
-
-* `read_trex()` no longer requires the CSV's optional columns. `VX`, `VY` and `timestamp` were dropped by name, which errors on a file that does not have them — and which columns a TRex CSV carries is set per run by its `output_fields` parameter.
-
-* `read_trex()` declares `unit_time` as `"s"`. TRex reports seconds in both exports, and leaving it unset meant `anicore::set_sampling_rate()` treated the column as frames and divided it by the frame rate.
-
-## Added
 
 * `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.
 
@@ -64,15 +44,27 @@
 
 * The layout a file was read as is recorded in the `source_format` metadata field, as `"by_frame_8col"` or `"by_frame_9col"`, so drift between FreeMoCap releases is visible on the aniframe rather than only in whether reading happened to work.
 
+## Changed
+
+* `read_sleap()` names individuals by the track SLEAP recorded, rather than by position (#125). The h5 reader read `track_names` only to count them and then labelled individuals `individual1`, `individual2`, …, discarding names the file already held — so `SLEAP_three-mice_Aeon_mixed-labels.analysis.h5` came back as `individual1/2/3` instead of `AEON3B_NTP/TP1/TP2`. A recording with no tracks, such as a single untracked instance, still falls back to the positional names, because there is nothing else to use.
+
+  This changes the `individual` values returned for any h5 with named tracks. Code matching on `"individual1"` will need the real name instead; `levels(data$individual)` shows them.
+
+* `get_sample_data("trex")` defaults to `"five-locusts"` (#116). The previous default, `"beetles"`, is a 19-frame CSV excerpt with one unnamed individual and no confidence — too small to carry an example or a tutorial. `"five-locusts"` is a real 2845-frame recording of five individuals with pose and detection probability. `"beetles"` is still available, and is still the fixture exercising the CSV path.
+
+* `read_trex()` treats `Inf` as missing in both exports. TRex marks a frame it could not track with an infinity rather than a `NaN` — its own documentation masks `np.inf` out before plotting — so these were reaching the aniframe and propagating through every downstream calculation. Uses `anicore::convert_inf_to_na()`, added for this.
+
+* `read_trex()` no longer requires the CSV's optional columns. `VX`, `VY` and `timestamp` were dropped by name, which errors on a file that does not have them — and which columns a TRex CSV carries is set per run by its `output_fields` parameter.
+
+* `read_trex()` declares `unit_time` as `"s"`. TRex reports seconds in both exports, and leaving it unset meant `anicore::set_sampling_rate()` treated the column as frames and divided it by the frame rate.
+
+* `read_freemocap()`'s error names the layout it found rather than only the one it wanted. Told a `by_trajectory.csv` or a per-model `mediapipe_body_3d_xyz.csv`, it said to look for a file ending in `by_frame.csv` — unhelpful when the recording never produced one. Neither layout is read yet; both are now recognised well enough to say so.
+
 ## Fixed
 
 * `detect_freemocap_format()` no longer mistakes a `by_trajectory` file for a wide one. It told them apart by a `frame` column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only `by_trajectory` carries.
 
 * `detect_source()` recognises FreeMoCap files written by v1.8.0 and later (#117). It compared the header for exact equality with the eight columns of the older export, so a file with `reprojection_error` was not identified as FreeMoCap at all and `read_dataset()` failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.
-
-## Changed
-
-* `read_freemocap()`'s error names the layout it found rather than only the one it wanted. Told a `by_trajectory.csv` or a per-model `mediapipe_body_3d_xyz.csv`, it said to look for a file ending in `by_frame.csv` — unhelpful when the recording never produced one. Neither layout is read yet; both are now recognised well enough to say so.
 
 # aniread 0.7.0 (2026-08-28)
 
