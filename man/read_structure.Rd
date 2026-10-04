@@ -46,6 +46,18 @@ for frames.
 
 Edges keep the direction the file lists them in, which is what
 \code{\link[anicore:as_anisegment]{anicore::as_anisegment()}} measures along.
+
+A frame reader attaches whatever its data file itself contains, so
+whether you need these depends on where the tool keeps its skeleton:
+\itemize{
+\item A SLEAP analysis \code{.h5} carries its skeleton, and \code{\link[=read_sleap]{read_sleap()}} attaches
+it as it reads the tracks.
+\item DeepLabCut keeps its skeleton in the project's \code{config.yaml}, not in the
+data file, so \code{\link[=read_deeplabcut]{read_deeplabcut()}} attaches none. Read the config with
+\code{read_structure()} and attach it with \code{\link[anicore:set_structure]{anicore::set_structure()}}.
+\item SLEAP's analysis CSV carries no skeleton either. Read it from the \code{.slp}
+or \code{.h5} of the same recording.
+}
 }
 \examples{
 \dontrun{

@@ -16,7 +16,9 @@
   * `read_bonsai()` keeps the blob's `Orientation` as `orientation_axis`: the angle of its long axis, axial rather than a heading, so it is not declared as orientation. It is turned with `y` when y is reflected.
   * `read_octron()` documents that its `orientation` is scikit-image's axial angle in image coordinates.
 
-* `read_structure()` reads a pose-estimation project's skeleton as an `anicore::anistructure()`, detecting the tool from the file, alongside `read_structure_deeplabcut()` (a project's `config.yaml`, including multi-animal projects) and `read_structure_sleap()` (a `.slp` file or an analysis `.h5`; body edges only, since symmetry edges are not segments). Attach it with `anicore::set_structure()`; the frame readers do not attach skeletons themselves.
+* `read_structure()` reads a pose-estimation project's skeleton as an `anicore::anistructure()`, detecting the tool from the file, alongside `read_structure_deeplabcut()` (a project's `config.yaml`, including multi-animal projects) and `read_structure_sleap()` (a `.slp` file or an analysis `.h5`; body edges only, since symmetry edges are not segments). Attach it with `anicore::set_structure()`. A frame reader attaches a skeleton itself only when its data file carries one, as a SLEAP analysis `.h5` does; DeepLabCut keeps its skeleton in the project config, so a DeepLabCut frame still needs `read_structure()`.
+
+* `read_sleap()`, and so `read_dataset()`, keeps what a SLEAP analysis `.h5` records besides the tracks (#143). The skeleton is attached as the frame's `keypoint` structure, parsed as `read_structure_sleap()` parses it, and the SLEAP version from the file's `provenance` record becomes `source_version`. The CSV export carries neither, so a frame read from it is unchanged.
 
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
 

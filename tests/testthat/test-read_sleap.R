@@ -139,3 +139,120 @@ test_that("a recording with no tracks falls back to positional names", {
 
   expect_setequal(levels(read_sleap(path)$individual), "individual1")
 })
+
+# What the h5 carries besides the tracks (#143) --------------------------
+
+# A minimal analysis .h5: one track of two nodes over three frames, with
+# the skeleton and provenance record written only when given.
+write_sleap_h5 <- function(edges = NULL, provenance = NULL) {
+  path <- withr::local_tempfile(fileext = ".h5", .local_envir = parent.frame())
+  rhdf5::h5createFile(path)
+  rhdf5::h5write(c("head", "tail"), path, "node_names")
+  rhdf5::h5write("mouse", path, "track_names")
+  rhdf5::h5write(array(as.numeric(1:12), dim = c(3, 2, 2, 1)), path, "tracks")
+  rhdf5::h5write(array(0.9, dim = c(3, 2, 1)), path, "point_scores")
+  if (!is.null(edges)) {
+    rhdf5::h5write(edges, path, "edge_inds")
+  }
+  if (!is.null(provenance)) {
+    rhdf5::h5write(provenance, path, "provenance")
+  }
+  path
+}
+
+test_that("the h5 reader attaches the skeleton read_structure() reads", {
+  skip_if_not_installed("rhdf5")
+  path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
+  data <- read_sleap(path)
+  skeleton <- read_structure(path)
+
+  expect_named(anicore::get_structure(data), "keypoint")
+  attached <- anicore::get_structure(data, "keypoint")
+  expect_equal(attached$points, skeleton$points)
+  expect_equal(attached$segments, skeleton$segments)
+  expect_equal(attached$variable, "keypoint")
+  expect_setequal(attached$points, levels(data$keypoint))
+})
+
+test_that("the h5 reader records the SLEAP version that tracked it", {
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("jsonlite")
+  path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
+  data <- read_sleap(path)
+
+  expect_equal(anicore::get_metadata(data, "source_version"), "1.3.1")
+  # The provenance timestamps say when tracking ran, not when the video was
+  # recorded.
+  expect_true(is.na(anicore::get_metadata(data, "start_datetime")))
+})
+
+test_that("read_dataset() keeps the skeleton and version too", {
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("jsonlite")
+  path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
+  data <- read_dataset(path)
+
+  expect_equal(
+    anicore::get_structure(data, "keypoint")$segments,
+    read_structure(path)$segments
+  )
+  expect_equal(anicore::get_metadata(data, "source_version"), "1.3.1")
+})
+
+test_that("an h5 without edges or a version still reads", {
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("jsonlite")
+  # SLEAP wrote this one with empty edges and an empty provenance record.
+  path <- test_path("data/sleap/SLEAP_three-mice_Aeon_mixed-labels.analysis.h5")
+  data <- read_sleap(path)
+
+  attached <- anicore::get_structure(data, "keypoint")
+  expect_equal(attached$points, "centroid")
+  expect_equal(nrow(attached$segments), 0L)
+  expect_true(is.na(anicore::get_metadata(data, "source_version")))
+})
+
+test_that("an h5 with no provenance record at all still reads", {
+  skip_if_not_installed("rhdf5")
+  path <- write_sleap_h5(edges = matrix(c(0L, 1L), nrow = 2))
+  data <- read_sleap(path)
+
+  expect_equal(nrow(data), 6L)
+  expect_true(is.na(anicore::get_metadata(data, "source_version")))
+  attached <- anicore::get_structure(data, "keypoint")
+  expect_equal(attached$segments$from, "head")
+  expect_equal(attached$segments$to, "tail")
+})
+
+test_that("a provenance record without a usable version leaves it NA", {
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("jsonlite")
+  version_of <- function(provenance) {
+    path <- write_sleap_h5(provenance = provenance)
+    anicore::get_metadata(read_sleap(path), "source_version")
+  }
+
+  expect_equal(version_of('{"sleap_version": "1.4.1"}'), "1.4.1")
+  expect_true(is.na(version_of("not json")))
+  expect_true(is.na(version_of('["a", "list"]')))
+  expect_true(is.na(version_of('"1.4.1"')))
+  expect_true(is.na(version_of('{"sleap_version": ""}')))
+  expect_true(is.na(version_of('{"sleap_version": 1}')))
+})
+
+test_that("the CSV export reads without a structure or version", {
+  data <- read_sleap(sleap_csv())
+
+  expect_length(anicore::get_structure(data), 0L)
+  expect_true(is.na(anicore::get_metadata(data, "source_version")))
+})
+
+test_that("attaching the skeleton again replaces the one the reader attached", {
+  # The guides on animovement.dev attach read_structure() after reading.
+  skip_if_not_installed("rhdf5")
+  path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
+  data <- read_sleap(path)
+
+  expect_no_warning(again <- anicore::set_structure(data, read_structure(path)))
+  expect_equal(anicore::get_structure(again), anicore::get_structure(data))
+})

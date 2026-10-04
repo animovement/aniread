@@ -31,4 +31,19 @@ resolution, so pass \code{video_height} to get an accurate flip — otherwise
 recording with no tracks - a single unnamed instance, or predictions that
 were never tracked - has no names to use, and falls back to
 \code{individual1}, \code{individual2}, and so on.
+
+The \code{.h5} also carries the skeleton the recording was tracked with and a
+record of the run, and both are kept:
+\itemize{
+\item The skeleton is attached as the frame's \code{keypoint} structure, read as
+\code{\link[=read_structure_sleap]{read_structure_sleap()}} reads it: the nodes become points and the body
+edges segments. A file written without edges gives points alone.
+\item The SLEAP version that ran the tracking, from the file's \code{provenance}
+record, becomes the \code{source_version} metadata field. It stays \code{NA} when
+the file has no such record.
+}
+
+The CSV carries neither, so a frame read from it has no structure and no
+\code{source_version}. Attach one with \code{\link[=read_structure]{read_structure()}} and
+\code{\link[anicore:set_structure]{anicore::set_structure()}}.
 }

@@ -15,6 +15,20 @@
 #' were never tracked - has no names to use, and falls back to
 #' `individual1`, `individual2`, and so on.
 #'
+#' The `.h5` also carries the skeleton the recording was tracked with and a
+#' record of the run, and both are kept:
+#'
+#' * The skeleton is attached as the frame's `keypoint` structure, read as
+#'   [read_structure_sleap()] reads it: the nodes become points and the body
+#'   edges segments. A file written without edges gives points alone.
+#' * The SLEAP version that ran the tracking, from the file's `provenance`
+#'   record, becomes the `source_version` metadata field. It stays `NA` when
+#'   the file has no such record.
+#'
+#' The CSV carries neither, so a frame read from it has no structure and no
+#' `source_version`. Attach one with [read_structure()] and
+#' [anicore::set_structure()].
+#'
 #' @param path A SLEAP analysis file, either HDF5 (`.h5`) or CSV.
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
@@ -41,7 +55,42 @@ read_sleap <- function(path, video_height = NULL) {
     ) |>
     reflect_to_bottom_left(video_height = video_height)
 
+  # Only the h5 carries a skeleton and a provenance record (#143).
+  if (file_ext == "h5") {
+    data <- data |>
+      anicore::set_structure(read_sleap_analysis_skeleton(path)) |>
+      anicore::set_metadata(source_version = read_sleap_version(path))
+  }
+
   return(data)
+}
+
+#' The SLEAP version a SLEAP analysis .h5 was tracked with
+#'
+#' SLEAP writes a JSON `provenance` record into the export, whose
+#' `sleap_version` is the version that ran the tracking. Its
+#' `start_timestamp` is when tracking ran, not when the video was recorded,
+#' so it is not a `start_datetime`.
+#'
+#' @return A single string, or `NA` when the file has no record of it.
+#' @noRd
+read_sleap_version <- function(path) {
+  if (!"provenance" %in% rhdf5::h5ls(path)$name) {
+    return(NA_character_)
+  }
+  rlang::check_installed(
+    "jsonlite",
+    reason = "to read the SLEAP version from an .h5 file."
+  )
+  provenance <- tryCatch(
+    jsonlite::fromJSON(
+      as.character(rhdf5::h5read(path, "provenance")),
+      simplifyVector = FALSE
+    ),
+    error = function(e) NULL
+  )
+  version <- if (is.list(provenance)) provenance$sleap_version
+  if (rlang::is_string(version) && nzchar(version)) version else NA_character_
 }
 
 #' SLEAP HDF5 Reader
