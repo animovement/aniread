@@ -68,8 +68,22 @@
   [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md)
   (a `.slp` file or an analysis `.h5`; body edges only, since symmetry
   edges are not segments). Attach it with
-  [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html);
-  the frame readers do not attach skeletons themselves.
+  [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html).
+  A frame reader attaches a skeleton itself only when its data file
+  carries one, as a SLEAP analysis `.h5` does; DeepLabCut keeps its
+  skeleton in the project config, so a DeepLabCut frame still needs
+  [`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md).
+
+- [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md),
+  and so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  keeps what a SLEAP analysis `.h5` records besides the tracks
+  ([\#143](https://github.com/animovement/aniread/issues/143)). The
+  skeleton is attached as the frame’s `keypoint` structure, parsed as
+  [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md)
+  parses it, and the SLEAP version from the file’s `provenance` record
+  becomes `source_version`. The CSV export carries neither, so a frame
+  read from it is unchanged.
 
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   reads SLEAP’s analysis CSV export

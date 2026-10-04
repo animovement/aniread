@@ -27,6 +27,23 @@ Edges keep the direction the file lists them in, which is what
 [`anicore::as_anisegment()`](https://animovement.dev/anicore/reference/as_anisegment.html)
 measures along.
 
+A frame reader attaches whatever its data file itself contains, so
+whether you need these depends on where the tool keeps its skeleton:
+
+- A SLEAP analysis `.h5` carries its skeleton, and
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  attaches it as it reads the tracks.
+
+- DeepLabCut keeps its skeleton in the project's `config.yaml`, not in
+  the data file, so
+  [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md)
+  attaches none. Read the config with `read_structure()` and attach it
+  with
+  [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html).
+
+- SLEAP's analysis CSV carries no skeleton either. Read it from the
+  `.slp` or `.h5` of the same recording.
+
 ## Usage
 
 ``` r

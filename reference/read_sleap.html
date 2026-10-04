@@ -93,6 +93,16 @@ resolution, so pass <code>video_height</code> to get an accurate flip — otherw
 recording with no tracks - a single unnamed instance, or predictions that
 were never tracked - has no names to use, and falls back to
 <code>individual1</code>, <code>individual2</code>, and so on.</p>
+<p>The <code>.h5</code> also carries the skeleton the recording was tracked with and a
+record of the run, and both are kept:</p><ul><li><p>The skeleton is attached as the frame's <code>keypoint</code> structure, read as
+<code><a href="read_structure.html">read_structure_sleap()</a></code> reads it: the nodes become points and the body
+edges segments. A file written without edges gives points alone.</p></li>
+<li><p>The SLEAP version that ran the tracking, from the file's <code>provenance</code>
+record, becomes the <code>source_version</code> metadata field. It stays <code>NA</code> when
+the file has no such record.</p></li>
+</ul><p>The CSV carries neither, so a frame read from it has no structure and no
+<code>source_version</code>. Attach one with <code><a href="read_structure.html">read_structure()</a></code> and
+<code><a href="https://animovement.dev/anicore/reference/structures.html" class="external-link">anicore::set_structure()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

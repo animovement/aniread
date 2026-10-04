@@ -17,7 +17,18 @@ for frames.
 
 
 Edges keep the direction the file lists them in, which is what
-anicore::as_anisegment() measures along."><meta property="og:description" content="
+anicore::as_anisegment() measures along.
+A frame reader attaches whatever its data file itself contains, so
+whether you need these depends on where the tool keeps its skeleton:
+A SLEAP analysis .h5 carries its skeleton, and read_sleap() attaches
+it as it reads the tracks.
+DeepLabCut keeps its skeleton in the project's config.yaml, not in the
+data file, so read_deeplabcut() attaches none. Read the config with
+read_structure() and attach it with anicore::set_structure().
+SLEAP's analysis CSV carries no skeleton either. Read it from the .slp
+or .h5 of the same recording.
+
+"><meta property="og:description" content="
 Reads the skeleton a pose-estimation project defines — its keypoints and
 the edges between them — as an anicore::anistructure() with points and
 segments. Attach it to a frame with anicore::set_structure().
@@ -35,7 +46,18 @@ for frames.
 
 
 Edges keep the direction the file lists them in, which is what
-anicore::as_anisegment() measures along."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
+anicore::as_anisegment() measures along.
+A frame reader attaches whatever its data file itself contains, so
+whether you need these depends on where the tool keeps its skeleton:
+A SLEAP analysis .h5 carries its skeleton, and read_sleap() attaches
+it as it reads the tracks.
+DeepLabCut keeps its skeleton in the project's config.yaml, not in the
+data file, so read_deeplabcut() attaches none. Read the config with
+read_structure() and attach it with anicore::set_structure().
+SLEAP's analysis CSV carries no skeleton either. Read it from the .slp
+or .h5 of the same recording.
+
+"><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -103,7 +125,15 @@ not segments.</p></li>
 for frames.</p></li>
 </ul><p>Edges keep the direction the file lists them in, which is what
 <code><a href="https://animovement.dev/anicore/reference/as_anisegment.html" class="external-link">anicore::as_anisegment()</a></code> measures along.</p>
-    </div>
+<p>A frame reader attaches whatever its data file itself contains, so
+whether you need these depends on where the tool keeps its skeleton:</p><ul><li><p>A SLEAP analysis <code>.h5</code> carries its skeleton, and <code><a href="read_sleap.html">read_sleap()</a></code> attaches
+it as it reads the tracks.</p></li>
+<li><p>DeepLabCut keeps its skeleton in the project's <code>config.yaml</code>, not in the
+data file, so <code><a href="read_deeplabcut.html">read_deeplabcut()</a></code> attaches none. Read the config with
+<code>read_structure()</code> and attach it with <code><a href="https://animovement.dev/anicore/reference/structures.html" class="external-link">anicore::set_structure()</a></code>.</p></li>
+<li><p>SLEAP's analysis CSV carries no skeleton either. Read it from the <code>.slp</code>
+or <code>.h5</code> of the same recording.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>

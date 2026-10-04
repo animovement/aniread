@@ -36,3 +36,21 @@ fallback.
 recording with no tracks - a single unnamed instance, or predictions
 that were never tracked - has no names to use, and falls back to
 `individual1`, `individual2`, and so on.
+
+The `.h5` also carries the skeleton the recording was tracked with and a
+record of the run, and both are kept:
+
+- The skeleton is attached as the frame's `keypoint` structure, read as
+  [`read_structure_sleap()`](https://animovement.dev/aniread/reference/read_structure.md)
+  reads it: the nodes become points and the body edges segments. A file
+  written without edges gives points alone.
+
+- The SLEAP version that ran the tracking, from the file's `provenance`
+  record, becomes the `source_version` metadata field. It stays `NA`
+  when the file has no such record.
+
+The CSV carries neither, so a frame read from it has no structure and no
+`source_version`. Attach one with
+[`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md)
+and
+[`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html).
