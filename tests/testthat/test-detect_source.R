@@ -231,6 +231,18 @@ detection_cases <- list(
   list(source = "anipose", path = synthetic_anipose),
   list(source = "fictrac", path = synthetic_fictrac),
   list(source = "trackmate", path = synthetic_trackmate),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "crop_1_60_ManualCuration_trimmed.xml")
+  ),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "CelegansEarly_MIP_trimmed.xml")
+  ),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "trpL_150310-11_trimmed.xml")
+  ),
   list(source = "c3d", path = synthetic_c3d),
   list(source = "aniframe", path = synthetic_parquet)
 )

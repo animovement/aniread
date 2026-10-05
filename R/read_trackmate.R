@@ -14,6 +14,20 @@
 #' instead when any track has no name, or when two tracks share one, with a
 #' warning in that case.
 #'
+#' A track that divides, as a cell lineage does, holds more than one spot in
+#' a frame from its first division on, which a frame keyed by `track` and
+#' `time` cannot hold. Such a track is split into its branches, each a
+#' stretch of the track between divisions, named as TrackMate's auto-naming
+#' names them: the branch before the first division keeps the track's name,
+#' say `Track_0`, its daughters are `Track_0.a` and `Track_0.b`, theirs
+#' `Track_0.aa`, `Track_0.ab`, ..., with sisters lettered by their x position.
+#' A daughter starts at its first spot after the division, so nothing is
+#' measured across it. A track whose branches also merge, or whose spots
+#' share a frame in any other way, is left whole, with a warning about the
+#' duplicate track-frame combinations. A split or merge that never puts two
+#' spots in one frame, as when a link skips a frame beside another that does
+#' not, needs no splitting.
+#'
 #' The XML also records how the image was calibrated, and the reader keeps
 #' what has a place in the metadata:
 #'
@@ -24,7 +38,12 @@
 #'   `"pixel"`, `"micron"`, `"um"` (with or without the micro sign), `"mm"`
 #'   and so on for space. A unit with no equivalent in anicore (days or
 #'   inches, say) becomes `"unknown"` or `"none"`, with a warning, rather
-#'   than stopping the read.
+#'   than stopping the read. A blank spatial unit, which TrackMate writes for
+#'   an image whose length unit is a space, is read as pixels when the pixel
+#'   size in `Settings/ImageData` is 1 or not recorded, as ImageJ calls an
+#'   image with no length unit `"pixel"`. With any other pixel size the
+#'   positions are scaled by a unit nobody named, so it becomes `"none"`
+#'   with a warning.
 #' * `timeinterval`, from `Settings/ImageData`, is the time between frames in
 #'   `timeunits`. Its reciprocal, converted to Hz, becomes `sampling_rate`.
 #'   It stays `NA` when the interval is missing or not positive, or when the
@@ -72,11 +91,14 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
 
   # Units, frame interval and version
   model_node <- xml2::xml_find_first(xml, ".//Model")
+  image_data <- xml2::xml_find_first(xml, ".//Settings/ImageData")
   unit_space <- trackmate_unit_space(
-    xml2::xml_attr(model_node, "spatialunits")
+    xml2::xml_attr(model_node, "spatialunits"),
+    pixel_size = suppressWarnings(as.numeric(
+      xml2::xml_attr(image_data, c("pixelwidth", "pixelheight"))
+    ))
   )
   unit_time <- trackmate_unit_time(xml2::xml_attr(model_node, "timeunits"))
-  image_data <- xml2::xml_find_first(xml, ".//Settings/ImageData")
   sampling_rate <- trackmate_sampling_rate(
     xml2::xml_attr(image_data, "timeinterval"),
     unit_time
@@ -101,9 +123,10 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   # Build spot-to-track mapping (only for filtered tracks)
   spot_track_map <- build_spot_track_map(track_nodes, filtered_ids)
 
-  # Join and arrange
-  result <- spot_track_map |>
+  # Join, split dividing tracks into their branches, and arrange
+  result <- spot_track_map$spots |>
     dplyr::inner_join(spots, by = "spot_id") |>
+    split_dividing_tracks(spot_track_map$edges) |>
     dplyr::select(-"spot_id")
 
   # Check for duplicates
@@ -195,10 +218,17 @@ trackmate_unit_time <- function(unit) {
 #' @param unit The `spatialunits` attribute, free text from ImageJ's
 #'   calibration.
 #'
+#' @param pixel_size The `pixelwidth` and `pixelheight` of
+#'   `Settings/ImageData`, `NA` where not recorded.
+#'
 #' @return One of anicore's `unit_space` levels, `"none"` when the unit has
 #'   no equivalent.
 #' @noRd
-trackmate_unit_space <- function(unit) {
+trackmate_unit_space <- function(unit, pixel_size = NA_real_) {
+  # ImageJ names a missing length unit "pixel", but keeps one that is blank.
+  if (!is.na(unit) && !nzchar(trimws(unit)) && all(pixel_size %in% c(1, NA))) {
+    return("px")
+  }
   units <- list(
     px = c("pixel", "pixels", "px"),
     nm = c("nm", "nanometer", "nanometers", "nanometre", "nanometres"),
@@ -366,8 +396,10 @@ trackmate_track_labels <- function(track_names, track_ids) {
 #' @param track_nodes XML nodeset of Track elements.
 #' @param filtered_ids Character vector of filtered track IDs to include.
 #'
-#' @return A data.frame with spot_id, track and keypoint columns, where track
-#'   is the track's name or ID (see `trackmate_track_labels()`).
+#' @return A list of `spots`, a data.frame with spot_id, track and keypoint
+#'   columns, where track is the track's name or ID (see
+#'   `trackmate_track_labels()`), and `edges`, a data.frame of each link's
+#'   track, `source` and `target` spot.
 #' @noRd
 build_spot_track_map <- function(track_nodes, filtered_ids) {
   # Pre-filter to only process tracks we care about
@@ -380,18 +412,108 @@ build_spot_track_map <- function(track_nodes, filtered_ids) {
   )
 
   # Process each track
-  lapply(seq_along(track_nodes), function(i) {
+  edges <- lapply(seq_along(track_nodes), function(i) {
     edge_nodes <- xml2::xml_find_all(track_nodes[[i]], ".//Edge")
-    source_ids <- xml2::xml_attr(edge_nodes, "SPOT_SOURCE_ID")
-    target_ids <- xml2::xml_attr(edge_nodes, "SPOT_TARGET_ID")
-    spot_ids <- unique(c(source_ids, target_ids))
-
     data.frame(
-      spot_id = spot_ids,
-      track = track_labels[[i]],
+      track = rep(track_labels[[i]], length(edge_nodes)),
+      source = xml2::xml_attr(edge_nodes, "SPOT_SOURCE_ID"),
+      target = xml2::xml_attr(edge_nodes, "SPOT_TARGET_ID"),
+      stringsAsFactors = FALSE
+    )
+  }) |>
+    dplyr::bind_rows()
+
+  spots <- lapply(split(edges, factor(edges$track, unique(edges$track))), \(e) {
+    data.frame(
+      spot_id = unique(c(e$source, e$target)),
+      track = e$track[[1]],
       keypoint = "centroid",
       stringsAsFactors = FALSE
     )
   }) |>
     dplyr::bind_rows()
+
+  list(spots = spots, edges = edges)
+}
+
+#' Split tracks that divide into their branches
+#'
+#' @param spots The spots of the filtered tracks: spot_id, track, frame and x
+#'   at least.
+#' @param edges The links of those tracks, as `build_spot_track_map()`
+#'   returns them.
+#'
+#' @return `spots`, with `track` naming the branch of each spot of a track
+#'   that holds more than one spot in a frame, where that track is a tree of
+#'   divisions (see `trackmate_branches()`).
+#' @noRd
+split_dividing_tracks <- function(spots, edges) {
+  shared <- unique(spots$track[duplicated(spots[c("track", "frame")])])
+  for (label in shared) {
+    rows <- spots$track == label
+    branches <- trackmate_branches(
+      spots[rows, ],
+      edges[edges$track == label, ],
+      label
+    )
+    if (!is.null(branches)) {
+      spots$track[rows] <- branches
+    }
+  }
+  spots
+}
+
+#' Name the branches of a dividing track
+#'
+#' Follows TrackMate's default auto-naming rule (`DefaultAutoNamingRule`,
+#' without the spot number): the root branch keeps the track's name, the
+#' daughters of the root are `<track>.a`, `<track>.b`, ..., and the daughters
+#' of `<track>.a` are `<track>.aa`, `<track>.ab`, ..., sisters lettered in
+#' order of x.
+#'
+#' @param spots The track's spots: spot_id, frame and x.
+#' @param edges The track's links: source and target.
+#' @param label The track's name.
+#'
+#' @return The branch name of each spot, or `NULL` when the track is not a
+#'   tree of divisions forward in time: when a link joins two spots of one
+#'   frame or a spot outside the track, or a spot has two parents (a merge).
+#' @noRd
+trackmate_branches <- function(spots, edges, label) {
+  frame <- stats::setNames(spots$frame, spots$spot_id)
+  x <- stats::setNames(spots$x, spots$spot_id)
+  forward <- frame[edges$source] < frame[edges$target]
+  backward <- frame[edges$source] > frame[edges$target]
+  if (!isTRUE(all(forward | backward))) {
+    return(NULL)
+  }
+  # TrackMate links a spot to a later one, but the reader does not rely on it.
+  parent <- ifelse(forward, edges$source, edges$target)
+  child <- ifelse(forward, edges$target, edges$source)
+  if (anyDuplicated(child)) {
+    return(NULL)
+  }
+
+  # Parents come before their children in time, so in time order each
+  # parent is named before its children are.
+  in_time <- order(frame[child])
+  parent <- parent[in_time]
+  child <- child[in_time]
+  siblings <- split(child, parent)
+  branch <- stats::setNames(rep(label, nrow(spots)), spots$spot_id)
+  for (i in seq_along(child)) {
+    mother <- branch[[parent[[i]]]]
+    sisters <- siblings[[parent[[i]]]]
+    if (length(sisters) == 1) {
+      branch[[child[[i]]]] <- mother
+    } else {
+      sisters <- sisters[order(x[sisters])]
+      branch[[child[[i]]]] <- paste0(
+        mother,
+        if (mother == label) ".",
+        letters[match(child[[i]], sisters)]
+      )
+    }
+  }
+  unname(branch[spots$spot_id])
 }

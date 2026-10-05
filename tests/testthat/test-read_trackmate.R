@@ -22,6 +22,9 @@
 # - source_version from the root version attribute
 # - Reflects around height * pixelheight, the height in the spatial unit
 # - Labels tracks by Track/@name, falling back to TRACK_ID
+# - Reads files written by TrackMate 6, 7.0 and 7.13 (data/trackmate)
+# - Reads a blank spatial unit as pixels when the pixel size is 1
+# - Splits a track that divides into its branches
 
 test_that("read_trackmate errors on non-existent file", {
   expect_error(
@@ -467,6 +470,7 @@ write_trackmate_fixture <- function(
   timeinterval = "1.0",
   version = "7.11.1",
   image_data = TRUE,
+  pixel_size = NULL,
   env = parent.frame()
 ) {
   attr <- function(name, value) {
@@ -474,8 +478,10 @@ write_trackmate_fixture <- function(
   }
   settings <- if (image_data) {
     sprintf(
-      '<Settings><ImageData width="500" height="400"%s/></Settings>',
-      attr("timeinterval", timeinterval)
+      '<Settings><ImageData width="500" height="400"%s%s%s/></Settings>',
+      attr("timeinterval", timeinterval),
+      attr("pixelwidth", pixel_size),
+      attr("pixelheight", pixel_size)
     )
   } else {
     ""
@@ -764,4 +770,166 @@ test_that("read_trackmate labels tracks by ID when names cannot identify them", 
     "track names are not unique"
   )
   expect_setequal(as.character(unique(result$track)), c("0", "1"))
+})
+
+# Files written by TrackMate ------------------------------------------------
+
+# Trimmed from CC BY 4.0 files on Zenodo; data/trackmate/README.md records
+# their sources, creators and how they were trimmed.
+trackmate_file <- function(name) test_path("data/trackmate", name)
+
+test_that("read_trackmate reads a file written before TrackMate 7", {
+  path <- trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+
+  expect_equal(levels(result$track), c("Track_0", "Track_1"))
+  expect_equal(as.vector(table(result$track)), c(20, 20))
+  expect_equal(
+    head(result$time[result$track == "Track_1"], 3),
+    c(0, 300.014, 600.028)
+  )
+  expect_equal(anicore::get_metadata(result, "source_version"), "6.0.1")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "um")
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 1 / 300.014)
+  # 774 pixels of 0.633 micron
+  expect_equal(
+    anicore::get_metadata(result, "axis_extents"),
+    c(y = 774 * 0.633)
+  )
+})
+
+test_that("read_trackmate reads a blank spatial unit as pixels", {
+  # TrackMate 7.13.2 wrote spatialunits=" ", with a pixel size of 1.
+  path <- trackmate_file("trpL_150310-11_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "px")
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "frame"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+  expect_equal(anicore::get_metadata(result, "source_version"), "7.13.2")
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 727))
+
+  for (pixel_size in list(NULL, "1.0")) {
+    path <- write_trackmate_fixture(spatialunits = " ", pixel_size = pixel_size)
+    expect_no_warning(result <- read_trackmate_quietly(path))
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_space")),
+      "px"
+    )
+  }
+
+  # Scaled pixels in a unit nobody named.
+  path <- write_trackmate_fixture(spatialunits = " ", pixel_size = "0.5")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+})
+
+test_that("read_trackmate splits a dividing track into its branches", {
+  path <- trackmate_file("CelegansEarly_MIP_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+
+  expect_equal(
+    levels(result$track),
+    c("Track_0", "Track_0.a", "Track_0.b", "Track_2", "Track_2.a", "Track_2.b")
+  )
+  # Every spot is kept, once.
+  expect_equal(nrow(result), 51)
+  expect_false(anyDuplicated(as.data.frame(result)[c("track", "time")]) > 0)
+
+  # The daughters start at the frame after the mother's last spot, and are
+  # lettered by x.
+  times <- function(track) result$time[result$track == track]
+  expect_equal(max(times("Track_0")), 16)
+  expect_equal(min(times("Track_0.a")), 18)
+  expect_equal(min(times("Track_0.b")), 18)
+  first_x <- function(track) result$x[result$track == track][[1]]
+  expect_lt(first_x("Track_0.a"), first_x("Track_0.b"))
+
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "m")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "um")
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 1 / 120)
+})
+
+test_that("read_trackmate names the branches of a lineage as TrackMate does", {
+  # One cell dividing at frames 7 and 11: 1, 2, then 4 cells.
+  result <- read_trackmate_quietly(trackmate_file("trpL_150310-11_trimmed.xml"))
+
+  expect_equal(
+    levels(result$track),
+    paste0("Track_0", c("", ".a", ".aa", ".ab", ".b", ".ba", ".bb"))
+  )
+  ranges <- tapply(result$time, as.character(result$track), range)
+  expect_equal(ranges[["Track_0"]], c(0, 7))
+  expect_equal(ranges[["Track_0.b"]], c(8, 11))
+  expect_equal(ranges[["Track_0.ba"]], c(12, 13))
+})
+
+test_that("read_trackmate keeps whole a track that splits and merges in time", {
+  # Track_1 links frame 16 to both 17 and 18, and 17 to 18, so it never
+  # holds two spots in a frame.
+  result <- read_trackmate_quietly(
+    trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
+  )
+  expect_equal(sum(result$track == "Track_1"), 20)
+})
+
+test_that("read_trackmate keeps whole a track whose branches merge", {
+  # Spots 1 and 2 share frame 0 and both link to spot 3.
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate><Model spatialunits="pixel" timeunits="sec"><AllSpots>',
+    '<SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="10" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="30" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '</SpotsInFrame><SpotsInFrame frame="1">',
+    '<Spot ID="3" POSITION_X="20" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    '<AllTracks><Track TRACK_ID="0" name="Track_0">',
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="3"/>',
+    '<Edge SPOT_SOURCE_ID="2" SPOT_TARGET_ID="3"/>',
+    "</Track></AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model></TrackMate>"
+  )
+  path <- withr::local_tempfile(fileext = ".xml")
+  writeLines(xml_content, path)
+
+  expect_warning(result <- read_trackmate_quietly(path), "duplicate")
+  expect_equal(as.character(unique(result$track)), "Track_0")
+})
+
+test_that("read_trackmate follows a link written backwards in time", {
+  # TrackMate links a spot to a later one; a link from the later spot reads
+  # the same.
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate><Model spatialunits="pixel" timeunits="sec"><AllSpots>',
+    '<SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="20" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '</SpotsInFrame><SpotsInFrame frame="1">',
+    '<Spot ID="2" POSITION_X="30" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    '<Spot ID="3" POSITION_X="10" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    '<AllTracks><Track TRACK_ID="0" name="Track_0">',
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>',
+    '<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="1"/>',
+    "</Track></AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model></TrackMate>"
+  )
+  path <- withr::local_tempfile(fileext = ".xml")
+  writeLines(xml_content, path)
+
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_equal(result$x[result$track == "Track_0.a"], 10)
+  expect_equal(result$x[result$track == "Track_0.b"], 30)
 })

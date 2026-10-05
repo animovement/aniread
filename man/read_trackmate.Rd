@@ -34,6 +34,20 @@ TrackMate become the values of \code{track}. The numeric \code{TRACK_ID} is used
 instead when any track has no name, or when two tracks share one, with a
 warning in that case.
 
+A track that divides, as a cell lineage does, holds more than one spot in
+a frame from its first division on, which a frame keyed by \code{track} and
+\code{time} cannot hold. Such a track is split into its branches, each a
+stretch of the track between divisions, named as TrackMate's auto-naming
+names them: the branch before the first division keeps the track's name,
+say \code{Track_0}, its daughters are \code{Track_0.a} and \code{Track_0.b}, theirs
+\code{Track_0.aa}, \code{Track_0.ab}, ..., with sisters lettered by their x position.
+A daughter starts at its first spot after the division, so nothing is
+measured across it. A track whose branches also merge, or whose spots
+share a frame in any other way, is left whole, with a warning about the
+duplicate track-frame combinations. A split or merge that never puts two
+spots in one frame, as when a link skips a frame beside another that does
+not, needs no splitting.
+
 The XML also records how the image was calibrated, and the reader keeps
 what has a place in the metadata:
 \itemize{
@@ -44,7 +58,12 @@ are recognised: \code{"sec"}, \code{"msec"}, \code{"min"}, \code{"frame"} and so
 \code{"pixel"}, \code{"micron"}, \code{"um"} (with or without the micro sign), \code{"mm"}
 and so on for space. A unit with no equivalent in anicore (days or
 inches, say) becomes \code{"unknown"} or \code{"none"}, with a warning, rather
-than stopping the read.
+than stopping the read. A blank spatial unit, which TrackMate writes for
+an image whose length unit is a space, is read as pixels when the pixel
+size in \code{Settings/ImageData} is 1 or not recorded, as ImageJ calls an
+image with no length unit \code{"pixel"}. With any other pixel size the
+positions are scaled by a unit nobody named, so it becomes \code{"none"}
+with a warning.
 \item \code{timeinterval}, from \code{Settings/ImageData}, is the time between frames in
 \code{timeunits}. Its reciprocal, converted to Hz, becomes \code{sampling_rate}.
 It stays \code{NA} when the interval is missing or not positive, or when the
