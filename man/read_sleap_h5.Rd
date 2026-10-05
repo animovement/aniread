@@ -7,6 +7,8 @@
 read_sleap_h5(path)
 }
 \description{
-SLEAP HDF5 Reader
+Reads \code{tracks} and \code{point_scores} into one layout whatever order the file
+stores their axes in, following the \code{dims} attribute sleap-io writes.
+\code{time} is the position on the frame axis, counting from 1.
 }
 \keyword{internal}
