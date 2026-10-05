@@ -29,6 +29,13 @@ When the workflow records the blob's \code{Orientation}, it is kept as
 toward \code{y}, in \verb{(-pi/2, pi/2]}. It is axial — the blob has no front — so it
 is not declared as the frame's orientation (a \code{yaw}), and it is turned with
 \code{y} when y is reflected.
+
+\code{time} is the seconds elapsed since the first \code{Timestamp}, so \code{unit_time}
+is \code{"s"}, and the first \code{Timestamp} itself is kept as \code{start_datetime}.
+\code{sampling_rate} is left \code{NA}. A Bonsai \code{Timestamp} is the time the
+software received each frame, not when the camera captured it, so the
+intervals between rows vary from frame to frame and do not state the
+camera's rate. If you know it, set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
 }
 \examples{
 path <- system.file("extdata", "bonsai.csv", package = "aniread")

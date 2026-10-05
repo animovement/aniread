@@ -53,6 +53,10 @@ export keeps these in a separate \code{attributes.json} rather than in
 \code{trajectories.csv}, so a frame read from the CSV has neither
 \code{source_version} nor \code{sampling_rate}; set them with
 \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
+
+The CSV export's time column (\code{seconds}, or \code{time} in newer releases) is
+the time in seconds, so a frame read from it has \code{unit_time} \code{"s"}, where
+one read from the h5 has \code{"frame"}.
 }
 \examples{
 path <- system.file("extdata", "idtracker.csv", package = "aniread")

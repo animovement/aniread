@@ -35,3 +35,18 @@ test_that("read_bonsai leaves the angle alone when y is not reflected", {
   result <- suppressWarnings(read_bonsai(path))
   expect_equal(result$orientation_axis[1], raw$Item3.Value.Orientation[1])
 })
+
+test_that("read_bonsai gives time in seconds and leaves the rate unset", {
+  # Bonsai's Timestamp is when the software received each frame, so the
+  # intervals jitter and state no rate; the elapsed seconds are kept.
+  path <- system.file("extdata", "bonsai.csv", package = "aniread")
+  raw <- vroom::vroom(path, delim = ",", show_col_types = FALSE)
+  result <- read_bonsai(path)
+
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+  expect_equal(
+    result$time,
+    as.numeric(raw$Item3.Timestamp - min(raw$Item3.Timestamp))
+  )
+})

@@ -51,3 +51,26 @@ test_that("read_dataset reads a detailed export", {
   expect_no_error(result <- read_dataset(path))
   expect_s3_class(result, "anipoint")
 })
+
+# ---- Time ---------------------------------------------------------------
+
+test_that("time is AnimalTA's Time column, in seconds", {
+  # AnimalTA writes seconds, so leaving unit_time at its default of frames
+  # misread every time downstream.
+  path <- testthat::test_path("data/animalta/single_individual_multi_arena.csv")
+  raw <- utils::read.csv(path, sep = ";")
+  result <- read_animalta(path)
+
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
+  expect_equal(sort(unique(result$time)), raw$Time)
+})
+
+test_that("the variable-individuals layout keeps its time in seconds too", {
+  path <- testthat::test_path(
+    "data/animalta/variable_individuals_single_arena.csv"
+  )
+  result <- read_animalta(path)
+
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
+  expect_equal(result$time, round(0:18 / 30, 2))
+})
