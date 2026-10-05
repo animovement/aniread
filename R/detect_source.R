@@ -339,7 +339,9 @@ has_deeplabcut_csv_header <- function(path) {
 #' @keywords internal
 detect_deeplabcut_file <- function(path) {
   if (identical(tolower(get_file_ext(path)), "h5")) {
-    return("df_with_missing" %in% peek_h5_names(path))
+    # Predictions are under `df_with_missing`, stitched tracklets (`_el.h5`)
+    # under `tracks`, each a group, where SLEAP has a `tracks` dataset.
+    return(!is.na(dlc_h5_key(path)))
   }
   has_deeplabcut_csv_header(path)
 }

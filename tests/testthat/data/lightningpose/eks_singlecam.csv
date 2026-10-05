@@ -1,0 +1,6 @@
+scorer,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker
+bodyparts,nose,nose,nose,nose,nose,nose,nose,nose,nose,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l
+coords,x,y,likelihood,x_ens_median,y_ens_median,x_ens_var,y_ens_var,x_posterior_var,y_posterior_var,x,y,likelihood,x_ens_median,y_ens_median,x_ens_var,y_ens_var,x_posterior_var,y_posterior_var
+0,11.0,12.0,0.01,14.0,15.0,16.0,17.0,18.0,19.0,21.0,22.0,0.02,24.0,25.0,26.0,27.0,28.0,29.0
+1,1011.0,1012.0,0.01,1014.0,1015.0,1016.0,1017.0,1018.0,1019.0,1021.0,1022.0,0.02,1024.0,1025.0,1026.0,1027.0,1028.0,1029.0
+2,2011.0,2012.0,0.01,2014.0,2015.0,2016.0,2017.0,2018.0,2019.0,2021.0,2022.0,0.02,2024.0,2025.0,2026.0,2027.0,2028.0,2029.0

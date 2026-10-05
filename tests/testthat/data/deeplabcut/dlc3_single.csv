@@ -1,0 +1,7 @@
+scorer,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200,DLC_Resnet50_openfieldOct5shuffle1_snapshot_best-200
+bodyparts,snout,snout,snout,left_ear,left_ear,left_ear,tail_base,tail_base,tail_base
+coords,x,y,likelihood,x,y,likelihood,x,y,likelihood
+0,11.0,12.0,0.01,21.0,22.0,0.02,31.0,32.0,0.03
+1,1011.0,1012.0,0.01,1021.0,1022.0,0.02,1031.0,1032.0,0.03
+2,2011.0,2012.0,0.01,2021.0,2022.0,0.02,2031.0,2032.0,0.03
+3,3011.0,3012.0,0.01,3021.0,3022.0,0.02,3031.0,3032.0,0.03

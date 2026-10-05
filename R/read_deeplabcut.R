@@ -5,365 +5,482 @@
 #' reader reflects y so the returned aniframe is in the conventional
 #' `bottom_left` origin. DLC's csv/h5 exports do not contain the source
 #' video resolution (it lives in the project's `config.yaml`), so pass
-#' `video_height` to get an accurate flip — otherwise `max(y)` is used
+#' `video_height` to get an accurate flip; otherwise `max(y)` is used
 #' as a fallback.
+#'
+#' @section Layouts read:
+#' The file is read from its column header, the `scorer`, `individuals`
+#' (multi-animal projects only), `bodyparts` and `coords` levels, so the
+#' same data reads the same from a csv and an h5. An h5 is read whichever
+#' way pandas stored it: DeepLabCut writes the "table" format, while a file
+#' saved again with pandas' defaults, as movement's `to_dlc_file()` does,
+#' is in the "fixed" format. Predictions are read from the HDF key
+#' `df_with_missing`, and the stitched tracklets of a multi-animal project
+#' (`*_el.h5`) from the key `tracks`.
+#'
+#' Of the coords, `x`, `y`, `z` and `likelihood` are read, and `likelihood`
+#' becomes `confidence`. Any other coords, such as the variances the
+#' Ensemble Kalman Smoother adds, are not read.
+#'
+#' A multi-animal project tracks the bodyparts it does not assign to an
+#' animal (its `uniquebodyparts`) under the pseudo-individual `single`.
+#' They are kept as the keypoints of an `individual` called `"single"`.
+#'
+#' @section 3D files:
+#' DeepLabCut's triangulation writes `x`, `y` and `z` and no likelihood, so
+#' `confidence` is `NA`. Triangulated positions are in the units and frame
+#' of the stereo calibration rather than in image pixels, so they are
+#' returned as stored: y is not reflected and `video_height` is not used.
+#' The aniframe is 3D from its `z` column.
 #'
 #' @param path Path to a DeepLabCut data file
 #' @param video_height Optional numeric height of the source video frame
-#'   in pixels.
+#'   in pixels. Not used for 3D files.
 #' @return an aniframe
 #' @examples
 #' path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
 #' read_deeplabcut(path)
 #' @export
 read_deeplabcut <- function(path, video_height = NULL) {
-  # Validate file
   validate_files(path, expected_suffix = c("csv", "h5"))
 
-  # Check whether it's a multi-animal data set
-  ext <- get_file_ext(path)
-
-  data <- if (ext == "csv") {
-    read_deeplabcut_csv(path)
-  } else {
-    read_deeplabcut_h5(path)
-  }
-
-  # Init metadata
-  data <- data |>
+  data <- read_deeplabcut_points(path) |>
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "deeplabcut",
       filename = basename(path)
-    ) |>
-    reflect_to_bottom_left(video_height = video_height)
-
-  data
-}
-
-#' Read DeepLabCut data
-#'
-#' Read csv files from DeepLabCut (DLC). The function recognises whether it is a
-#' single- or multi-animal dataset.
-#'
-#' @param path Path to a DeepLabCut data file
-#' @param multianimal By default, whether a file is multi-animal is detected automatically. This gives an option to ensure it. logical TRUE/FALSE.
-#'
-#' @return a movement dataframe
-#' @keywords internal
-read_deeplabcut_csv <- function(path, multianimal = NULL) {
-  # Check whether it's a multi-animal data set
-  if (is.null(multianimal)) {
-    multianimal <- vroom::vroom(
-      path,
-      delim = ",",
-      show_col_types = FALSE,
-      skip = 3,
-      n_max = 1,
-      col_names = FALSE
-    ) |>
-      t() |>
-      is.character()
-  }
-
-  if (multianimal == FALSE) {
-    data <- read_deeplabcut_csv_single(path)
-  } else if (multianimal == TRUE) {
-    data <- read_deeplabcut_csv_multi(path)
-  }
-
-  data
-}
-
-#' Read single-animal DLC files
-#' @keywords internal
-read_deeplabcut_csv_single <- function(path) {
-  # Get metadata
-  header_2 <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 1,
-    n_max = 1,
-    col_names = FALSE
-  )
-
-  header_3 <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 2,
-    n_max = 1,
-    col_names = FALSE
-  )
-
-  new_headers <- rbind(header_2, header_3) |>
-    t() |>
-    as.data.frame() |>
-    dplyr::mutate(new_names = paste(.data$V1, .data$V2, sep = "_")) |>
-    dplyr::select("new_names") |>
-    as.data.frame() |>
-    dplyr::pull()
-
-  data <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 3,
-    col_names = new_headers
-  )
-
-  # Do check
-
-  # Wrangle
-  data <- data |>
-    dplyr::rename(time = 1) |>
-    tidyr::pivot_longer(
-      cols = !"time",
-      names_to = c("keypoint", "pos"),
-      names_pattern = "(.*)_(\\w+)",
-      values_to = "val"
-    ) |>
-    tidyr::pivot_wider(
-      id_cols = c("time", "keypoint"),
-      names_from = "pos",
-      values_from = "val"
-    ) |>
-    dplyr::rename(confidence = "likelihood") |>
-    dplyr::mutate(keypoint = factor(.data$keypoint))
-
-  data
-}
-
-#' Read multi-animal DLC files
-#' @keywords internal
-read_deeplabcut_csv_multi <- function(path) {
-  # Get metadata
-  header_2 <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 1,
-    n_max = 1,
-    col_names = FALSE
-  )
-
-  header_3 <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 2,
-    n_max = 1,
-    col_names = FALSE
-  )
-
-  header_4 <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 3,
-    n_max = 1,
-    col_names = FALSE
-  )
-
-  new_headers <- rbind(header_2, header_3, header_4) |>
-    t() |>
-    as.data.frame() |>
-    dplyr::mutate(new_names = paste(.data$V1, .data$V2, .data$V3, sep = "_")) |>
-    dplyr::select("new_names") |>
-    as.data.frame() |>
-    dplyr::pull()
-
-  data <- vroom::vroom(
-    path,
-    delim = ",",
-    show_col_types = FALSE,
-    skip = 4,
-    col_names = new_headers
-  )
-
-  # Do check
-
-  # Wrangle
-  data <- data |>
-    dplyr::rename(time = 1) |>
-    tidyr::pivot_longer(
-      cols = !"time",
-      names_to = c("individual", "keypoint", "pos"),
-      names_sep = "_",
-      values_to = "val"
-    ) |>
-    tidyr::pivot_wider(
-      id_cols = c("time", "individual", "keypoint"),
-      names_from = "pos",
-      values_from = "val"
-    ) |>
-    dplyr::rename(confidence = "likelihood") |>
-    dplyr::mutate(
-      individual = factor(.data$individual),
-      keypoint = factor(.data$keypoint)
     )
 
-  data
+  if ("z" %in% names(data)) {
+    if (!is.null(video_height)) {
+      cli::cli_warn(c(
+        "{.arg video_height} is not used for 3D data.",
+        "i" = "Triangulated positions are not in image pixels, so y is not reflected."
+      ))
+    }
+    return(data)
+  }
+
+  reflect_to_bottom_left(data, video_height = video_height)
 }
 
-#' Read DeepLabCut H5 file
+#' Read the points of a DeepLabCut file into long format
 #'
-#' @param path Path to the DLC .h5 file
-#' @return An aniframe with columns: time, individual, keypoint, x, y, confidence
+#' @param path Path to a DeepLabCut `.csv` or `.h5` file.
+#' @return A tibble with `time`, `individual` (multi-animal files only),
+#'   `keypoint`, `x`, `y`, `z` (3D files only) and `confidence`.
+#' @keywords internal
+read_deeplabcut_points <- function(path) {
+  wide <- if (get_file_ext(path) == "csv") {
+    read_deeplabcut_csv(path)
+  } else {
+    read_deeplabcut_h5(path)
+  }
+  dlc_points_long(wide)
+}
+
+#' The coords the DeepLabCut reader keeps
+#' @keywords internal
+dlc_coords <- function() {
+  c("x", "y", "z", "likelihood")
+}
+
+#' Read a DeepLabCut csv file
+#'
+#' The header rows are the column levels, each named in the first column;
+#' the data rows follow, with the frame index in the first column.
+#'
+#' @param path Path to a DeepLabCut `.csv` file.
+#' @return A list of `columns`, a data frame with one row per kept column
+#'   and one column per level; `values`, a frames-by-columns matrix; and
+#'   `index`, the frame index.
+#' @keywords internal
+read_deeplabcut_csv <- function(path) {
+  head <- vroom::vroom(
+    path,
+    delim = ",",
+    col_names = FALSE,
+    n_max = 5,
+    col_types = vroom::cols(.default = vroom::col_character()),
+    show_col_types = FALSE,
+    progress = FALSE
+  )
+
+  is_header <- head[[1]] %in% c("scorer", "individuals", "bodyparts", "coords")
+  n_header <- match(FALSE, is_header, nomatch = length(is_header) + 1L) - 1L
+  header <- head[seq_len(n_header), -1]
+  columns <- as.data.frame(
+    t(as.matrix(header)),
+    stringsAsFactors = FALSE,
+    row.names = NULL
+  )
+  names(columns) <- head[[1]][seq_len(n_header)]
+  ensure_dlc_levels(columns, path)
+
+  keep <- columns$coords %in% dlc_coords()
+  data <- vroom::vroom(
+    path,
+    delim = ",",
+    col_names = FALSE,
+    skip = n_header,
+    col_types = paste0(c("?", ifelse(keep, "d", "_")), collapse = ""),
+    show_col_types = FALSE,
+    progress = FALSE
+  )
+
+  list(
+    columns = columns[keep, , drop = FALSE],
+    values = as.matrix(data[-1]),
+    index = data[[1]]
+  )
+}
+
+#' Read a DeepLabCut h5 file
+#'
+#' Reads the pandas DataFrame under the key `df_with_missing` (predictions)
+#' or `tracks` (stitched tracklets), stored in pandas' "table" format, as
+#' DeepLabCut writes it, or its "fixed" format, as pandas writes by default.
+#'
+#' @param path Path to a DeepLabCut `.h5` file.
+#' @inherit read_deeplabcut_csv return
 #' @keywords internal
 read_deeplabcut_h5 <- function(path) {
-  # Check that rhdf5 is installed
   check_rhdf5()
+  on.exit(rhdf5::h5closeAll(), add = TRUE)
 
-  # Read data
-  raw <- rhdf5::h5read(
-    path,
-    "/df_with_missing/table",
-    compoundAsDataFrame = FALSE
-  )
+  key <- dlc_h5_key(path)
+  if (is.na(key)) {
+    cli::cli_abort(c(
+      "{.file {path}} is not a DeepLabCut h5 file.",
+      "i" = "Expected a {.val df_with_missing} or {.val tracks} group at its root."
+    ))
+  }
 
-  # Read attributes
-  attrs <- rhdf5::h5readAttributes(path, "/df_with_missing/table")
-
-  # Detect multi-animal by checking level names in info attribute
-  multianimal <- ifelse(
-    length(
-      grepl("Vindividuals", attrs$info)
-    ) >
-      0,
-    TRUE,
-    FALSE
-  )
-
-  # Parse the column structure from the pickle string
-  col_info <- parse_dlc_pickle(attrs$values_block_0_kind, multianimal)
-
-  # Transpose the matrix (DLC stores it as n_cols x n_frames)
-  mat <- t(raw$values_block_0)
-
-  # Build column names
-  if (multianimal) {
-    # nocov start
-    # No multi-animal H5 sample fixture is currently shipped or
-    # downloadable; covered indirectly by parse_dlc_pickle tests.
-    col_names <- paste(
-      col_info$individual,
-      col_info$bodypart,
-      col_info$coord,
-      sep = "_"
+  attrs <- rhdf5::h5readAttributes(path, key)
+  wide <- switch(
+    attrs$pandas_type %||% "",
+    frame_table = read_pandas_table(path, key, attrs),
+    frame = read_pandas_fixed(path, key, attrs),
+    cli::cli_abort(
+      "{.file {path}} does not hold a pandas DataFrame under {.val {key}}."
     )
-    # nocov end
-  } else {
-    col_names <- paste(col_info$bodypart, col_info$coord, sep = "_")
-  }
-  colnames(mat) <- col_names
+  )
+  ensure_dlc_levels(wide$columns, path)
 
-  # Create data frame with frame index
-  data <- dplyr::as_tibble(mat)
-  data$time <- raw$index
-
-  # Pivot to long format
-  if (multianimal) {
-    # nocov start
-    data <- data |>
-      tidyr::pivot_longer(
-        cols = -"time",
-        names_to = c("individual", "keypoint", ".value"),
-        names_sep = "_"
-      ) |>
-      dplyr::rename(confidence = "likelihood")
-    # nocov end
-  } else {
-    data <- data |>
-      tidyr::pivot_longer(
-        cols = -"time",
-        names_to = c("keypoint", ".value"),
-        names_pattern = "(.+)_(x|y|likelihood)"
-      ) |>
-      dplyr::rename(confidence = "likelihood")
-  }
-
-  data
+  keep <- wide$columns$coords %in% dlc_coords()
+  wide$columns <- wide$columns[keep, , drop = FALSE]
+  wide$values <- wide$values[, keep, drop = FALSE]
+  wide
 }
 
-#' Parse DLC pickle string to extract column order
+#' The HDF key a DeepLabCut h5 keeps its DataFrame under
 #'
-#' @param pickle_str The values_block_0_kind attribute string
-#' @param multianimal Whether this is a multi-animal dataset
-#' @return A tibble with bodypart, coord columns (and individual if multi-animal)
+#' @param path Path to an `.h5` file.
+#' @return `"df_with_missing"` or `"tracks"`, whichever is a group at the
+#'   root of the file, or `NA` when neither is. SLEAP's analysis files
+#'   have a `tracks` dataset rather than a group.
 #' @keywords internal
-parse_dlc_pickle <- function(pickle_str, multianimal = FALSE) {
-  strings <- stringr::str_extract_all(pickle_str, "V[^\n]+")[[1]]
-  strings <- sub("^V", "", strings)
+dlc_h5_key <- function(path) {
+  contents <- rhdf5::h5ls(path, recursive = FALSE)
+  on.exit(rhdf5::h5closeAll(), add = TRUE)
+  groups <- contents$name[contents$otype == "H5I_GROUP"]
+  key <- intersect(c("df_with_missing", "tracks"), groups)
+  if (length(key) == 0) NA_character_ else key[[1]]
+}
 
-  # Skip scorer (first string)
-  rest <- strings[-1]
+#' Read a DataFrame stored in pandas' "table" format
+#'
+#' The values sit in a compound dataset `<key>/table`, one field per block
+#' of columns. The column labels of each block are a pickled list of tuples
+#' in the block's `_kind` attribute, and the level names a pickled dict in
+#' the group's `info` attribute.
+#'
+#' @param path Path to the `.h5` file.
+#' @param key The HDF key of the DataFrame.
+#' @param attrs The attributes of the group at `key`.
+#' @inherit read_deeplabcut_csv return
+#' @keywords internal
+read_pandas_table <- function(path, key, attrs) {
+  table <- paste0(key, "/table")
+  raw <- rhdf5::h5read(path, table, compoundAsDataFrame = FALSE)
+  table_attrs <- rhdf5::h5readAttributes(path, table)
 
-  coords <- c("x", "y", "likelihood")
+  index <- as.vector(raw$index)
+  blocks <- unlist(parse_pickle(attrs$values_cols))
+  labels <- unlist(
+    lapply(blocks, \(b) parse_pickle(table_attrs[[paste0(b, "_kind")]])),
+    recursive = FALSE
+  )
+  values <- lapply(blocks, \(b) block_matrix(raw[[b]], length(index)))
+  level_names <- unlist(parse_pickle(attrs$info)[["1"]][["names"]])
 
-  if (multianimal) {
-    # Remaining strings are: individual, bodypart, coord pattern
-    # Individuals and bodyparts are non-coord strings
-    non_coords <- setdiff(unique(rest), coords)
+  levels <- lapply(seq_along(labels[[1]]), \(i) {
+    vapply(labels, \(label) as.character(label[[i]]), character(1))
+  })
 
-    # Need to figure out which are individuals vs bodyparts
-    # In the pickle, order is: ind1, bp1, x, y, likelihood, bp2, x, y, likelihood, ..., ind2, bp1, ...
-    # First non-coord after scorer is an individual
-    # We can detect the pattern by finding where individuals repeat
+  list(
+    columns = dlc_columns(levels, level_names),
+    values = do.call(cbind, values),
+    index = index
+  )
+}
 
-    # Find positions of non-coord strings
-    is_non_coord <- rest %in% non_coords
-    non_coord_positions <- which(is_non_coord)
-
-    # The first one is an individual, then bodyparts follow until we see
-    # another string that starts a new individual (detected by seeing x after it)
-    # Actually simpler: individuals appear less frequently than bodyparts
-
-    counts <- table(rest[is_non_coord])
-    # Bodyparts appear once per individual, individuals appear once per themselves
-    # but coords appear most often. Need another approach.
-
-    # Look at the sequence: the first non-coord is individual, then bodyparts
-    # until we see the same individual or a new one
-    first_non_coord <- rest[non_coord_positions[1]]
-
-    # Count occurrences of the first non-coord string
-    first_count <- sum(rest == first_non_coord)
-
-    # If it appears multiple times (once per coord set), it's a bodypart repeated
-    # for a single individual. If it appears few times, it might be an individual.
-
-    # Better approach: look at the stride. After (ind, bp, x, y, likelihood),
-    # we either get (bp, x, y, likelihood) or (ind, bp, x, y, likelihood)
-    # Stride of 4 = same individual, different bodypart
-    # Stride of 5 = new individual
-
-    # Simplest: assume first non-coord is individual, collect all unique
-    # non-coords that appear right before a bodypart
-    # Actually, let's just use position-based logic
-
-    # Find gaps between non-coord strings
-    gaps <- diff(non_coord_positions)
-    # Gap of 3 = x,y,likelihood between bodyparts (same individual)
-    # Gap of 4 = x,y,likelihood + individual between (new individual)
-
-    # If we see gap of 4, the item at that position is a new individual
-    individual_positions <- c(1, non_coord_positions[which(gaps == 4) + 1])
-    individuals <- unique(rest[non_coord_positions[individual_positions]])
-    bodyparts <- setdiff(non_coords, individuals)
-
-    dplyr::tibble(
-      individual = rep(individuals, each = length(bodyparts) * 3),
-      bodypart = rep(rep(bodyparts, each = 3), times = length(individuals)),
-      coord = rep(coords, times = length(individuals) * length(bodyparts))
-    )
-  } else {
-    bodyparts <- setdiff(unique(rest), coords)
-
-    dplyr::tibble(
-      bodypart = rep(bodyparts, each = 3),
-      coord = rep(coords, times = length(bodyparts))
+#' Read a DataFrame stored in pandas' "fixed" format
+#'
+#' Each block of columns has its values in `<key>/block<k>_values` and its
+#' labels as a MultiIndex: per level, the unique values in
+#' `block<k>_items_level<i>` and the codes into them in
+#' `block<k>_items_label<i>`. The frame index is `<key>/axis1`.
+#'
+#' @inheritParams read_pandas_table
+#' @inherit read_deeplabcut_csv return
+#' @keywords internal
+read_pandas_fixed <- function(path, key, attrs) {
+  if (!identical(attrs$axis0_variety, "multi")) {
+    cli::cli_abort(
+      "The columns of {.file {path}} are not DeepLabCut's multi-level header."
     )
   }
+
+  index <- as.vector(rhdf5::h5read(path, paste0(key, "/axis1")))
+  blocks <- lapply(seq_len(attrs$nblocks) - 1L, \(k) {
+    prefix <- paste0(key, "/block", k, "_items")
+    n_levels <- attrs[[paste0("block", k, "_items_nlevels")]]
+    levels <- lapply(seq_len(n_levels) - 1L, \(i) {
+      level <- as.character(rhdf5::h5read(path, paste0(prefix, "_level", i)))
+      Encoding(level) <- "UTF-8"
+      codes <- as.vector(rhdf5::h5read(path, paste0(prefix, "_label", i)))
+      level[replace(codes + 1L, codes < 0L, NA)]
+    })
+    level_names <- vapply(
+      seq_len(n_levels) - 1L,
+      \(i) {
+        # rhdf5 warns about the `transposed` attribute, which it cannot read
+        level_attrs <- suppressWarnings(
+          rhdf5::h5readAttributes(path, paste0(prefix, "_level", i))
+        )
+        level_attrs$name %||% NA_character_
+      },
+      character(1)
+    )
+    values <- rhdf5::h5read(path, paste0(key, "/block", k, "_values"))
+    list(
+      columns = dlc_columns(levels, level_names),
+      values = block_matrix(values, length(index))
+    )
+  })
+
+  list(
+    columns = do.call(rbind, lapply(blocks, \(b) b$columns)),
+    values = do.call(cbind, lapply(blocks, \(b) b$values)),
+    index = index
+  )
+}
+
+#' Arrange one block of values as frames by columns
+#'
+#' @param values A block as rhdf5 reads it: columns by frames, or a vector
+#'   when the block has a single column.
+#' @param n_frames Number of frames.
+#' @return A numeric matrix with one row per frame.
+#' @keywords internal
+block_matrix <- function(values, n_frames) {
+  matrix(as.vector(values), nrow = n_frames, byrow = TRUE)
+}
+
+#' Name the column levels of a DeepLabCut header
+#'
+#' @param levels List of character vectors, one per level, each with one
+#'   element per column.
+#' @param level_names The level names pandas stored, or `NULL`/`NA` where it
+#'   stored none. DeepLabCut's own order is assumed then.
+#' @return A data frame with one row per column and one column per level.
+#' @keywords internal
+dlc_columns <- function(levels, level_names) {
+  dlc_order <- list(
+    c("scorer", "bodyparts", "coords"),
+    c("scorer", "individuals", "bodyparts", "coords")
+  )
+  if (length(level_names) != length(levels) || anyNA(level_names)) {
+    default <- Filter(\(o) length(o) == length(levels), dlc_order)
+    level_names <- if (length(default) == 1) default[[1]] else NULL
+  }
+  names(levels) <- level_names
+  as.data.frame(levels, stringsAsFactors = FALSE, optional = TRUE)
+}
+
+#' Check that a header has the levels DeepLabCut writes
+#'
+#' @param columns Column levels, as from [dlc_columns()].
+#' @param path The file they were read from, for the message.
+#' @keywords internal
+ensure_dlc_levels <- function(columns, path) {
+  missing <- setdiff(c("bodyparts", "coords"), names(columns))
+  if (length(missing) > 0) {
+    cli::cli_abort(c(
+      "{.file {path}} does not have DeepLabCut's column header.",
+      "x" = "No {.val {missing}} level."
+    ))
+  }
+  coords <- unique(columns$coords)
+  if (!all(c("x", "y") %in% coords)) {
+    cli::cli_abort(c(
+      "{.file {path}} has no {.val x} and {.val y} coords.",
+      "i" = "Its coords are {.val {coords}}."
+    ))
+  }
+}
+
+#' Turn DeepLabCut's wide layout into one row per point and frame
+#'
+#' @param wide A list of `columns`, `values` and `index`, as from
+#'   [read_deeplabcut_csv()] or [read_deeplabcut_h5()].
+#' @return A tibble with `time`, `individual` (when the header has an
+#'   `individuals` level), `keypoint`, `x`, `y`, `z` (when present) and
+#'   `confidence`, which is `NA` when the file has no likelihood.
+#' @keywords internal
+dlc_points_long <- function(wide) {
+  columns <- wide$columns
+  multianimal <- "individuals" %in% names(columns)
+  point <- if (multianimal) {
+    paste(columns$individuals, columns$bodyparts, sep = "\u001f")
+  } else {
+    columns$bodyparts
+  }
+  key <- paste(point, columns$coords, sep = "\u001f")
+  if (anyDuplicated(key)) {
+    cli::cli_abort(c(
+      "More than one column holds the same point.",
+      "i" = "The file may hold several scorers: {.val {unique(columns$scorer)}}."
+    ))
+  }
+
+  points <- unique(point)
+  first <- match(points, point)
+  n_frames <- length(wide$index)
+  n_points <- length(points)
+
+  out <- list(time = rep(wide$index, each = n_points))
+  if (multianimal) {
+    out$individual <- factor(rep(columns$individuals[first], times = n_frames))
+  }
+  out$keypoint <- factor(rep(columns$bodyparts[first], times = n_frames))
+
+  # pandas writes a missing value as NaN to h5 and as an empty field to csv
+  values <- wide$values
+  values[is.nan(values)] <- NA_real_
+  coord_values <- function(coord) {
+    i <- match(paste(points, coord, sep = "\u001f"), key)
+    as.vector(t(values[, i, drop = FALSE]))
+  }
+  axes <- intersect(c("x", "y", "z"), columns$coords)
+  out[axes] <- lapply(axes, coord_values)
+  out$confidence <- if ("likelihood" %in% columns$coords) {
+    coord_values("likelihood")
+  } else {
+    rep(NA_real_, n_frames * n_points)
+  }
+
+  dplyr::as_tibble(out)
+}
+
+#' Read a protocol 0 pickle
+#'
+#' PyTables stores the Python objects pandas keeps as HDF5 attributes as
+#' protocol 0 pickles: lists, tuples and dicts of strings, integers and
+#' `None`. This reads that subset, without Python. Lists and tuples become
+#' unnamed lists, dicts named lists, `None` `NULL`.
+#'
+#' @param x A pickle, as a single string.
+#' @return The unpickled object.
+#' @keywords internal
+parse_pickle <- function(x) {
+  bytes <- charToRaw(x)
+  newlines <- which(bytes == as.raw(10L))
+  stack <- list()
+  marks <- integer()
+  memo <- list()
+  pos <- 1L
+
+  pop_mark <- function() {
+    mark <- marks[[length(marks)]]
+    marks <<- marks[-length(marks)]
+    items <- stack[seq_along(stack) > mark]
+    stack <<- stack[seq_len(mark)]
+    items
+  }
+  push <- function(value) {
+    # Force `value` first: it may be pop_mark(), which shortens the stack.
+    force(value)
+    stack <<- c(stack, list(value))
+  }
+
+  repeat {
+    op <- rawToChar(bytes[pos])
+    if (op %in% c("V", "I", "p", "g")) {
+      end <- newlines[[findInterval(pos, newlines) + 1L]]
+      arg <- bytes[seq_len(end - pos - 1L) + pos]
+      pos <- end + 1L
+    } else {
+      pos <- pos + 1L
+    }
+
+    if (op == ".") {
+      break
+    }
+    switch(
+      op,
+      "(" = marks <- c(marks, length(stack)),
+      "l" = ,
+      "t" = push(pop_mark()),
+      "d" = {
+        items <- pop_mark()
+        is_key <- seq_along(items) %% 2L == 1L
+        keys <- vapply(items[is_key], as.character, character(1))
+        push(stats::setNames(items[!is_key], keys))
+      },
+      "a" = {
+        n <- length(stack)
+        stack[[n - 1L]] <- c(stack[[n - 1L]], stack[n])
+        stack <- stack[-n]
+      },
+      "s" = {
+        n <- length(stack)
+        stack[[n - 2L]][as.character(stack[[n - 1L]])] <- stack[n]
+        stack <- stack[seq_len(n - 2L)]
+      },
+      "p" = memo[[rawToChar(arg)]] <- stack[[length(stack)]],
+      "g" = push(memo[[rawToChar(arg)]]),
+      "V" = push(decode_pickle_unicode(arg)),
+      "I" = push(as.integer(rawToChar(arg))),
+      "N" = push(NULL),
+      cli::cli_abort("Cannot read pickle opcode {.val {op}}.")
+    )
+  }
+
+  stack[[1]]
+}
+
+#' Decode a protocol 0 pickle's unicode string
+#'
+#' Python writes these as "raw-unicode-escape": characters below 256 as
+#' their Latin-1 byte, the rest as `\uXXXX` or `\UXXXXXXXX`.
+#'
+#' @param bytes The string's bytes.
+#' @return A UTF-8 string.
+#' @keywords internal
+decode_pickle_unicode <- function(bytes) {
+  x <- rawToChar(bytes)
+  Encoding(x) <- "latin1"
+  x <- enc2utf8(x)
+  escapes <- gregexpr("\\\\u[0-9a-fA-F]{4}|\\\\U[0-9a-fA-F]{8}", x)
+  regmatches(x, escapes) <- lapply(regmatches(x, escapes), \(e) {
+    vapply(
+      e,
+      \(s) intToUtf8(strtoi(substring(s, 3), 16L)),
+      character(1),
+      USE.NAMES = FALSE
+    )
+  })
+  x
 }

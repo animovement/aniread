@@ -222,7 +222,31 @@ detection_cases <- list(
   ),
   list(
     source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_multi_unique.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_3d.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
     path = fixture("lightningpose", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_singlecam.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_multicam_3d_results.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_ibl-paw_multicam_left_head.csv")
   ),
   list(
     source = "deeplabcut/lightningpose",
@@ -259,6 +283,26 @@ if (rlang::is_installed("arrow")) {
         source = "idtrackerai",
         path = fixture("idtrackerai", "trajectories_no_fps.parquet")
       )
+    )
+  )
+}
+
+# DeepLabCut h5 files: pandas "table" and "fixed" formats, under the keys
+# `df_with_missing` and `tracks`. Detecting them needs rhdf5.
+if (rlang::is_installed("rhdf5")) {
+  detection_cases <- c(
+    detection_cases,
+    lapply(
+      c(
+        "dlc3_single.h5",
+        "dlc3_multi_unique.h5",
+        "dlc3_tracks_el.h5",
+        "dlc3_tracks_fixed_el.h5",
+        "dlc3_3d.h5",
+        "movement_multi.h5",
+        "movement_3d.h5"
+      ),
+      \(f) list(source = "deeplabcut", path = fixture("deeplabcut", f))
     )
   )
 }
@@ -313,6 +357,19 @@ test_that("FreeMoCap v2's per-trajectory files are left to read_freemocap()", {
     detect_source(fixture("freemocap", "v2", "rtmpose_body_3d_xyz.csv")),
     "Cannot detect the source software"
   )
+})
+
+test_that("a SLEAP analysis h5 is not taken for DeepLabCut tracklets", {
+  # Both have `tracks`: a dataset in SLEAP's file, a group in DeepLabCut's.
+  skip_if_not_installed("rhdf5")
+  path <- withr::local_tempfile(fileext = ".h5")
+  rhdf5::h5createFile(path)
+  rhdf5::h5write(array(0, dim = c(1, 2, 1, 1)), path, "tracks")
+  rhdf5::h5write("nose", path, "node_names")
+  rhdf5::h5closeAll()
+
+  expect_false(detect_deeplabcut_file(path))
+  expect_true(detect_sleap_file(path))
 })
 
 test_that("files that are not datasets detect as nothing", {
