@@ -60,6 +60,8 @@
 
 ## Changed
 
+* `get_sample_data("movement")` downloads `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement 0.17.0 or later with the singular dimension names (#167). The file it used to download, the same recording saved with the plural names of earlier versions, is the dataset `"legacy-plural"`. Both are cached under new file names, so a cache from before holds no stale copy.
+
 * `read_animalta()` takes the layout as `format = c("auto", "fixed", "variable", "detailed")`, following `read_boris()` and `read_freemocap()` (#118), and records it in the `source_format` metadata field. The layout `detailed = TRUE` named, `Frame;Time;Arena;Ind;X;Y`, is not AnimalTA's detailed data but its coordinates file for a variable number of targets, so it is now `format = "variable"`, the one-pair-per-target coordinates file is `format = "fixed"`, and `format = "detailed"` names the detailed data files. `detailed` is deprecated: `detailed = TRUE` and `detailed = FALSE` still read as `"variable"` and `"fixed"`, with a warning.
 
 * `read_trackmate()` labels tracks by the name TrackMate gave them (`Track_0`, `Track_1`, ..., or whatever you renamed them to) rather than by the numeric `TRACK_ID` (#149). It falls back to `TRACK_ID` when a track has no name, or with a warning when two tracks share one.
@@ -103,6 +105,11 @@
 * `read_movement()` keeps the `confidence` of each point (#149). It was read from the file and never joined, so every frame came back without one.
 
 * `read_movement()` reads 3D files (#149). The axes were fixed at `x` and `y`, so a dataset whose `space` coordinate holds `x`, `y` and `z` aborted; they are now read from `space`.
+
+* `read_movement()` and `detect_source()` read files saved by movement 0.17.0 and later (#167). movement renamed the dimensions `individuals` and `keypoints` to `individual` and `keypoint`, so these files were not detected and `read_movement()` aborted with "Object 'individuals' does not exist". Both names are now read, so files saved by earlier versions keep reading. Along with the rename:
+  * A `confidence` scored per individual, with dimensions (`time`, `individual`), which movement accepts since 0.17.0, is repeated for every keypoint of that individual.
+  * A file without a `source_file` attribute, such as a dataset movement built from arrays, takes the name of the file read as its `filename` rather than aborting.
+  * A movement bounding boxes dataset or a multi-view dataset now aborts with a message saying it is not a single-view poses dataset, rather than with an error from deep inside the reader.
 
 * `read_movement()` reads files that movement saved without a frame rate (#149). movement then writes `time_unit = "frames"` and no `fps`, and the reader aborted because `"frames"` is not one of anicore's units. It now becomes `"frame"`, and `sampling_rate` stays `NA` rather than becoming an empty number.
 

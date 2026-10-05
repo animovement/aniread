@@ -24,7 +24,10 @@ Currently supported software names:
 \item "freemocap": FreeMoCap motion capture test data
 \item "idtracker": Trajectories from idtracker.ai
 \item "lightningpose": Mouse tracking from LightningPose (2 datasets)
-\item "movement": Movement package native format (2 datasets)
+\item "movement": netCDF files saved by the movement Python package
+(2 datasets). The default, "two-mice_octagon", has the dimension names
+movement uses since 0.17.0; "legacy-plural" is the same recording
+with the plural names of earlier versions
 \item "sleap": Animal tracking from SLEAP (3 datasets)
 \item "trex": Multi-animal tracking from TRex (2 datasets). The default,
 "five-locusts", unpacks to one \code{.npz} per individual and returns a

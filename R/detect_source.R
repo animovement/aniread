@@ -389,10 +389,12 @@ detect_sleap_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_movement_file <- function(path) {
-  all(
-    c("individuals", "keypoints", "position", "confidence") %in%
-      peek_h5_names(path)
-  )
+  # movement 0.17.0 renamed the `individuals` and `keypoints` dimensions to
+  # `individual` and `keypoint`; files saved before keep the plural names.
+  names <- peek_h5_names(path)
+  all(c("position", "confidence") %in% names) &&
+    any(c("individual", "individuals") %in% names) &&
+    any(c("keypoint", "keypoints") %in% names)
 }
 
 
