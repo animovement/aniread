@@ -4,22 +4,21 @@
 \alias{resolve_animalta_layout}
 \title{Work out which AnimalTA export layout a file uses}
 \usage{
-resolve_animalta_layout(path, detailed)
+resolve_animalta_layout(path, format)
 }
 \arguments{
-\item{path}{Path to the file.}
+\item{path}{Path to the file, or several detailed files.}
 
-\item{detailed}{\code{"auto"}, or a logical stating the layout outright.}
+\item{format}{\code{"auto"}, or the layout to require.}
 }
 \value{
-\code{TRUE} for the detailed layout, \code{FALSE} for the raw one.
+\code{"fixed"}, \code{"variable"} or \code{"detailed"}.
 }
 \description{
-The two layouts are separable from their first line — the raw export
-continues into \verb{X_Arena<n>_Ind<n>} columns, the detailed one into
-\verb{Arena;Ind;X;Y} — and \code{\link[=read_animalta]{read_animalta()}} already encodes both header
-sets. It just used to consult its argument instead of looking, so a
-detailed file read with the default gave a header error naming columns
-the user had never heard of rather than pointing at \code{detailed} (#88).
+AnimalTA's layouts are separable from their first line, so \code{"auto"}
+reads the layout from the header rather than asking for it. Before it
+looked, a file read with the wrong default gave a header error naming
+columns the user had never heard of rather than pointing at the argument
+(#88).
 }
 \keyword{internal}
