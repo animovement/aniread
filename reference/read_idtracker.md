@@ -2,8 +2,8 @@
 
 idtracker.ai stores trajectories in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
-`bottom_left` origin. For h5 files the frame height is read directly
-from the `/height` dataset. CSV exports do not include the frame height,
+`bottom_left` origin. For h5 files the frame height is read from the
+file, as described below. CSV exports do not include the frame height,
 so pass `video_height` explicitly to get an accurate flip (otherwise
 `max(y)` is used as a fallback).
 
@@ -41,6 +41,29 @@ read_idtracker(
 ## Value
 
 a movement dataframe
+
+## Details
+
+An h5 file also records, as attributes of its root, how the recording
+was tracked, and the reader keeps what has a place in the metadata:
+
+- `version`, the idtracker.ai version that tracked it, becomes the
+  `source_version` metadata field.
+
+- `frames_per_second`, the frame rate of the video, becomes the
+  `sampling_rate` metadata field. `time` stays the frame number counted
+  from 1, so `unit_time` is still `"frame"`; the frame rate is what
+  converts it to seconds.
+
+- `height`, the height of the video frame, is what y is reflected
+  around, unless `video_height` is given. A `height` dataset is used
+  when there is no such attribute.
+
+Both fields stay `NA` when the file does not record them. The CSV export
+keeps these in a separate `attributes.json` rather than in
+`trajectories.csv`, so a frame read from the CSV has neither
+`source_version` nor `sampling_rate`; set them with
+[`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html).
 
 ## Examples
 

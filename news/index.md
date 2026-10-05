@@ -85,6 +85,19 @@
   becomes `source_version`. The CSV export carries neither, so a frame
   read from it is unchanged.
 
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md),
+  and so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  keeps what an idtracker.ai `.h5` records about the recording
+  ([\#146](https://github.com/animovement/aniread/issues/146)). The
+  `version` attribute becomes `source_version` and `frames_per_second`
+  becomes `sampling_rate`, each left `NA` when the file does not record
+  it. `time` stays the frame number, so `unit_time` is still `"frame"`.
+  The frame height is now read from the `height` attribute, where
+  idtracker.ai writes it, so y is reflected around the frame rather than
+  around the furthest tracked point. The CSV export keeps these in a
+  separate `attributes.json`, so a frame read from it is unchanged.
+
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   reads SLEAP’s analysis CSV export
   ([\#87](https://github.com/animovement/aniread/issues/87)).
