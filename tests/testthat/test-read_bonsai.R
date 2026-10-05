@@ -31,6 +31,8 @@ test_that("read_bonsai leaves the angle alone when y is not reflected", {
     package = "aniread"
   ))
   raw$Item3.Value.Centroid.Y <- NA
+  # Without y or a recorded frame height there is nothing to reflect around.
+  raw <- raw[!grepl("Size\\.(Width|Height)$", names(raw))]
   utils::write.csv(raw, path, row.names = FALSE)
   result <- suppressWarnings(read_bonsai(path))
   expect_equal(result$orientation_axis[1], raw$Item3.Value.Orientation[1])
@@ -48,5 +50,56 @@ test_that("read_bonsai gives time in seconds and leaves the rate unset", {
   expect_equal(
     result$time,
     as.numeric(raw$Item3.Timestamp - min(raw$Item3.Timestamp))
+  )
+})
+
+test_that("read_bonsai reflects y around the frame the images record", {
+  # Every image item in the file is 1920 x 1080; the largest y is only 826,
+  # so reflecting around it put every y 254 px off.
+  path <- testthat::test_path("data/bonsai/LI850.csv")
+  raw <- utils::read.csv(path)
+  result <- read_bonsai(path)
+
+  expect_equal(
+    anicore::get_metadata(result, "axis_extents"),
+    c(x = 1920, y = 1080)
+  )
+  expect_equal(result$y, 1080 - raw$Item3.Value.Centroid.Y)
+  expect_equal(result$x, raw$Item3.Value.Centroid.X)
+
+  # An explicit video_height still wins.
+  result <- read_bonsai(path, video_height = 1200)
+  expect_equal(result$y, 1200 - raw$Item3.Value.Centroid.Y)
+})
+
+test_that("read_bonsai falls back to the largest y when the images disagree", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  raw <- utils::read.csv(system.file(
+    "extdata",
+    "bonsai.csv",
+    package = "aniread"
+  ))
+  raw$Item2.Size.Height <- 540
+  raw$Item2.Size.Width <- 960
+  utils::write.csv(raw, path, row.names = FALSE)
+  result <- read_bonsai(path)
+
+  extent <- max(raw$Item3.Value.Centroid.Y)
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = extent))
+  expect_equal(result$y, extent - raw$Item3.Value.Centroid.Y)
+})
+
+test_that("bonsai_frame_size() needs one positive size", {
+  expect_identical(
+    bonsai_frame_size(data.frame(Item1.Size.Width = c(640, NA))),
+    list(width = 640, height = NULL)
+  )
+  expect_identical(
+    bonsai_frame_size(data.frame(Item1.Size.Height = c("a", "a"))),
+    list(width = NULL, height = NULL)
+  )
+  expect_identical(
+    bonsai_frame_size(data.frame(x = 1)),
+    list(width = NULL, height = NULL)
   )
 })
