@@ -556,3 +556,293 @@ test_that("describe_freemocap_format() falls back for an unknown layout", {
     "not a layout this reader recognises"
   )
 })
+
+# FreeMoCap v1.8 ----------------------------------------------------------
+# A 9-column by_frame.csv written by v1.8.2's own DataSaver.save_to_tidy_csv()
+# from synthetic positions; see data/freemocap/README.md for its origin.
+
+test_that("a by_frame.csv from FreeMoCap v1.8's writer is read", {
+  path <- test_path("data", "freemocap", "v1.8", "recording_by_frame.csv")
+  raw <- vroom::vroom(path, show_col_types = FALSE)
+  data <- read_freemocap(path)
+  meta <- anicore::get_metadata(data)
+
+  expect_equal(meta$source_format, "by_frame_9col")
+  expect_equal(as.character(meta$unit_time), "frame")
+  expect_setequal(
+    as.character(unique(data$model)),
+    c("mediapipe_body", "mediapipe_com", "mediapipe_hand", "mediapipe_face")
+  )
+  # The face keypoints are numbered; they stay text, not the number 0.
+  expect_true("0000" %in% as.character(data$keypoint))
+  # Centres of mass carry no reprojection error, so no confidence.
+  com <- data[data$model == "mediapipe_com", ]
+  expect_true(all(is.na(com$confidence)))
+  expect_equal(
+    sort(1 / data$confidence[!is.na(data$confidence)] - 1),
+    sort(raw$reprojection_error[!is.na(raw$reprojection_error)]),
+    tolerance = 1e-9
+  )
+})
+
+test_that("numbered keypoints stay text in a file of only those", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "frame,timestamp,timestamp_by_camera,model,keypoint,x,y,z,reprojection_error",
+      "0,,{},mediapipe_face,0000,1,2,3,0.5",
+      "0,,{},mediapipe_face,0001,1,2,3,0.5"
+    ),
+    path
+  )
+
+  expect_setequal(
+    as.character(read_freemocap(path)$keypoint),
+    c("0000", "0001")
+  )
+})
+
+# FreeMoCap v2 ------------------------------------------------------------
+# Written by skellyforge's own writers from synthetic positions: RTMPose, body
+# and left hand, three frames. See data/freemocap/README.md for the origin.
+
+v2_csv <- function() {
+  system.file("extdata", "freemocap_v2.csv", package = "aniread")
+}
+v2_file <- function(...) test_path("data", "freemocap", "v2", ...)
+
+as_plain <- function(d) {
+  d <- as.data.frame(d)
+  d$model <- as.character(d$model)
+  d$keypoint <- as.character(d$keypoint)
+  d <- d[c("time", "model", "keypoint", "x", "y", "z", "confidence")]
+  d <- d[order(d$model, d$keypoint, d$time), ]
+  rownames(d) <- NULL
+  d
+}
+
+test_that("the v2 tidy export is read", {
+  data <- read_freemocap(v2_csv())
+  meta <- anicore::get_metadata(data)
+
+  expect_s3_class(data, "anipoint")
+  expect_equal(meta$source, "freemocap")
+  expect_equal(meta$source_format, "v2_by_frame")
+  expect_equal(as.character(meta$unit_time), "frame")
+  expect_equal(as.character(meta$unit_space), "mm")
+  expect_true(is.na(meta$sampling_rate))
+  expect_equal(sort(unique(as.numeric(data$time))), c(0, 1, 2))
+  expect_false(any(c("trajectory", "reprojection_error") %in% names(data)))
+  # skellyforge's main pipeline attaches no reprojection error.
+  expect_true(all(is.na(data$confidence)))
+})
+
+test_that("v2 models are named as v1 names them", {
+  data <- read_freemocap(v2_csv())
+
+  expect_setequal(
+    as.character(unique(data$model)),
+    c("rtmpose_body", "rtmpose_left_hand", "rtmpose_com")
+  )
+})
+
+test_that("each v2 keypoint is read once per frame, from 3d_xyz", {
+  raw <- vroom::vroom(v2_csv(), show_col_types = FALSE)
+  data <- read_freemocap(v2_csv())
+
+  body <- as_plain(data[data$model == "rtmpose_body", ])
+  expected <- raw[raw$model == "rtmpose.body" & raw$trajectory == "3d_xyz", ]
+  expected <- expected[order(expected$keypoint, expected$frame), ]
+
+  expect_equal(nrow(body), nrow(expected))
+  expect_equal(body$keypoint, expected$keypoint)
+  expect_equal(body$x, expected$x)
+  expect_equal(body$z, expected$z)
+})
+
+test_that("the v2 centres of mass are keypoints of their own model", {
+  raw <- vroom::vroom(v2_csv(), show_col_types = FALSE)
+  data <- read_freemocap(v2_csv())
+  com <- data[data$model == "rtmpose_com", ]
+
+  com_raw <- raw[grepl("center_of_mass", raw$trajectory), ]
+  expect_equal(nrow(com), nrow(com_raw))
+  expect_setequal(as.character(unique(com$keypoint)), unique(com_raw$keypoint))
+  expect_true("total_body_center_of_mass" %in% as.character(com$keypoint))
+})
+
+test_that("trajectory = 'rigid_3d_xyz' reads the rigid positions", {
+  raw <- vroom::vroom(v2_csv(), show_col_types = FALSE)
+
+  expect_message(
+    data <- read_freemocap(v2_csv(), trajectory = "rigid_3d_xyz"),
+    "rtmpose_left_hand"
+  )
+  expect_equal(anicore::get_metadata(data)$source_format, "v2_by_frame")
+
+  body <- as_plain(data[data$model == "rtmpose_body", ])
+  rigid <- raw[
+    raw$model == "rtmpose.body" & raw$trajectory == "rigid_3d_xyz",
+  ]
+  rigid <- rigid[order(rigid$keypoint, rigid$frame), ]
+  expect_equal(body$x, rigid$x)
+
+  # The hand has no rigid version, so it keeps its 3d_xyz rather than
+  # vanishing from the frame.
+  hand_default <- as_plain(read_freemocap(v2_csv())) |>
+    dplyr::filter(.data$model == "rtmpose_left_hand")
+  hand_rigid <- as_plain(data) |>
+    dplyr::filter(.data$model == "rtmpose_left_hand")
+  expect_equal(hand_rigid, hand_default)
+})
+
+test_that("trajectory is validated, and ignored with a warning elsewhere", {
+  expect_error(
+    read_freemocap(v2_csv(), trajectory = "2d_xy"),
+    "should be one of"
+  )
+  path <- system.file("extdata", "freemocap.csv", package = "aniread")
+  expect_warning(
+    data <- read_freemocap(path, trajectory = "rigid_3d_xyz"),
+    "ignored"
+  )
+  expect_equal(anicore::get_metadata(data)$source_format, "by_frame_9col")
+})
+
+test_that("a v2 reprojection error becomes confidence", {
+  raw <- vroom::vroom(v2_csv(), show_col_types = FALSE)
+  raw$reprojection_error <- seq_len(nrow(raw)) / 10
+  path <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(raw, path, delim = ",")
+
+  data <- read_freemocap(path)
+  kept <- raw[raw$trajectory != "rigid_3d_xyz", ]
+  expect_equal(
+    sort(1 / data$confidence - 1),
+    sort(kept$reprojection_error),
+    tolerance = 1e-9
+  )
+})
+
+test_that("the v2 Parquet export reads as the CSV does", {
+  skip_if_not_installed("arrow")
+  data <- read_freemocap(v2_file("freemocap_data_by_frame.parquet"))
+
+  expect_equal(anicore::get_metadata(data)$source_format, "v2_by_frame")
+  expect_equal(as_plain(data), as_plain(read_freemocap(v2_csv())))
+})
+
+test_that("the v2 per-trajectory files are read, with the model from the name", {
+  cases <- list(
+    rtmpose_body_3d_xyz.csv = "rtmpose_body",
+    rtmpose_body_rigid_3d_xyz.csv = "rtmpose_body",
+    rtmpose_left_hand_3d_xyz.csv = "rtmpose_left_hand",
+    rtmpose_body_total_body_center_of_mass.csv = "rtmpose_com",
+    rtmpose_body_segment_center_of_mass.csv = "rtmpose_com"
+  )
+  for (f in names(cases)) {
+    data <- read_freemocap(v2_file(f))
+    expect_equal(
+      anicore::get_metadata(data)$source_format,
+      "v2_trajectory",
+      info = f
+    )
+    expect_equal(as.character(unique(data$model)), cases[[f]], info = f)
+    expect_true(all(is.na(data$confidence)), info = f)
+  }
+})
+
+test_that("v2's tidy and per-trajectory files agree on the same recording", {
+  # The point of naming models the same way in both: the per-trajectory
+  # files, stacked, are the tidy export read with the same trajectory.
+  stack <- function(files) {
+    dplyr::bind_rows(lapply(files, \(f) as_plain(read_freemocap(v2_file(f)))))
+  }
+  com <- c(
+    "rtmpose_body_total_body_center_of_mass.csv",
+    "rtmpose_body_segment_center_of_mass.csv",
+    "rtmpose_left_hand_3d_xyz.csv"
+  )
+
+  expect_equal(
+    as_plain(stack(c("rtmpose_body_3d_xyz.csv", com))),
+    as_plain(read_freemocap(v2_csv()))
+  )
+  expect_equal(
+    as_plain(stack(c("rtmpose_body_rigid_3d_xyz.csv", com))),
+    as_plain(suppressMessages(
+      read_freemocap(v2_csv(), trajectory = "rigid_3d_xyz")
+    ))
+  )
+})
+
+test_that("a v2 per-trajectory file under another name keeps its stem", {
+  path <- file.path(withr::local_tempdir(), "my_points.csv")
+  file.copy(v2_file("rtmpose_body_3d_xyz.csv"), path)
+
+  expect_equal(
+    as.character(unique(read_freemocap(path)$model)),
+    "my_points"
+  )
+})
+
+test_that("v2 files are not mistaken for v1's of the same name", {
+  # v2's per-trajectory files reuse v1's per-model names, but are long rather
+  # than wide; the layout is read from the columns, not the name.
+  path <- file.path(withr::local_tempdir(), "mediapipe_body_3d_xyz.csv")
+  file.copy(v2_file("rtmpose_body_3d_xyz.csv"), path)
+
+  expect_equal(
+    anicore::get_metadata(read_freemocap(path))$source_format,
+    "v2_trajectory"
+  )
+  expect_error(
+    read_freemocap(path, format = "wide"),
+    "v2 per-trajectory export"
+  )
+  expect_error(
+    read_freemocap(v2_csv(), format = "by_frame"),
+    "v2 freemocap_data_by_frame export"
+  )
+  expect_s3_class(
+    read_freemocap(v2_csv(), format = "v2_by_frame"),
+    "anipoint"
+  )
+})
+
+test_that("detect_freemocap_format() recognises the v2 layouts", {
+  cols <- function(...) {
+    nm <- c(...)
+    as.data.frame(setNames(rep(list(1), length(nm)), nm))
+  }
+
+  expect_equal(
+    detect_freemocap_format(cols(
+      "frame",
+      "keypoint",
+      "x",
+      "y",
+      "z",
+      "model",
+      "trajectory",
+      "reprojection_error"
+    )),
+    "v2_by_frame"
+  )
+  expect_equal(
+    detect_freemocap_format(cols("frame", "keypoint", "x", "y", "z")),
+    "v2_trajectory"
+  )
+})
+
+test_that("v2 model names map as documented", {
+  expect_equal(
+    freemocap_v2_model(c("mediapipe.body", "rtmpose.left_hand")),
+    c("mediapipe_body", "rtmpose_left_hand")
+  )
+  expect_equal(
+    freemocap_v2_com_model(c("mediapipe.body", "rtmpose.face", "bare")),
+    c("mediapipe_com", "rtmpose_face_com", "bare_com")
+  )
+  expect_identical(freemocap_v2_com_model(character(0)), character(0))
+})

@@ -10,6 +10,8 @@
 
 ## Added
 
+* `read_freemocap()` reads FreeMoCap v2's output (#171). The tidy `freemocap_data_by_frame.csv`, and the `.parquet` beside it (with arrow installed), are read as `source_format` `"v2_by_frame"`, and the per-trajectory files such as `output_data/mediapipe_body_3d_xyz.csv` as `"v2_trajectory"`. Those per-trajectory files keep the names of v1's wide per-model files but are long, so they are told apart by their columns. Models are named `<tracker>_<aspect>` as in v1 (`rtmpose.left_hand` becomes `rtmpose_left_hand`). Each keypoint appears once per trajectory in the tidy export: the new `trajectory` argument chooses `"3d_xyz"` (default) or `"rigid_3d_xyz"` for the positions, and the centres of mass become keypoints of a `<tracker>_com` model, as v1's `mediapipe_com`. v2 writes no timestamps, so `time` is in frames. `detect_source()` and `read_dataset()` recognise the tidy CSV. The 9-column v1.8 `by_frame.csv` already read; it now has a test fixture written by FreeMoCap v1.8.2's own saver, and `model` and `keypoint` are now always read as text, so a face keypoint such as `0000` can no longer be guessed to be the number 0.
+
 * `read_trackmate()`, and so `read_dataset()`, keeps what a TrackMate XML records about the recording (#149). The frame interval in `Settings/ImageData` becomes `sampling_rate`, converted to Hz, and the TrackMate version on the root element becomes `source_version`. `sampling_rate` stays `NA` when the time unit is frames or not recognised. TrackMate writes an image with no time calibration as one second per frame, so a 1 Hz rate from a file in seconds may really be frames.
 
 * Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
