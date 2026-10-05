@@ -21,10 +21,12 @@
 #   interval in a unit of time
 # - source_version from the root version attribute
 # - Reflects around height * pixelheight, the height in the spatial unit
-# - Labels tracks by Track/@name, falling back to TRACK_ID
+# - Labels tracks by Track/@name, without TrackMate's default `Track_`
+#   prefix, falling back to TRACK_ID; levels in numeric order
 # - Reads files written by TrackMate 6, 7.0 and 7.13 (data/trackmate)
 # - Reads a blank spatial unit as pixels when the pixel size is 1
-# - Splits a track that divides into its branches
+# - Splits a track that divides into its branches, numbered after the
+#   largest id in the file, with the lineage in `parent`
 
 test_that("read_trackmate errors on non-existent file", {
   expect_error(
@@ -738,10 +740,48 @@ test_that("read_trackmate labels tracks by their names", {
   result <- read_trackmate_quietly(path)
   expect_setequal(as.character(unique(result$track)), c("Cell A", "Cell B"))
 
-  # TrackMate's default names
+  # TrackMate's default names, without the prefix
   path <- write_trackmate_tracks()
   result <- read_trackmate_quietly(path)
-  expect_setequal(as.character(unique(result$track)), c("Track_0", "Track_1"))
+  expect_equal(levels(result$track), c("0", "1"))
+
+  # Renamed and default names in one file: each is read on its own
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_0"', 'name="Cell B"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("0", "Cell B"))
+
+  # Only TrackMate's own pattern loses its prefix
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_A"', 'name="track_1"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("Track_A", "track_1"))
+})
+
+test_that("read_trackmate orders track ids as numbers", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_10"', 'name="Track_2"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("2", "10"))
+  expect_equal(levels(result$parent), c("2", "10"))
+
+  # Numbers first, then names
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell B"', 'name="Track_10"'),
+    extra_track = '<Track TRACK_ID="2" name="Track_9"/>'
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("10", "Cell B"))
+})
+
+test_that("read_trackmate gives a track that does not divide no parent", {
+  result <- read_trackmate_quietly(write_trackmate_tracks())
+  expect_true("parent" %in% names(result))
+  expect_true(all(is.na(result$parent)))
+  expect_equal(anicore::get_variables(result, "what"), c("track", "keypoint"))
 })
 
 test_that("read_trackmate only needs the names of the filtered tracks to differ", {
@@ -761,15 +801,18 @@ test_that("read_trackmate labels tracks by ID when names cannot identify them", 
     expect_setequal(as.character(unique(result$track)), c("0", "1"))
   }
 
-  # Two tracks sharing a name
-  path <- write_trackmate_tracks(
-    track_attrs = c('name="Cell A"', 'name="Cell A"')
-  )
-  expect_warning(
-    result <- read_trackmate_quietly(path),
-    "track names are not unique"
-  )
-  expect_setequal(as.character(unique(result$track)), c("0", "1"))
+  # Two tracks sharing a name, as written or once the prefix is dropped
+  for (attrs in list(
+    c('name="Cell A"', 'name="Cell A"'),
+    c('name="3"', 'name="Track_3"')
+  )) {
+    path <- write_trackmate_tracks(track_attrs = attrs)
+    expect_warning(
+      result <- read_trackmate_quietly(path),
+      "do not tell every track apart"
+    )
+    expect_setequal(as.character(unique(result$track)), c("0", "1"))
+  }
 })
 
 # Files written by TrackMate ------------------------------------------------
@@ -782,10 +825,10 @@ test_that("read_trackmate reads a file written before TrackMate 7", {
   path <- trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
   expect_no_warning(result <- read_trackmate_quietly(path))
 
-  expect_equal(levels(result$track), c("Track_0", "Track_1"))
+  expect_equal(levels(result$track), c("0", "1"))
   expect_equal(as.vector(table(result$track)), c(20, 20))
   expect_equal(
-    head(result$time[result$track == "Track_1"], 3),
+    head(result$time[result$track == "1"], 3),
     c(0, 300.014, 600.028)
   )
   expect_equal(anicore::get_metadata(result, "source_version"), "6.0.1")
@@ -833,44 +876,72 @@ test_that("read_trackmate reads a blank spatial unit as pixels", {
   )
 })
 
+# One row per track: when it starts and ends, and its parent
+lineage <- function(data) {
+  as.data.frame(data) |>
+    dplyr::summarise(
+      start = min(time),
+      end = max(time),
+      parent = as.character(dplyr::first(parent)),
+      .by = track
+    ) |>
+    dplyr::mutate(track = as.character(track))
+}
+
 test_that("read_trackmate splits a dividing track into its branches", {
   path <- trackmate_file("CelegansEarly_MIP_trimmed.xml")
   expect_no_warning(result <- read_trackmate_quietly(path))
 
+  # Tracks 0 and 2 each divide; their daughters are numbered after the
+  # largest id, 2, track by track.
+  expect_equal(levels(result$track), c("0", "2", "3", "4", "5", "6"))
+  expect_equal(levels(result$parent), levels(result$track))
   expect_equal(
-    levels(result$track),
-    c("Track_0", "Track_0.a", "Track_0.b", "Track_2", "Track_2.a", "Track_2.b")
+    lineage(result)[c("track", "parent")],
+    data.frame(
+      track = c("0", "2", "3", "4", "5", "6"),
+      parent = c(NA, NA, "0", "0", "2", "2")
+    )
   )
   # Every spot is kept, once.
   expect_equal(nrow(result), 51)
   expect_false(anyDuplicated(as.data.frame(result)[c("track", "time")]) > 0)
 
-  # The daughters start at the frame after the mother's last spot, and are
-  # lettered by x.
+  # The daughters start after the mother's last spot, and are numbered by x.
   times <- function(track) result$time[result$track == track]
-  expect_equal(max(times("Track_0")), 16)
-  expect_equal(min(times("Track_0.a")), 18)
-  expect_equal(min(times("Track_0.b")), 18)
+  expect_equal(max(times("0")), 16)
+  expect_equal(min(times("3")), 18)
+  expect_equal(min(times("4")), 18)
+  expect_equal(max(times("2")), 14)
+  expect_equal(min(times("5")), 16)
   first_x <- function(track) result$x[result$track == track][[1]]
-  expect_lt(first_x("Track_0.a"), first_x("Track_0.b"))
+  expect_lt(first_x("3"), first_x("4"))
+  expect_lt(first_x("5"), first_x("6"))
 
   expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "m")
   expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "um")
   expect_equal(anicore::get_metadata(result, "sampling_rate"), 1 / 120)
 })
 
-test_that("read_trackmate names the branches of a lineage as TrackMate does", {
-  # One cell dividing at frames 7 and 11: 1, 2, then 4 cells.
+test_that("read_trackmate numbers the branches of a lineage by generation", {
+  # One cell dividing at frame 7, and both daughters at frame 11: 1, 2, then
+  # 4 cells.
   result <- read_trackmate_quietly(trackmate_file("trpL_150310-11_trimmed.xml"))
 
   expect_equal(
-    levels(result$track),
-    paste0("Track_0", c("", ".a", ".aa", ".ab", ".b", ".ba", ".bb"))
+    lineage(result),
+    data.frame(
+      track = as.character(0:6),
+      start = c(0, 8, 8, 12, 12, 12, 12),
+      end = c(7, 11, 11, 13, 13, 13, 13),
+      parent = c(NA, "0", "0", "1", "1", "2", "2")
+    )
   )
-  ranges <- tapply(result$time, as.character(result$track), range)
-  expect_equal(ranges[["Track_0"]], c(0, 7))
-  expect_equal(ranges[["Track_0.b"]], c(8, 11))
-  expect_equal(ranges[["Track_0.ba"]], c(12, 13))
+  # Sisters are numbered by x.
+  first_x <- function(track) result$x[result$track == track][[1]]
+  expect_lt(first_x("1"), first_x("2"))
+  expect_lt(first_x("3"), first_x("4"))
+  expect_lt(first_x("5"), first_x("6"))
 })
 
 test_that("read_trackmate keeps whole a track that splits and merges in time", {
@@ -879,7 +950,8 @@ test_that("read_trackmate keeps whole a track that splits and merges in time", {
   result <- read_trackmate_quietly(
     trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
   )
-  expect_equal(sum(result$track == "Track_1"), 20)
+  expect_equal(sum(result$track == "1"), 20)
+  expect_true(all(is.na(result$parent)))
 })
 
 test_that("read_trackmate keeps whole a track whose branches merge", {
@@ -904,12 +976,18 @@ test_that("read_trackmate keeps whole a track whose branches merge", {
   writeLines(xml_content, path)
 
   expect_warning(result <- read_trackmate_quietly(path), "duplicate")
-  expect_equal(as.character(unique(result$track)), "Track_0")
+  expect_equal(as.character(unique(result$track)), "0")
+  expect_true(all(is.na(result$parent)))
 })
 
-test_that("read_trackmate follows a link written backwards in time", {
-  # TrackMate links a spot to a later one; a link from the later spot reads
-  # the same.
+# A track named `name` whose spot 1 divides into spots 2 (x = 30) and 3
+# (x = 10), with one link written backwards in time, and `extra_track`
+# beside it.
+write_trackmate_division <- function(
+  name = 'name="Track_0"',
+  extra_track = "",
+  env = parent.frame()
+) {
   xml_content <- paste0(
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<TrackMate><Model spatialunits="pixel" timeunits="sec"><AllSpots>',
@@ -919,17 +997,54 @@ test_that("read_trackmate follows a link written backwards in time", {
     '<Spot ID="2" POSITION_X="30" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
     '<Spot ID="3" POSITION_X="10" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
     "</SpotsInFrame></AllSpots>",
-    '<AllTracks><Track TRACK_ID="0" name="Track_0">',
+    sprintf('<AllTracks><Track TRACK_ID="0" %s>', name),
     '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>',
     '<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="1"/>',
-    "</Track></AllTracks>",
+    "</Track>",
+    extra_track,
+    "</AllTracks>",
     '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
     "</Model></TrackMate>"
   )
-  path <- withr::local_tempfile(fileext = ".xml")
+  path <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
   writeLines(xml_content, path)
+  path
+}
 
-  expect_no_warning(result <- read_trackmate_quietly(path))
-  expect_equal(result$x[result$track == "Track_0.a"], 10)
-  expect_equal(result$x[result$track == "Track_0.b"], 30)
+test_that("read_trackmate follows a link written backwards in time", {
+  # TrackMate links a spot to a later one; a link from the later spot reads
+  # the same.
+  expect_no_warning(
+    result <- read_trackmate_quietly(write_trackmate_division())
+  )
+  expect_equal(result$x[result$track == "1"], 10)
+  expect_equal(result$x[result$track == "2"], 30)
+  expect_equal(as.character(result$parent), c(NA, "0", "0"))
+})
+
+test_that("read_trackmate numbers branches after every track in the file", {
+  # A track left out by the filter, with a larger TRACK_ID or name number
+  for (extra in c(
+    '<Track TRACK_ID="9" name="Track_4"/>',
+    '<Track TRACK_ID="4" name="Track_9"/>'
+  )) {
+    result <- read_trackmate_quietly(write_trackmate_division(
+      extra_track = extra
+    ))
+    expect_equal(levels(result$track), c("0", "10", "11"), label = extra)
+  }
+
+  # A track you named keeps its name, and its daughters are numbered.
+  result <- read_trackmate_quietly(write_trackmate_division('name="Cell A"'))
+  expect_equal(
+    lineage(result)[c("track", "parent")],
+    data.frame(
+      track = c("1", "2", "Cell A"),
+      parent = c("Cell A", "Cell A", NA)
+    )
+  )
+
+  # With no number anywhere but the TRACK_ID 0, daughters start at 1
+  result <- read_trackmate_quietly(write_trackmate_division(""))
+  expect_equal(levels(result$track), c("0", "1", "2"))
 })
