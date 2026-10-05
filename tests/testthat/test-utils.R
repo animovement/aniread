@@ -62,6 +62,31 @@ test_that("reflect_to_bottom_left falls back to the furthest point when video_he
   expect_equal(result$y, c(20, 10, 0))
 })
 
+test_that("reflect_to_bottom_left records a video_width as the x extent", {
+  data <- dplyr::tibble(
+    individual = factor("ind1"),
+    keypoint = factor("centroid"),
+    time = 1:3,
+    x = c(1, 2, 3),
+    y = c(10, 20, 30)
+  ) |>
+    anicore::as_anipoint()
+
+  result <- reflect_to_bottom_left(data, video_height = 100, video_width = 200)
+  expect_equal(
+    anicore::get_metadata(result, "axis_extents"),
+    c(x = 200, y = 100)
+  )
+  expect_equal(result$x, c(1, 2, 3))
+  expect_equal(result$y, c(90, 80, 70))
+
+  # x is still recorded when there is no y to reflect.
+  data$y <- NA_real_
+  result <- reflect_to_bottom_left(data, video_width = 200)
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(x = 200))
+  expect_equal(anicore::get_axis_directions(result)[["y"]], "down")
+})
+
 test_that("reflect_to_bottom_left leaves the data alone when y is all NA", {
   data <- dplyr::tibble(
     individual = factor("ind1"),

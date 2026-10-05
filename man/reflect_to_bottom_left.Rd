@@ -4,7 +4,7 @@
 \alias{reflect_to_bottom_left}
 \title{Turn image-plane data the right way up}
 \usage{
-reflect_to_bottom_left(data, video_height = NULL)
+reflect_to_bottom_left(data, video_height = NULL, video_width = NULL)
 }
 \arguments{
 \item{data}{An anipoint with image-plane coordinates.}
@@ -12,6 +12,10 @@ reflect_to_bottom_left(data, video_height = NULL)
 \item{video_height}{Optional numeric height of the source video frame
 in y-axis units. When supplied, takes precedence over the extent
 inferred from the data.}
+
+\item{video_width}{Optional numeric width of the source video frame in
+x-axis units, recorded as the x extent. Nothing is inferred when it is
+not supplied, since x is not reflected.}
 }
 \value{
 An anipoint with y counting upward.

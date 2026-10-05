@@ -10,7 +10,7 @@ read_bonsai(path, video_height = NULL)
 \item{path}{Path to a Bonsai data file}
 
 \item{video_height}{Optional numeric height of the source video frame
-in pixels.}
+in pixels. Takes precedence over the height the file records.}
 }
 \value{
 a movement dataframe
@@ -19,10 +19,15 @@ a movement dataframe
 Read a Bonsai data frame. Bonsai centroid coordinates
 come from camera/video pipelines that use image (top-left) origin;
 the reader reflects y so the returned aniframe is in the
-conventional \code{bottom_left} origin. Bonsai workflows are
-user-defined and the output CSV does not record video resolution,
-so pass \code{video_height} to get an accurate flip — otherwise \code{max(y)}
-is used as a fallback.
+conventional \code{bottom_left} origin.
+
+Bonsai workflows are user-defined, so what the CSV records about the
+video depends on the workflow. When it writes the image alongside the
+centroid, every row carries the image's \code{Size.Width} and \code{Size.Height}.
+When all the images in the file have the same size, that is the frame
+size: y is reflected around its height, and its width and height are
+recorded as the \code{axis_extents} of x and y. Otherwise pass \code{video_height},
+or the largest \code{y} is used as the height and no extent is recorded for x.
 
 When the workflow records the blob's \code{Orientation}, it is kept as
 \code{orientation_axis}: the angle of the blob's long axis, in radians from \code{x}

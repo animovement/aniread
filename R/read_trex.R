@@ -11,6 +11,24 @@
 #' carries the centroid and midline of a single individual and none of that
 #' metadata, so several columns come back `NA`.
 #'
+#' Both exports give `time` in seconds, so `unit_time` is `"s"`. The `.npz`
+#' records the frame rate as `frame_rate`, which becomes `sampling_rate`. The
+#' CSV does not record it, but when it has both a `frame` and a `time` column,
+#' and every time is the frame number divided by one rate (to within the
+#' rounding of `time`), that rate becomes `sampling_rate`: the frames between
+#' the first and last row over the seconds between them, or the whole number
+#' nearest to it when that fits every row as well. Otherwise, as when the
+#' times are camera timestamps that vary from frame to frame, it is left `NA`.
+#'
+#' Both exports give positions in centimetres, so `unit_space` is `"cm"`.
+#' TRex converts from pixels with its `cm_per_pixel`, the real width of the
+#' image (`meta_real_width`) over its width in pixels. When nobody set the
+#' real width, TRex assumes 30 cm, so the centimetres are only as real as
+#' that setting. The `.npz` records the frame size as `video_size`, in
+#' pixels, and `cm_per_pixel`; their product is the frame's width and height
+#' in centimetres, which become the `axis_extents` of x and y and what y is
+#' reflected around.
+#'
 #' @param path Character string specifying the path to a TRex CSV file.
 #'   The file should contain columns for:
 #'   - time
@@ -60,8 +78,7 @@
 #' @param format Which export to read. `"auto"` (default) reads it from the
 #'   file: the `.npz` export is a zip of `.npy` arrays, the CSV export is not.
 #' @param video_height Optional numeric height of the source video frame
-#'   in the same spatial units as the tracking output (TRex defaults to
-#'   centimetres). The `.npz` export records this as `video_size` and it is
+#'   in the same spatial units as the tracking output, centimetres. The `.npz` export records this as `video_size` and it is
 #'   used automatically; TRex's CSV export does not, so without it `max(y)`
 #'   is used as a fallback when reflecting to `bottom_left`.
 #'
@@ -86,15 +103,21 @@ read_trex <- function(
       ))
     }
     data <- read_trex_csv(path)
-    sampling_rate <- NULL
-    frame_height <- NULL
+    # The CSV records no frame rate, but its `frame` and `time` columns
+    # state one when they agree.
+    sampling_rate <- NA_real_
+    if ("frame" %in% names(data)) {
+      sampling_rate <- rate_from_frames(data$frame, data$time)
+      data$frame <- NULL
+    }
+    frame_size <- list()
   } else {
     data <- read_trex_npz(path)
     # The npz records the frame rate and frame size the CSV export omits, so
     # neither has to be supplied or guessed.
     first <- read_npz(path[[1]])
     sampling_rate <- first[["frame_rate"]]
-    frame_height <- trex_frame_height(first)
+    frame_size <- trex_frame_size(first)
   }
 
   # TRex reports `time` in seconds in both exports, so `unit_time` is
@@ -112,7 +135,8 @@ read_trex <- function(
       source = "trex",
       source_format = format,
       filename = basename(path),
-      unit_time = "s"
+      unit_time = "s",
+      unit_space = "cm"
     )
 
   if (
@@ -124,25 +148,29 @@ read_trex <- function(
   }
 
   data |>
-    reflect_to_bottom_left(video_height = video_height %||% frame_height)
+    reflect_to_bottom_left(
+      video_height = video_height %||% frame_size$height,
+      video_width = frame_size$width
+    )
 }
 
-#' The frame height a TRex `.npz` records, in the units of its coordinates
+#' The frame size a TRex `.npz` records, in the units of its coordinates
 #'
-#' `video_size` is in pixels and the coordinates are in centimetres, so the
-#' height is scaled by `cm_per_pixel` before it can be reflected around.
+#' `video_size` is the width and height in pixels and the coordinates are in
+#' centimetres, so both are scaled by `cm_per_pixel`.
 #'
 #' @param arrays The named list from `read_npz()`.
 #'
-#' @return A single numeric height, or `NULL` when the file records none.
+#' @return A list of `width` and `height`, both `NULL` when the file does
+#'   not record the size and the scale.
 #' @noRd
-trex_frame_height <- function(arrays) {
+trex_frame_size <- function(arrays) {
   size <- arrays[["video_size"]]
   scale <- arrays[["cm_per_pixel"]]
   if (is.null(size) || length(size) < 2 || is.null(scale)) {
-    return(NULL)
+    return(list(width = NULL, height = NULL))
   }
-  size[[2]] * scale
+  list(width = size[[1]] * scale, height = size[[2]] * scale)
 }
 
 #' Read and Process TRex CSV File
@@ -163,9 +191,20 @@ read_trex_csv <- function(path) {
     delim = ",",
     show_col_types = FALSE
   ) |>
-    suppressMessages() |>
+    suppressMessages()
+
+  # TRex can write `frame` twice, and vroom then suffixes both names
+  # (`frame...1`). They hold the same frame number, so the first is kept.
+  frame_cols <- grep("^frame(\\.\\.\\.[0-9]+)?$", names(data))
+  if (length(frame_cols) > 0) {
+    names(data)[[frame_cols[[1]]]] <- "frame"
+    data <- data[setdiff(seq_along(data), frame_cols[-1])]
+  }
+
+  data <- data |>
     janitor::clean_names() |>
     dplyr::select(
+      tidyselect::any_of("frame"),
       tidyselect::contains(c("x_", "y_", "time")),
       tidyselect::any_of("angle")
     ) |>
@@ -179,13 +218,13 @@ read_trex_csv <- function(path) {
       y_head = "y_cm"
     ) |>
     tidyr::pivot_longer(
-      cols = !tidyselect::any_of(c("time", "angle")),
+      cols = !tidyselect::any_of(c("frame", "time", "angle")),
       names_sep = "_",
       names_to = c("pos", "keypoint"),
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = tidyselect::any_of(c("time", "keypoint", "angle")),
+      id_cols = tidyselect::any_of(c("frame", "time", "keypoint", "angle")),
       names_from = "pos",
       values_from = "val"
     ) |>

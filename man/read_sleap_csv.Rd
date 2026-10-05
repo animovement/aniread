@@ -17,9 +17,19 @@ A data frame with \code{time}, \code{individual}, \code{keypoint}, \code{x}, \co
 The CSV export carries one row per instance, with columns \code{track},
 \code{frame_idx}, \code{instance.score} and a \code{.x}/\code{.y}/\code{.score} triple per node.
 Node names are taken from the columns rather than assumed, since a
-recording has whatever skeleton it was tracked with.
+recording has whatever skeleton it was tracked with. Columns are matched
+by name, so their order does not matter: SLEAP wrote the nodes in
+skeleton order with \code{.x}, \code{.y}, \code{.score}, where sleap-io sorts them by
+name.
 }
 \details{
+A row with an empty \code{track} is an instance in no track. It is named
+\code{individual1}, \code{individual2}, ... by its place among the untracked rows of
+its frame, as \code{\link[=read_sleap_h5]{read_sleap_h5()}} names the instances of a file without
+track names. sleap-io writes a frame's user-labelled instances before its
+predicted ones, and where a track has both in one frame, the
+user-labelled one is kept, as sleap-io's \code{.h5} export keeps it.
+
 Two things are aligned with \code{\link[=read_sleap_h5]{read_sleap_h5()}} so that one recording reads
 the same from either export: \code{time} counts from 1, where \code{frame_idx}
 counts from 0; and a frame in which an instance was not detected comes

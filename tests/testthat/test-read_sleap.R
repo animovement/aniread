@@ -256,3 +256,274 @@ test_that("attaching the skeleton again replaces the one the reader attached", {
   expect_no_warning(again <- anicore::set_structure(data, read_structure(path)))
   expect_equal(anicore::get_structure(again), anicore::get_structure(data))
 })
+
+# Exports written by sleap-io (#170) --------------------------------------
+# SLEAP writes its analysis exports through sleap-io from SLEAP 1.6.3 on.
+# The fixtures below were written by sleap-io 0.9.2 (BSD-3-Clause) from two
+# of its own BSD-3-Clause test files, in tests/data/slp at tag v0.9.2:
+#
+# * SLEAP_two-flies_sleap-io.*: predictions_1.2.7_provenance_and_tracking.slp
+#   cut to frames 0 to 5 of a video declared 9 frames long, with track_1
+#   removed from frame 3. Two tracks, 13 nodes, and a provenance record of
+#   SLEAP 1.2.7. Written with save_csv(), and save_analysis_h5() with
+#   preset = "matlab" and preset = "standard".
+# * SLEAP_untracked-pair_sleap-io.*: centered_pair_predictions.slp cut to
+#   frames 0 to 2, with every track removed, only the first instance kept in
+#   frame 1, and an empty provenance record. Written with save_csv(), and
+#   save_analysis_h5() with custom axes (track_dim = 0, frame_dim = 1,
+#   xy_dim = 2, node_dim = 3).
+#
+# Files SLEAP wrote itself, from github.com/talmolab/sleap (Clear BSD):
+#
+# * SLEAP_small-robot_legacy.analysis.h5: tests/data/hdf5_format_v1/
+#   small_robot.000_small_robot_3_frame.analysis.h5, unchanged.
+# * SLEAP_minimal-instance_legacy.analysis.csv: tests/data/csv_format/
+#   minimal_instance.000_centered_pair_low_quality.analysis.csv, unchanged.
+# * SLEAP_docs-example_no-scores.analysis.h5: the docs example
+#   docs/notebooks/analysis_example/predictions.analysis.h5 (branch main),
+#   which predates the score datasets, cut to its first 5 frames with h5py.
+#   Its four datasets and their layout are otherwise unchanged.
+
+sleap_fixture <- function(name) {
+  test_path("data/sleap", name)
+}
+
+# One row per time, individual and keypoint, for comparing two reads.
+sleap_rows <- function(d) {
+  d <- d[order(d$time, as.character(d$individual), as.character(d$keypoint)), ]
+  data.frame(
+    time = as.numeric(d$time),
+    individual = as.character(d$individual),
+    keypoint = as.character(d$keypoint),
+    x = d$x,
+    y = d$y,
+    confidence = d$confidence
+  )
+}
+
+test_that("both sleap-io presets read the same", {
+  skip_if_not_installed("rhdf5")
+  matlab <- read_sleap(sleap_fixture(
+    "SLEAP_two-flies_sleap-io.matlab.analysis.h5"
+  ))
+  standard <- read_sleap(
+    sleap_fixture("SLEAP_two-flies_sleap-io.standard.analysis.h5")
+  )
+
+  expect_equal(
+    rhdf5::h5readAttributes(
+      sleap_fixture("SLEAP_two-flies_sleap-io.standard.analysis.h5"),
+      "/"
+    )$preset,
+    "standard"
+  )
+  expect_equal(sleap_rows(standard), sleap_rows(matlab))
+})
+
+test_that("a sleap-io h5 reads as its CSV does", {
+  skip_if_not_installed("rhdf5")
+  base <- "SLEAP_two-flies_sleap-io"
+  h5 <- read_sleap(
+    sleap_fixture(paste0(base, ".standard.analysis.h5")),
+    video_height = 1024
+  )
+  csv <- read_sleap(
+    sleap_fixture(paste0(base, ".analysis.csv")),
+    video_height = 1024
+  )
+
+  a <- sleap_rows(h5[h5$time <= max(csv$time), ])
+  b <- sleap_rows(csv)
+  expect_equal(a, b)
+  expect_setequal(b$individual, c("track_0", "track_1"))
+})
+
+test_that("the sleap-io CSV's sorted columns are matched by name", {
+  path <- sleap_fixture("SLEAP_two-flies_sleap-io.analysis.csv")
+  raw <- vroom::vroom(path, show_col_types = FALSE) |> suppressMessages()
+  # sleap-io sorts the nodes by name, with .score before .x and .y.
+  expect_equal(
+    names(raw)[4:9],
+    c(
+      "abdomen.score",
+      "abdomen.x",
+      "abdomen.y",
+      "eyeL.score",
+      "eyeL.x",
+      "eyeL.y"
+    )
+  )
+
+  data <- read_sleap(path, video_height = 1024)
+  head <- data[data$keypoint == "head", ]
+  head <- head[order(head$time, head$individual), ]
+  head <- head[!is.na(head$x), ]
+  raw <- raw[order(raw$frame_idx, raw$track), ]
+
+  expect_equal(head$x, raw[["head.x"]])
+  expect_equal(head$confidence, raw[["head.score"]])
+})
+
+test_that("the frame axis of a sleap-io h5 runs to the end of the video", {
+  skip_if_not_installed("rhdf5")
+  # Six labelled frames of a nine-frame video: the last three come back as
+  # NA rows, one per track and node, as undetected frames always have.
+  data <- read_sleap(sleap_fixture(
+    "SLEAP_two-flies_sleap-io.matlab.analysis.h5"
+  ))
+
+  expect_equal(nrow(data), 9L * 2L * 13L)
+  expect_equal(range(data$time), c(1, 9))
+  expect_true(all(is.na(data$x[data$time > 6])))
+  expect_true(all(is.na(data$confidence[data$time > 6])))
+  # track_1 was not detected in frame 3, which is time 4.
+  gap <- data[data$time == 4, ]
+  expect_true(all(is.na(gap$x[gap$individual == "track_1"])))
+  expect_false(all(is.na(gap$x[gap$individual == "track_0"])))
+})
+
+test_that("custom axes are read from the dims attribute", {
+  skip_if_not_installed("rhdf5")
+  path <- sleap_fixture("SLEAP_untracked-pair_sleap-io.custom.analysis.h5")
+  expect_equal(
+    rhdf5::h5readAttributes(path, "tracks")$dims,
+    '["track", "frame", "xy", "node"]'
+  )
+  h5 <- read_sleap(path, video_height = 1024)
+  csv <- read_sleap(
+    sleap_fixture("SLEAP_untracked-pair_sleap-io.analysis.csv"),
+    video_height = 1024
+  )
+
+  # sleap-io names the instances of an untracked recording track_0, track_1
+  # in the h5, and the reader keeps them; the CSV leaves track empty, and
+  # its rows are numbered in the same order.
+  expect_setequal(levels(h5$individual), c("track_0", "track_1"))
+  expect_setequal(levels(csv$individual), c("individual1", "individual2"))
+  h5$individual <- factor(
+    h5$individual,
+    levels = c("track_0", "track_1"),
+    labels = c("individual1", "individual2")
+  )
+  expect_equal(sleap_rows(h5), sleap_rows(csv))
+  # Only one fly was kept in frame 1, which is time 2.
+  expect_true(all(is.na(csv$x[
+    csv$time == 2 & csv$individual == "individual2"
+  ])))
+})
+
+test_that("a dims attribute that names other axes is rejected", {
+  skip_if_not_installed("rhdf5")
+  path <- write_sleap_h5()
+  rhdf5::h5writeAttribute(
+    '["track", "xy", "node", "time"]',
+    rhdf5::H5Dopen(rhdf5::H5Fopen(path), "tracks"),
+    "dims"
+  )
+  rhdf5::h5closeAll()
+
+  expect_error(read_sleap(path), "Cannot read the axes of")
+})
+
+test_that("sleap-io's version is recorded when the provenance names no SLEAP", {
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("jsonlite")
+  version_of <- function(name) {
+    anicore::get_metadata(read_sleap(sleap_fixture(name)), "source_version")
+  }
+
+  # The provenance names the SLEAP that tracked it, and that wins.
+  expect_equal(
+    version_of("SLEAP_two-flies_sleap-io.matlab.analysis.h5"),
+    "1.2.7"
+  )
+  expect_equal(
+    version_of("SLEAP_untracked-pair_sleap-io.custom.analysis.h5"),
+    "sleap-io 0.9.2"
+  )
+  # SLEAP's own exports have no root attributes.
+  expect_true(is.na(version_of("SLEAP_small-robot_legacy.analysis.h5")))
+})
+
+test_that("a sleap-io h5 keeps its skeleton", {
+  skip_if_not_installed("rhdf5")
+  path <- sleap_fixture("SLEAP_two-flies_sleap-io.standard.analysis.h5")
+  attached <- anicore::get_structure(read_sleap(path), "keypoint")
+
+  expect_equal(attached$segments, read_structure(path)$segments)
+  expect_equal(nrow(attached$segments), 12L)
+})
+
+test_that("an old h5 without score datasets reads with NA confidence", {
+  skip_if_not_installed("rhdf5")
+  path <- sleap_fixture("SLEAP_docs-example_no-scores.analysis.h5")
+  expect_false("point_scores" %in% rhdf5::h5ls(path)$name)
+  data <- read_sleap(path)
+
+  expect_equal(nrow(data), 5L * 2L * 13L)
+  expect_true(all(is.na(data$confidence)))
+  expect_false(anyNA(data$x))
+  expect_setequal(levels(data$individual), c("track_0", "track_1"))
+})
+
+test_that("SLEAP's own exports from its test data still read", {
+  skip_if_not_installed("rhdf5")
+  h5 <- read_sleap(sleap_fixture("SLEAP_small-robot_legacy.analysis.h5"))
+  expect_equal(nrow(h5), 3L * 3L)
+  expect_setequal(levels(h5$individual), "individual1")
+
+  # An untracked row has an empty track, and is named as the h5 reader
+  # names an untracked instance.
+  csv <- read_sleap(sleap_fixture("SLEAP_minimal-instance_legacy.analysis.csv"))
+  expect_setequal(levels(csv$individual), "individual1")
+  expect_false(anyNA(csv$individual))
+  expect_setequal(levels(csv$keypoint), c("A", "B"))
+})
+
+test_that("a track with two instances in a frame keeps the first", {
+  # sleap-io's CSV has a row for each user-labelled and each predicted
+  # instance, user-labelled first; its h5 keeps the user-labelled one.
+  path <- sleap_fixture("SLEAP_two-flies_sleap-io.analysis.csv")
+  raw <- vroom::vroom(path, show_col_types = FALSE) |> suppressMessages()
+  user <- raw[1, ]
+  user$head.x <- -1
+  dup <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(rbind(user, raw), dup, delim = ",")
+
+  data <- read_sleap(dup)
+  first <- data[data$time == 1 & data$individual == "track_0", ]
+
+  expect_equal(nrow(data), nrow(read_sleap(path)))
+  expect_equal(first$x[first$keypoint == "head"], -1)
+})
+
+test_that("a CSV without scores or with a video column still reads", {
+  path <- sleap_fixture("SLEAP_two-flies_sleap-io.analysis.csv")
+  raw <- vroom::vroom(path, show_col_types = FALSE) |> suppressMessages()
+  # User-labelled instances have no scores, and sleap-io sorts a video_idx
+  # column in among the nodes when asked for one.
+  trimmed <- raw[, !grepl("score$", names(raw))]
+  trimmed$video_idx <- 0
+  out <- withr::local_tempfile(fileext = ".csv")
+  vroom::vroom_write(trimmed, out, delim = ",")
+
+  data <- read_sleap(out)
+
+  expect_true(all(is.na(data$confidence)))
+  expect_equal(nlevels(data$keypoint), 13L)
+  expect_equal(data$x, read_sleap(path)$x)
+})
+
+test_that("read_dataset() recognises the sleap-io exports", {
+  skip_if_not_installed("rhdf5")
+  expect_equal(
+    detect_source(sleap_fixture(
+      "SLEAP_two-flies_sleap-io.standard.analysis.h5"
+    )),
+    "sleap"
+  )
+  expect_equal(
+    detect_source(sleap_fixture("SLEAP_untracked-pair_sleap-io.analysis.csv")),
+    "sleap"
+  )
+})

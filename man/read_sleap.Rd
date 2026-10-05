@@ -30,7 +30,20 @@ resolution, so pass \code{video_height} to get an accurate flip — otherwise
 \code{individual} is the track name SLEAP recorded, from either export. A
 recording with no tracks - a single unnamed instance, or predictions that
 were never tracked - has no names to use, and falls back to
-\code{individual1}, \code{individual2}, and so on.
+\code{individual1}, \code{individual2}, and so on. In the CSV, where such rows have
+an empty \code{track}, they are numbered in the order they appear within each
+frame. sleap-io (which writes SLEAP's exports from SLEAP 1.6.3 on) gives
+the instances of an untracked recording the names \code{track_0}, \code{track_1},
+... in the \code{.h5}, and those are kept like any other track name.
+
+Both the files SLEAP wrote itself and those written by sleap-io are read.
+sleap-io can store the \code{.h5} arrays in another axis order (its \code{"standard"}
+preset, or custom axes) and records the order in each dataset's \code{dims}
+attribute, which the reader follows; a file without it has SLEAP's
+original layout. The frame axis of a sleap-io \code{.h5} runs to the end of the
+video, so frames after the last detection come back as \code{NA} rows, as
+undetected frames always have. Very old \code{.h5} files have no
+\code{point_scores}, and give \code{NA} confidence.
 
 The \code{.h5} also carries the skeleton the recording was tracked with and a
 record of the run, and both are kept:
@@ -39,8 +52,10 @@ record of the run, and both are kept:
 \code{\link[=read_structure_sleap]{read_structure_sleap()}} reads it: the nodes become points and the body
 edges segments. A file written without edges gives points alone.
 \item The SLEAP version that ran the tracking, from the file's \code{provenance}
-record, becomes the \code{source_version} metadata field. It stays \code{NA} when
-the file has no such record.
+record, becomes the \code{source_version} metadata field. When the record
+names none, a file written by sleap-io gives the sleap-io version that
+wrote it instead, as \code{"sleap-io 0.9.2"} for example. It stays \code{NA} when
+the file records neither.
 }
 
 The CSV carries neither, so a frame read from it has no structure and no

@@ -28,4 +28,34 @@ scores, and time. This function reads that structure and reshapes it into
 a tidy aniframe format. The underlying tracking software outputs
 image (top-left) coordinates, so the reader reflects y to
 \code{bottom_left} before returning.
+
+Since version 0.17.0, movement names the dimensions \code{individual} and
+\code{keypoint}; files saved by earlier versions name them \code{individuals} and
+\code{keypoints}. Both read the same way.
+
+The axes are taken from the file's \code{space} coordinate, so a 2D dataset
+gives \code{x} and \code{y} and a 3D one \code{x}, \code{y} and \code{z}. The \code{confidence}
+variable becomes the \code{confidence} column. movement stores it either for
+each point, with dimensions (\code{time}, \code{keypoint}, \code{individual}), or for
+each individual, with dimensions (\code{time}, \code{individual}); a per-individual
+score is repeated for every keypoint of that individual.
+
+Only poses datasets are read. A bounding boxes dataset (\code{ds_type}
+\code{"bboxes"}) or a multi-view dataset, which has a further \code{view}
+dimension, is an error.
+
+The file's root attributes describe the recording, and the reader keeps
+what has a place in the metadata:
+\itemize{
+\item \code{source_software} becomes \code{source}, and the name of \code{source_file}
+becomes \code{filename}. A file without \code{source_file} (a dataset movement
+built from arrays rather than loaded from a file) takes the name of the
+file read.
+\item \code{time_unit} becomes \code{unit_time}. movement writes \code{"seconds"} when it was
+given the frame rate and \code{"frames"} when it was not; these become \code{"s"}
+and \code{"frame"}.
+\item \code{fps} becomes \code{sampling_rate}. movement writes it only when it was
+given one, so a file whose time is in frames leaves \code{sampling_rate}
+\code{NA}. Set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
+}
 }

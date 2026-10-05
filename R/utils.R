@@ -21,23 +21,32 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in y-axis units. When supplied, takes precedence over the extent
 #'   inferred from the data.
+#' @param video_width Optional numeric width of the source video frame in
+#'   x-axis units, recorded as the x extent. Nothing is inferred when it is
+#'   not supplied, since x is not reflected.
 #'
 #' @return An anipoint with y counting upward.
 #' @keywords internal
-reflect_to_bottom_left <- function(data, video_height = NULL) {
+reflect_to_bottom_left <- function(
+  data,
+  video_height = NULL,
+  video_width = NULL
+) {
   data <- anicore::set_metadata(
     data,
     axis_directions = c(x = "right", y = "down", z = "back")
   )
 
-  extent <- video_height %||% compute_y_extent(data)
+  extents <- c(x = video_width, y = video_height %||% compute_y_extent(data))
+  if (length(extents) > 0) {
+    data <- anicore::set_metadata(data, axis_extents = extents)
+  }
   # Nothing to reflect around when y is empty or all-NA, so the data is
   # left as it arrived rather than turned over on a guess.
-  if (is.null(extent)) {
+  if (!"y" %in% names(extents)) {
     return(data)
   }
 
-  data <- anicore::set_metadata(data, axis_extents = c(y = extent))
   anicore::reflect_axis(data, "y")
 }
 

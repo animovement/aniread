@@ -4,20 +4,33 @@
 \alias{read_animalta}
 \title{Read AnimalTA data}
 \usage{
-read_animalta(path, detailed = "auto", video_height = NULL)
+read_animalta(
+  path,
+  format = c("auto", "fixed", "variable", "detailed"),
+  video_height = NULL,
+  detailed = deprecated()
+)
 }
 \arguments{
-\item{path}{An AnimalTA data frame}
+\item{path}{Path to an AnimalTA file. Several detailed files, one per
+target, can be given together.}
 
-\item{detailed}{Which export layout the file uses. \code{"auto"} (the
-default) reads it from the header: the raw layout continues into
-\verb{X_Arena<n>_Ind<n>} columns, the detailed one into \verb{Arena;Ind;X;Y}.
-Pass \code{TRUE} or \code{FALSE} to state it explicitly. We only have limited
-support for detailed data.}
+\item{format}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Which layout the file
+uses: \code{"auto"} (the default) reads it from the header; \code{"fixed"},
+\code{"variable"} or \code{"detailed"} require that layout and error on anything
+else. The layout names may change while one convention for readers of a
+source with several export layouts is settled
+(\href{https://github.com/animovement/aniread/issues/118}{#118}).}
 
-\item{video_height}{Optional numeric height of the source video frame in
-pixels. AnimalTA does not record this in the export, so when not
-supplied the maximum observed \code{y} is used as a fallback.}
+\item{video_height}{Optional numeric height of the source video frame, in
+pixels for the coordinates files. AnimalTA does not record this in the
+export, so when not supplied the maximum observed \code{y} is used as a
+fallback.}
+
+\item{detailed}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{format} instead.
+\code{detailed = TRUE} named the layout of a variable number of targets,
+now \code{format = "variable"}, and \code{detailed = FALSE} the fixed one, now
+\code{format = "fixed"}.}
 }
 \value{
 a movement dataframe
@@ -27,9 +40,78 @@ Read a data frame from AnimalTA. AnimalTA exports tracking
 data in image (top-left) coordinates; the reader reflects y so the
 returned aniframe is in the conventional \code{bottom_left} origin.
 
-AnimalTA writes the time since the start of the video in seconds, rounded
-to 0.01 s, in its \code{Time} column. The reader keeps it as \code{time}, so
-\code{unit_time} is \code{"s"}.
+AnimalTA writes positions in three layouts, and the reader reads all
+three. Which one it read is recorded in the \code{source_format} metadata
+field.
+\itemize{
+\item \code{"fixed"}: the coordinates file of a video tracked with a fixed number
+of targets (\verb{coordinates/<video>_Coordinates.csv}, or
+\verb{corrected_coordinates/<video>_Corrected.csv} once corrected). One row
+per frame, with a pair of columns per target, \verb{X_Arena<a>_Ind<i>} and
+\verb{Y_Arena<a>_Ind<i>}. When a target alone in its arena was tracked with
+AnimalTA's "Separate head from tail" option, its pair is replaced by
+\verb{X_Arena<a>_Ind<i>_Head}, \code{Y_..._Head}, \code{X_..._Tail} and \code{Y_..._Tail}.
+Once the tracking is corrected, AnimalTA holds them as two targets and
+names the same columns \verb{X_Arena<a>_Ind<i>_part0} and so on for the head
+and \code{..._part1} for the tail. Both become the keypoints \code{head} and \code{tail}
+of \verb{Ind<i>}; AnimalTA writes no centroid for such a target. Every other
+target has the keypoint \code{centroid}, AnimalTA's name for the one position
+it tracks.
+\item \code{"variable"}: the coordinates file of a video tracked with a variable
+number of targets. One row per target and frame, in the columns
+\code{Frame}, \code{Time}, \code{Arena}, \code{Ind}, \code{X} and \code{Y}.
+\item \code{"detailed"}: a file from the "Detailed data" folder that AnimalTA's
+"Run analyses" writes, \verb{Results/Detailed_data/<video>/Arena_<a><target>.csv}.
+It holds one target, one row per frame, and the columns ticked under
+"Detailed data columns": by default \code{Time}, \code{X}, \code{Y} (\code{X_Smoothed} and
+\code{Y_Smoothed} when a smoothing filter was applied) and measures derived
+from them, such as \code{Distance} and \code{Speed}. Only the time and positions
+are kept. The target is named from the file name. Several files, one per
+target, can be read at once by passing their paths together. A target
+tracked with "Separate head from tail" has two files,
+\verb{Arena_<a>Ind<i>_part0.csv} for its head and \verb{Arena_<a>Ind<i>_part1.csv}
+for its tail, which read together as the keypoints \code{head} and \code{tail} of
+one individual.
+}
+
+AnimalTA's head and tail are the two ends of the animal's skeleton, kept
+apart from frame to frame by distance. AnimalTA does not work out which end
+is the head, so check that \code{head} is the head before relying on it.
+
+Positions in the coordinates files are in pixels. Positions in a detailed
+file are in the unit of the scale set in AnimalTA, and in pixels when none
+was set. The file does not record which, so \code{unit_space} keeps its default
+of \code{"px"}; if a scale was set, declare its unit with
+\code{\link[anicore:set_metadata]{anicore::set_metadata()}}, and give \code{video_height} in that unit too.
+
+AnimalTA writes the time since the start of the video in seconds in its
+\code{Time} column, rounded to 0.01 s in the coordinates files and to 0.001 s in
+a detailed file. The reader keeps it as \code{time}, so \code{unit_time} is \code{"s"}. A
+detailed file exported without the \code{Time} column but with \code{Frame} is
+timed by its frame number instead, with \code{unit_time} \code{"frame"}.
+
+AnimalTA does not write the frame rate, but each row is a frame at the
+rate it tracked at: the coordinates files give its number in \code{Frame}, and
+a detailed file has a row for every frame. When every row agrees on one
+rate, to within the rounding of \code{Time}, it becomes \code{sampling_rate}: the
+frames between the first and last row over the seconds between them, or
+the whole number nearest to it when that fits every row as well. Otherwise
+it is left \code{NA}. In a short file the rounding leaves the rate uncertain by
+about one rounding step over the file's duration.
+
+AnimalTA numbers individuals from 0 within each arena, so an individual is
+identified by its arena and its name together. The arena is its own
+identity column, \code{arena}, holding AnimalTA's arena number (\code{"0"}, \code{"1"},
+...), and \code{individual} holds AnimalTA's name for the target: \verb{Ind<i>}, or
+the name it was given in AnimalTA, with its case kept. Every layout gives
+the same values: the fixed layout's columns are named \verb{X_Arena<a>_Ind<i>},
+the variable layout's \code{Arena} and \code{Ind} columns hold the same arena and
+target, and so does a detailed file's name, \verb{Arena_<a>Ind<i>.csv}. A
+detailed file whose name is not in that form is named after the file, with
+its arena \code{NA}. \code{arena}, \code{individual} and \code{keypoint} are the aniframe's
+identity keys, so functions that work per individual keep arenas apart.
+The \code{arena} column is there for every file, also when it has a single
+arena.
 }
 \examples{
 path <- system.file("extdata", "animalta.csv", package = "aniread")

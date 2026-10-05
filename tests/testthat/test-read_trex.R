@@ -139,3 +139,63 @@ test_that("read_trex reads ANGLE from the npz export when it is there", {
   )
   expect_true(all(!is.na(with$yaw[with$keypoint == "centroid"])))
 })
+
+# Sampling rate from the CSV --------------------------------------------
+
+test_that("the CSV reader takes the rate from its frame and time columns", {
+  # The npz records `frame_rate`; the CSV states it only through frame and
+  # time. TRex writes `frame` twice, and the first is the one read.
+  data <- read_trex(test_path("data/trex/beetle.csv"))
+
+  expect_identical(anicore::get_metadata(data, "sampling_rate"), 30)
+  expect_identical(
+    anicore::get_metadata(read_trex(npz_path()), "sampling_rate"),
+    30
+  )
+  expect_false("frame" %in% names(data))
+})
+
+test_that("a CSV without a frame column leaves the rate NA", {
+  csv <- system.file("extdata", "trex.csv", package = "aniread")
+  raw <- utils::read.csv(csv, check.names = FALSE)
+  raw <- raw[, names(raw) != "frame"]
+  path <- withr::local_tempfile(fileext = ".csv")
+  utils::write.csv(raw, path, row.names = FALSE)
+
+  data <- read_trex(path)
+  expect_s3_class(data, "anipoint")
+  expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
+})
+
+# Units and frame size ---------------------------------------------------
+
+test_that("both exports are declared in centimetres", {
+  # TRex converts positions to cm with its cm_per_pixel; the CSV says so in
+  # its headers (`X (cm)`).
+  npz <- read_trex(npz_path())
+  csv <- read_trex(test_path("data/trex/beetle.csv"))
+
+  expect_equal(as.character(anicore::get_metadata(npz, "unit_space")), "cm")
+  expect_equal(as.character(anicore::get_metadata(csv, "unit_space")), "cm")
+})
+
+test_that("the npz records the frame width and height in centimetres", {
+  # video_size is 640 x 480 px and cm_per_pixel is 0.1 in the fixture.
+  data <- read_trex(npz_path())
+
+  expect_equal(
+    anicore::get_metadata(data, "axis_extents"),
+    c(x = 64, y = 48)
+  )
+})
+
+test_that("trex_frame_size() needs both the size and the scale", {
+  expect_equal(
+    trex_frame_size(list(video_size = c(640, 480), cm_per_pixel = 0.5)),
+    list(width = 320, height = 240)
+  )
+  expect_equal(
+    trex_frame_size(list(video_size = c(640, 480))),
+    list(width = NULL, height = NULL)
+  )
+})

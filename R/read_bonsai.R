@@ -3,10 +3,15 @@
 #' @description Read a Bonsai data frame. Bonsai centroid coordinates
 #' come from camera/video pipelines that use image (top-left) origin;
 #' the reader reflects y so the returned aniframe is in the
-#' conventional `bottom_left` origin. Bonsai workflows are
-#' user-defined and the output CSV does not record video resolution,
-#' so pass `video_height` to get an accurate flip — otherwise `max(y)`
-#' is used as a fallback.
+#' conventional `bottom_left` origin.
+#'
+#' Bonsai workflows are user-defined, so what the CSV records about the
+#' video depends on the workflow. When it writes the image alongside the
+#' centroid, every row carries the image's `Size.Width` and `Size.Height`.
+#' When all the images in the file have the same size, that is the frame
+#' size: y is reflected around its height, and its width and height are
+#' recorded as the `axis_extents` of x and y. Otherwise pass `video_height`,
+#' or the largest `y` is used as the height and no extent is recorded for x.
 #'
 #' When the workflow records the blob's `Orientation`, it is kept as
 #' `orientation_axis`: the angle of the blob's long axis, in radians from `x`
@@ -23,7 +28,7 @@
 #'
 #' @param path Path to a Bonsai data file
 #' @param video_height Optional numeric height of the source video frame
-#'   in pixels.
+#'   in pixels. Takes precedence over the height the file records.
 #'
 #' @return a movement dataframe
 #'
@@ -41,7 +46,10 @@ read_bonsai <- function(path, video_height = NULL) {
     delim = ",",
     show_col_types = FALSE
   ) |>
-    suppressMessages() |>
+    suppressMessages()
+  frame_size <- bonsai_frame_size(data)
+
+  data <- data |>
     anicore::convert_nan_to_na() |>
     dplyr::select(
       tidyselect::contains(c("Timestamp", "Centroid")),
@@ -76,7 +84,10 @@ read_bonsai <- function(path, video_height = NULL) {
     dplyr::mutate(
       time = as.numeric(.data$time - min(.data$time, na.rm = TRUE))
     ) |>
-    reflect_to_bottom_left(video_height = video_height)
+    reflect_to_bottom_left(
+      video_height = video_height %||% frame_size$height,
+      video_width = frame_size$width
+    )
 
   # Reflecting y reverses any angle measured from x toward y; an axial angle
   # is then brought back into (-pi/2, pi/2].
@@ -89,4 +100,33 @@ read_bonsai <- function(path, video_height = NULL) {
     data$orientation_axis <- ifelse(turned <= -pi / 2, turned + pi, turned)
   }
   return(data)
+}
+
+#' The frame size a Bonsai CSV records
+#'
+#' A workflow that writes an image writes its `Size.Width` and `Size.Height`
+#' (as `Item1.Size.Width` and so on) on every row. The region of interest
+#' has its own `RegionOfInterest.Width` and `.Height`, which are not the
+#' frame.
+#'
+#' @param data The CSV as read, before any column is dropped.
+#'
+#' @return A list of `width` and `height`, each a single positive number
+#'   when every image in the file has the same one, and `NULL` when the file
+#'   records none or images of different sizes.
+#' @noRd
+bonsai_frame_size <- function(data) {
+  one_size <- function(pattern) {
+    values <- unlist(data[grep(pattern, names(data))], use.names = FALSE)
+    values <- unique(values[!is.na(values)])
+    if (length(values) == 1 && is.numeric(values) && values > 0) {
+      values
+    } else {
+      NULL
+    }
+  }
+  list(
+    width = one_size("\\.Size\\.Width$"),
+    height = one_size("\\.Size\\.Height$")
+  )
 }

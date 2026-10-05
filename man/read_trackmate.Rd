@@ -12,16 +12,100 @@ read_trackmate(path, slim = TRUE, video_height = NULL)
 \item{slim}{If TRUE, return only essential columns (default TRUE).}
 
 \item{video_height}{Optional numeric height of the source frame in the
-units reported by the XML. Overrides the value parsed from
-\verb{Settings/ImageData/@height} when both are available.}
+spatial unit reported by the XML. Overrides the height read from
+\code{Settings/ImageData} when both are available.}
 }
 \value{
-An aniframe with columns including time, x, y, z, frame, and track_id.
+An aniframe with columns including \code{time}, \code{track}, \code{keypoint},
+\code{parent}, \code{x}, \code{y}, \code{z} and \code{frame}.
 }
 \description{
 Parses a TrackMate XML file and returns spot data from filtered tracks
 as an aniframe. TrackMate stores spot coordinates in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in the
 conventional \code{bottom_left} origin. The frame height is read from
-\verb{Settings/ImageData/@height} in the XML by default.
+\code{Settings/ImageData} in the XML by default: \code{height} is in pixels and
+\code{pixelheight} in \code{spatialunits}, so their product is the height in the
+unit of the positions. Without a \code{pixelheight}, \code{height} is used as it is.
+}
+\details{
+Each track is identified in \code{track} by the name TrackMate gave it.
+TrackMate names tracks \code{Track_0}, \code{Track_1}, ..., and the column already
+says they are tracks, so a name of that form becomes its number alone:
+\code{Track_12} is read as \code{12}. A name you gave a track in TrackMate, anything
+not of the form \verb{Track_<number>}, is kept as written. Each track's name is
+read on its own, so a file in which you renamed some tracks gives, say,
+\code{0}, \code{2} and \verb{Cell A}. The numeric \code{TRACK_ID} is used instead when any
+track has no name, or, with a warning, when two tracks would get the same
+id (such as a track you renamed \code{3} beside \code{Track_3}). The levels of
+\code{track} are the numbers in numeric order, \code{2} before \code{10}, followed by
+any names sorted as text (capitals first, in every locale).
+
+A track that divides, as a cell lineage does, holds more than one spot in
+a frame from its first division on, which a frame keyed by \code{track} and
+\code{time} cannot hold. Such a track is split into its branches, each the
+stretch of the track between divisions, and each branch becomes a track
+of its own. The \code{parent} column records the lineage, as cell tracking
+does (the \code{P} of the Cell Tracking Challenge's \code{res_track.txt}, Ultrack's
+\code{parent_track_id}): it holds the id of the track a track divided from,
+and is \code{NA} for a track that did not divide from another, so for every
+track of a file without divisions. The branch before the first division
+keeps the track's id. The other branches are numbered on from the
+largest number that identifies any track in the file, by \code{TRACK_ID} or
+by name, so a new id never names another track you can see in TrackMate.
+They are numbered track by track, in the order of the tracks' ids, and
+within a track by the frame they start in, then by the id of the track
+they divided from, so sisters are numbered together, then by x and y. A
+daughter starts at its first spot after the division, so nothing is
+measured across it. A track whose branches also merge, or whose spots
+share a frame in any other way, is left whole, with a warning about the
+duplicate track-frame combinations. A split or merge that never puts two
+spots in one frame, as when a link skips a frame beside another that does
+not, needs no splitting.
+
+\code{parent} is not an identity key: the keys are \code{track} and \code{keypoint}. It
+is a factor with the same levels as \code{track}, so its values match the
+ids in \code{track}. One row per track gives the lineage, as the Cell Tracking
+Challenge's \verb{L B E P} table (label, first and last time, parent):
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{dplyr::summarise(
+  data,
+  start = min(time),
+  end = max(time),
+  parent = dplyr::first(parent),
+  .by = track
+)
+}\if{html}{\out{</div>}}
+
+The XML also records how the image was calibrated, and the reader keeps
+what has a place in the metadata:
+\itemize{
+\item \code{timeunits} and \code{spatialunits}, from the \code{Model} element, become
+\code{unit_time} and \code{unit_space}. TrackMate takes them from the image's
+calibration in ImageJ, where they are free text, so the usual spellings
+are recognised: \code{"sec"}, \code{"msec"}, \code{"min"}, \code{"frame"} and so on for time,
+\code{"pixel"}, \code{"micron"}, \code{"um"} (with or without the micro sign), \code{"mm"}
+and so on for space. A unit with no equivalent in anicore (days or
+inches, say) becomes \code{"unknown"} or \code{"none"}, with a warning, rather
+than stopping the read. A blank spatial unit, which TrackMate writes for
+an image whose length unit is a space, is read as pixels when the pixel
+size in \code{Settings/ImageData} is 1 or not recorded, as ImageJ calls an
+image with no length unit \code{"pixel"}. With any other pixel size the
+positions are scaled by a unit nobody named, so it becomes \code{"none"}
+with a warning.
+\item \code{timeinterval}, from \code{Settings/ImageData}, is the time between frames in
+\code{timeunits}. Its reciprocal, converted to Hz, becomes \code{sampling_rate}.
+It stays \code{NA} when the interval is missing or not positive, or when the
+time unit is frames or not recognised.
+\item \code{version}, from the root element, is the TrackMate version that wrote
+the file and becomes \code{source_version}.
+}
+
+TrackMate cannot tell an uncalibrated image from one calibrated at one
+second per frame. An image with no time calibration has a frame interval
+of 0, which TrackMate replaces with 1, and ImageJ's default time unit is
+\code{"sec"}. A file with \code{timeunits = "sec"} and \code{timeinterval = 1} may
+therefore really count frames, in which case \code{time} is the frame number
+and the 1 Hz \code{sampling_rate} is not the camera's. If you know the real
+rate, set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
 }

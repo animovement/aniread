@@ -22,7 +22,9 @@
 #'
 #'   Channels: each row's `channel` is the value of BORIS's
 #'   `Behavioral category` column when populated, falling back to the
-#'   literal `"behavior"` otherwise; `label` is the behaviour name,
+#'   literal `"behavior"` otherwise, including where the aggregated
+#'   export writes `"Not defined"` for a behaviour without a category;
+#'   `label` is the behaviour name,
 #'   and `type` is `"state"` or `"point"` mapped from BORIS's
 #'   `Behavior type` column. Overlap between bouts of the same channel
 #'   is permitted on the `anievent` side; [anicore::validate_anievent()]
@@ -42,8 +44,10 @@
 #'   anievent with an anipoint to keep frame-aligned semantics.
 #'
 #' @return An [anicore::anievent()] with metadata fields `source`,
-#'   `filename`, `unit_time`, and `sampling_rate` (when FPS is a
-#'   single numeric in the export) populated.
+#'   `filename`, `unit_time`, and `sampling_rate` populated. The
+#'   sampling rate is set when every media file in the export has the
+#'   same FPS; an observation of several media files lists one FPS per
+#'   file in a single cell, separated by `;` (and `|` between players).
 #'
 #' @references
 #' - Friard, O., & Gamba, M. (2016). BORIS: a free, versatile open-source
@@ -587,7 +591,11 @@ finalise_boris <- function(data, path, unit_time) {
 
   if ("behavioral_category" %in% names(data)) {
     cat_vec <- data$behavioral_category
-    cat_vec[is.na(cat_vec) | !nzchar(cat_vec)] <- NA_character_
+    # The aggregated export writes "Not defined" for a behaviour without
+    # a category, where the tabular export leaves the cell empty.
+    cat_vec[
+      is.na(cat_vec) | !nzchar(cat_vec) | cat_vec == "Not defined"
+    ] <- NA_character_
     data$channel <- ifelse(is.na(cat_vec), "behavior", cat_vec)
   } else {
     data$channel <- "behavior"
@@ -742,7 +750,10 @@ extract_boris_fps <- function(data) {
   if (!"fps" %in% names(data)) {
     return(NULL)
   }
-  vals <- unique(suppressWarnings(as.numeric(data$fps)))
+  # An observation of several media files lists one FPS per file in the
+  # cell, `;`-separated within a player and `|`-separated between players.
+  vals <- unlist(strsplit(as.character(data$fps), "[;|]"))
+  vals <- unique(suppressWarnings(as.numeric(vals)))
   vals <- vals[!is.na(vals)]
   if (length(vals) == 1) vals else NULL
 }
