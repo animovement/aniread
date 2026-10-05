@@ -19,8 +19,7 @@ The file should contain columns for:
 file: the \code{.npz} export is a zip of \code{.npy} arrays, the CSV export is not.}
 
 \item{video_height}{Optional numeric height of the source video frame
-in the same spatial units as the tracking output (TRex defaults to
-centimetres). The \code{.npz} export records this as \code{video_size} and it is
+in the same spatial units as the tracking output, centimetres. The \code{.npz} export records this as \code{video_size} and it is
 used automatically; TRex's CSV export does not, so without it \code{max(y)}
 is used as a fallback when reflecting to \code{bottom_left}.}
 }
@@ -60,6 +59,15 @@ rounding of \code{time}), that rate becomes \code{sampling_rate}: the frames bet
 the first and last row over the seconds between them, or the whole number
 nearest to it when that fits every row as well. Otherwise, as when the
 times are camera timestamps that vary from frame to frame, it is left \code{NA}.
+
+Both exports give positions in centimetres, so \code{unit_space} is \code{"cm"}.
+TRex converts from pixels with its \code{cm_per_pixel}, the real width of the
+image (\code{meta_real_width}) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The \code{.npz} records the frame size as \code{video_size}, in
+pixels, and \code{cm_per_pixel}; their product is the frame's width and height
+in centimetres, which become the \code{axis_extents} of x and y and what y is
+reflected around.
 }
 \details{
 The function performs several processing steps:
