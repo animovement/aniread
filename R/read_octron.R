@@ -62,7 +62,8 @@
 #' row axis. It is kept as Octron wrote it, in image coordinates: it is not
 #' reflected with `y` and not declared as the frame's orientation.
 #'
-#' @return An anipoint
+#' @return An anipoint. `time` is OCTRON's `frame_idx`, with the first frame
+#'   of the video at 0; see "Time" in [read_dataset()].
 #'
 #' @examples
 #' path <- system.file("extdata", "octron.csv", package = "aniread")

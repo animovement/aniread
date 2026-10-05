@@ -88,11 +88,12 @@ test_that("the CSV and the h5 of one recording read the same", {
   expect_equal(a$confidence, b$confidence, tolerance = 1e-8)
 })
 
-test_that("time counts from 1, as it does for the h5", {
+test_that("time is frame_idx, counted from 0 as it is for the h5 (#150)", {
   data <- read_sleap(sleap_csv())
   raw <- vroom::vroom(sleap_csv(), show_col_types = FALSE) |> suppressMessages()
 
-  expect_equal(min(data$time), min(raw$frame_idx) + 1)
+  expect_equal(sort(unique(data$time)), sort(unique(raw$frame_idx)))
+  expect_equal(min(data$time), 0)
 })
 
 test_that("a frame with no instance comes back as NA, not absent", {
@@ -104,7 +105,7 @@ test_that("a frame with no instance comes back as NA, not absent", {
   vroom::vroom_write(trimmed, path, delim = ",")
 
   data <- read_sleap(path)
-  gap <- data[data$individual == raw$track[[1]] & data$time == 6, ]
+  gap <- data[data$individual == raw$track[[1]] & data$time == 5, ]
 
   expect_equal(nrow(gap), 1)
   expect_true(is.na(gap$x))
@@ -373,11 +374,11 @@ test_that("the frame axis of a sleap-io h5 runs to the end of the video", {
   ))
 
   expect_equal(nrow(data), 9L * 2L * 13L)
-  expect_equal(range(data$time), c(1, 9))
-  expect_true(all(is.na(data$x[data$time > 6])))
-  expect_true(all(is.na(data$confidence[data$time > 6])))
-  # track_1 was not detected in frame 3, which is time 4.
-  gap <- data[data$time == 4, ]
+  expect_equal(range(data$time), c(0, 8))
+  expect_true(all(is.na(data$x[data$time > 5])))
+  expect_true(all(is.na(data$confidence[data$time > 5])))
+  # track_1 was not detected in frame 3.
+  gap <- data[data$time == 3, ]
   expect_true(all(is.na(gap$x[gap$individual == "track_1"])))
   expect_false(all(is.na(gap$x[gap$individual == "track_0"])))
 })
@@ -406,10 +407,35 @@ test_that("custom axes are read from the dims attribute", {
     labels = c("individual1", "individual2")
   )
   expect_equal(sleap_rows(h5), sleap_rows(csv))
-  # Only one fly was kept in frame 1, which is time 2.
+  # Only one fly was kept in frame 1.
   expect_true(all(is.na(csv$x[
-    csv$time == 2 & csv$individual == "individual2"
+    csv$time == 1 & csv$individual == "individual2"
   ])))
+})
+
+test_that("the first frame of the video reads as time 0 (#150)", {
+  skip_if_not_installed("rhdf5")
+  # sleap-io writes the frame axis from the video's frame 0, and the CSV
+  # gives frame_idx; frame 0 is labelled in this recording.
+  csv_path <- sleap_fixture("SLEAP_two-flies_sleap-io.analysis.csv")
+  raw <- vroom::vroom(csv_path, show_col_types = FALSE) |> suppressMessages()
+  expect_equal(min(raw$frame_idx), 0)
+
+  for (name in c(
+    "SLEAP_two-flies_sleap-io.matlab.analysis.h5",
+    "SLEAP_two-flies_sleap-io.standard.analysis.h5",
+    "SLEAP_two-flies_sleap-io.analysis.csv"
+  )) {
+    data <- read_sleap(sleap_fixture(name), video_height = 1024)
+    first <- data[data$time == 0 & data$keypoint == "head", ]
+    first <- first[order(first$individual), ]
+    expect_equal(min(data$time), 0, info = name)
+    expect_equal(
+      first$x,
+      raw[["head.x"]][raw$frame_idx == 0][order(raw$track[raw$frame_idx == 0])],
+      info = name
+    )
+  }
 })
 
 test_that("a dims attribute that names other axes is rejected", {
@@ -491,7 +517,7 @@ test_that("a track with two instances in a frame keeps the first", {
   vroom::vroom_write(rbind(user, raw), dup, delim = ",")
 
   data <- read_sleap(dup)
-  first <- data[data$time == 1 & data$individual == "track_0", ]
+  first <- data[data$time == 0 & data$individual == "track_0", ]
 
   expect_equal(nrow(data), nrow(read_sleap(path)))
   expect_equal(first$x[first$keypoint == "head"], -1)

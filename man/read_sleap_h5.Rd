@@ -9,6 +9,7 @@ read_sleap_h5(path)
 \description{
 Reads \code{tracks} and \code{point_scores} into one layout whatever order the file
 stores their axes in, following the \code{dims} attribute sleap-io writes.
-\code{time} is the position on the frame axis, counting from 1.
+\code{time} is the position on the frame axis, counting from 0, which is
+SLEAP's \code{frame_idx}.
 }
 \keyword{internal}

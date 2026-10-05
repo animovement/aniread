@@ -30,7 +30,8 @@ which. Ignored, with a warning, for every other layout.}
 An aniframe with \code{time}, \code{model}, \code{keypoint}, \code{confidence} and
 \code{x}/\code{y}/\code{z} in millimetres on a 3D cartesian coordinate system. \code{time}
 is seconds elapsed from \code{start_datetime} where the layout carries
-timestamps, and frames where it does not.
+timestamps, and frames where it does not. Either way the first frame is
+at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads the layouts FreeMoCap v1 and v2 write, dispatching on

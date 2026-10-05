@@ -36,7 +36,8 @@
 #' @param path Path to a DeepLabCut data file
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels. Not used for 3D files.
-#' @return an aniframe
+#' @return an aniframe. `time` is DeepLabCut's frame index, with the first
+#'   frame of the video at 0; see "Time" in [read_dataset()].
 #' @examples
 #' path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
 #' read_deeplabcut(path)

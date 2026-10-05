@@ -23,7 +23,9 @@ anievent with an anipoint to keep frame-aligned semantics.}
 }
 \value{
 An \code{\link[anicore:anievent]{anicore::anievent()}} with metadata fields \code{source},
-\code{filename}, \code{unit_time}, and \code{sampling_rate} populated. The
+\code{filename}, \code{unit_time}, and \code{sampling_rate} populated. \code{start} and
+\code{stop} are BORIS's times in seconds, or its frame numbers with the
+first frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}. The
 sampling rate is set when every media file in the export has the
 same FPS; an observation of several media files lists one FPS per
 file in a single cell, separated by \verb{;} (and \code{|} between players).
@@ -39,7 +41,10 @@ POINT transition; paired into bouts by the reader).
 Time units come from the columns BORIS provides. The default
 \code{unit_time = "s"} uses \code{Start (s)} / \code{Stop (s)} and works on any
 BORIS export. With \code{unit_time = "frame"} the reader uses the
-\verb{Image index start} / \verb{Image index stop} columns instead; frames
+\verb{Image index start} / \verb{Image index stop} columns instead, with the
+first frame of the video at 0 (BORIS counts a video's frames from 0,
+and the images of an observation of images from 1, which are shifted
+so the first image is 0); frames
 stay aligned with rows of a host \code{\link[anicore:anipoint]{anicore::anipoint()}}, which
 keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If \code{"frame"} is

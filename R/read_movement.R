@@ -9,7 +9,8 @@
 #'   attributes, so without it `max(y)` is used as a fallback when
 #'   reflecting to `bottom_left`.
 #'
-#' @return An aniframe
+#' @return An aniframe. `time` is movement's `time` coordinate, with the first
+#'   frame of the video at 0; see "Time" in [read_dataset()].
 #'
 #' @details
 #' The movement package stores pose estimation data in a specific netCDF/HDF5 structure

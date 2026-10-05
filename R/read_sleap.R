@@ -48,7 +48,8 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
 #'
-#' @return a movement dataframe
+#' @return a movement dataframe. `time` is SLEAP's frame index, so the first
+#'   frame of the video is at `time = 0`; see "Time" in [read_dataset()].
 #' @export
 read_sleap <- function(path, video_height = NULL) {
   validate_files(path, expected_suffix = c("h5", "csv"))
@@ -131,7 +132,8 @@ read_sleap_provenance_version <- function(path) {
 #'
 #' Reads `tracks` and `point_scores` into one layout whatever order the file
 #' stores their axes in, following the `dims` attribute sleap-io writes.
-#' `time` is the position on the frame axis, counting from 1.
+#' `time` is the position on the frame axis, counting from 0, which is
+#' SLEAP's `frame_idx`.
 #' @keywords internal
 read_sleap_h5 <- function(path) {
   # Check that rhdf5 is installed
@@ -171,7 +173,9 @@ read_sleap_h5 <- function(path) {
     values
   }
   data <- data.frame(
-    time = rep(seq_len(n_frames), each = n_nodes, times = n_tracks),
+    # The frame axis starts at the first frame of the video, SLEAP's
+    # `frame_idx` 0.
+    time = rep(seq_len(n_frames) - 1, each = n_nodes, times = n_tracks),
     individual = rep(individual_names, each = n_nodes * n_frames),
     keypoint = rep(node_names, times = n_frames * n_tracks),
     x = flatten(tracks[,, 1, ]),
@@ -243,11 +247,11 @@ read_sleap_array <- function(path, name, axes) {
 #' predicted ones, and where a track has both in one frame, the
 #' user-labelled one is kept, as sleap-io's `.h5` export keeps it.
 #'
-#' Two things are aligned with [read_sleap_h5()] so that one recording reads
-#' the same from either export: `time` counts from 1, where `frame_idx`
-#' counts from 0; and a frame in which an instance was not detected comes
-#' back as an all-`NA` row rather than being absent, since the CSV holds a
-#' row per *instance* and omits those entirely.
+#' `time` is `frame_idx`, which counts from 0, as [read_sleap_h5()] counts
+#' frames, so one recording reads the same from either export. A frame in
+#' which an instance was not detected comes back as an all-`NA` row rather
+#' than being absent, as it does from the h5, since the CSV holds a row per
+#' *instance* and omits those entirely.
 #'
 #' @param path Path to a SLEAP analysis CSV.
 #'
@@ -306,8 +310,8 @@ read_sleap_csv <- function(path) {
     dplyr::rename(confidence = "score") |>
     dplyr::mutate(
       individual = .data$track,
-      # frame_idx counts from 0; read_sleap_h5() counts from 1.
-      time = .data$frame_idx + 1
+      # frame_idx counts from 0, the first frame of the video.
+      time = .data$frame_idx
     ) |>
     dplyr::select(
       "time",

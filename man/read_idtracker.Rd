@@ -30,7 +30,8 @@ them apart by the suffix and, for a CSV, by its header. Which one was
 read is recorded in the \code{source_format} metadata field.}
 }
 \value{
-a movement dataframe
+a movement dataframe. The first frame of the video is at
+\code{time = 0}, in frames or in seconds; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 idtracker.ai stores trajectories in image (top-left) coordinates; the
@@ -47,9 +48,9 @@ was tracked, and the reader keeps what has a place in the metadata:
 \item \code{version}, the idtracker.ai version that tracked it, becomes the
 \code{source_version} metadata field.
 \item \code{frames_per_second}, the frame rate of the video, becomes the
-\code{sampling_rate} metadata field. \code{time} stays the frame number counted
-from 1, so \code{unit_time} is still \code{"frame"}; the frame rate is what
-converts it to seconds.
+\code{sampling_rate} metadata field. \code{time} stays the frame number, counted
+from 0 as idtracker.ai counts frames, so \code{unit_time} is still \code{"frame"};
+the frame rate is what converts it to seconds.
 \item \code{height}, the height of the video frame, is what y is reflected
 around, unless \code{video_height} is given. A \code{height} dataset is used
 when there is no such attribute.
@@ -79,9 +80,9 @@ times are not evenly spaced.
 
 When idtracker.ai could not read the video's frame rate, it writes the
 CSV export without a time column, and \code{frames_per_second} as \code{null} in
-\code{attributes.json}. \code{time} is then the row number, counted from 1 as the
-h5 reader counts frames, \code{unit_time} is \code{"frame"}, and \code{sampling_rate} is
-\code{NA}. Set the rate with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
+\code{attributes.json}. \code{time} is then the frame number, the row counted from
+0 as the h5 reader counts frames, \code{unit_time} is \code{"frame"}, and
+\code{sampling_rate} is \code{NA}. Set the rate with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
 }
 \section{Tidy CSV and Parquet exports}{
 
@@ -106,8 +107,8 @@ known, \code{time} is the file's time in seconds, which is the frame over the
 frame rate, as the CSV export times its rows, with \code{unit_time} \code{"s"} and
 the frame rate as \code{sampling_rate}. When idtracker.ai could not read the
 frame rate it still writes a \code{time} column, but as the frame over 1, so
-\code{time} is then the frame counted from 1, as the other exports number it,
-with \code{unit_time} \code{"frame"} and \code{sampling_rate} \code{NA}. Without
+\code{time} is then the frame, counted from 0, with \code{unit_time} \code{"frame"} and
+\code{sampling_rate} \code{NA}. Without
 \code{attributes_tidy.json}, a tidy CSV whose \code{time} equals its \code{frame} in every
 row is read as one without a frame rate, and otherwise the rate is taken
 from the two columns, as for the CSV export.

@@ -58,7 +58,8 @@ area-weighted mean has no meaning otherwise) and an info message
 is emitted.}
 }
 \value{
-An anipoint
+An anipoint. \code{time} is OCTRON's \code{frame_idx}, with the first frame
+of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads CSV files exported from Octron video segmentation software.

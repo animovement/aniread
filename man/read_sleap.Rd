@@ -13,7 +13,8 @@ read_sleap(path, video_height = NULL)
 in pixels.}
 }
 \value{
-a movement dataframe
+a movement dataframe. \code{time} is SLEAP's frame index, so the first
+frame of the video is at \code{time = 0}; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads either of SLEAP's analysis exports: the HDF5 file, or the CSV

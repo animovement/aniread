@@ -82,7 +82,7 @@ test_that("a CSV export without a time column is timed by frame", {
   raw <- utils::read.csv(no_fps("trajectories.csv"))
 
   expect_s3_class(data, "anipoint")
-  expect_equal(sort(unique(data$time)), seq_len(nrow(raw)))
+  expect_equal(sort(unique(data$time)), seq_len(nrow(raw)) - 1)
   expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
   expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
   expect_setequal(levels(data$individual), c("1", "2"))
@@ -96,15 +96,32 @@ test_that("a CSV export without a time column is timed by frame", {
   expect_equal(second$confidence[[3]], 0)
 })
 
-test_that("frames are numbered from 1, as the h5 reader numbers them", {
-  # aniread#150 proposes numbering every reader's frames from 0; until then
-  # the two idtracker.ai exports of one recording agree with each other.
-  skip_if_not_installed("rhdf5")
+test_that("the first frame of the video is at time 0, in every export (#150)", {
+  # idtracker.ai counts frames from 0, and every export of a recording starts
+  # at its first frame, so each reads its first row as time 0.
   csv <- read_idtracker(no_fps("trajectories.csv"))
-  h5 <- read_idtracker(test_path("data/idtrackerai/trajectories.h5"))
+  expect_equal(min(csv$time), 0)
+  csv_seconds <- read_idtracker(
+    test_path("data/idtrackerai/trajectories_csv", "trajectories.csv")
+  )
+  expect_equal(min(csv_seconds$time), 0)
 
-  expect_equal(min(csv$time), min(h5$time))
-  expect_equal(min(csv$time), 1)
+  skip_if_not_installed("rhdf5")
+  h5 <- read_idtracker(test_path("data/idtrackerai/trajectories.h5"))
+  expect_equal(min(h5$time), 0)
+
+  skip_if_not_installed("arrow")
+  for (path in test_path(
+    "data/idtrackerai",
+    c(
+      "trajectories.parquet",
+      "trajectories_no_fps.parquet",
+      "trajectories_tidy/trajectories_tidy.csv",
+      "trajectories_tidy_no_fps/trajectories_tidy.csv"
+    )
+  )) {
+    expect_equal(min(read_idtracker(path)$time), 0, info = path)
+  }
 })
 
 test_that("read_dataset() detects and reads a CSV without a time column", {
@@ -149,7 +166,7 @@ test_that("the h5 reader records the idtracker.ai version and frame rate", {
   expect_equal(anicore::get_metadata(data, "sampling_rate"), 28)
   # time stays the frame number; the frame rate is what converts it.
   expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
-  expect_equal(sort(unique(data$time)), 1:508)
+  expect_equal(sort(unique(data$time)), 0:507)
 })
 
 test_that("read_dataset() records them too", {
@@ -312,7 +329,7 @@ tidy_csv_no_fps <- idt("trajectories_tidy_no_fps", "trajectories_tidy.csv")
 # The first 60 frames of the h5, which the tidy exports were written from.
 h5_first_60 <- function(...) {
   data <- read_idtracker(idt("trajectories.h5"), ...)
-  data[data$time <= 60, ]
+  data[data$time < 60, ]
 }
 
 test_that("the Parquet export reads as the h5 it was written from", {
@@ -328,8 +345,8 @@ test_that("the Parquet export reads as the h5 it was written from", {
   expect_equal(data$x, h5$x)
   expect_equal(data$y, h5$y)
   expect_equal(data$confidence, h5$confidence)
-  # The frame over the frame rate, where the h5 has the frame from 1.
-  expect_equal(data$time, (h5$time - 1) / 28)
+  # The frame over the frame rate, where the h5 has the frame.
+  expect_equal(data$time, h5$time / 28)
 
   expect_equal(anicore::get_metadata(data, "source_format"), "parquet")
   expect_equal(anicore::get_metadata(data, "source_version"), "6.0.0a0")
@@ -359,11 +376,11 @@ test_that("the tidy CSV export reads as the Parquet one, to 3 decimals", {
   expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "s")
 })
 
-test_that("without a frame rate, time is the frame counted from 1", {
+test_that("without a frame rate, time is the frame counted from 0", {
   skip_if_not_installed("arrow")
   for (path in c(idt("trajectories_no_fps.parquet"), tidy_csv_no_fps)) {
     data <- read_idtracker(path)
-    expect_equal(sort(unique(data$time)), 1:4, info = path)
+    expect_equal(sort(unique(data$time)), 0:3, info = path)
     expect_equal(
       as.character(anicore::get_metadata(data, "unit_time")),
       "frame",
@@ -390,7 +407,7 @@ test_that("a tidy CSV without its attributes takes the rate from its rows", {
   dir_no_fps <- withr::local_tempdir()
   file.copy(tidy_csv_no_fps, dir_no_fps)
   data <- read_idtracker(file.path(dir_no_fps, "trajectories_tidy.csv"))
-  expect_equal(sort(unique(data$time)), 1:4)
+  expect_equal(sort(unique(data$time)), 0:3)
   expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
   expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
 })

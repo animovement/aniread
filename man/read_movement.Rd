@@ -15,7 +15,8 @@ attributes, so without it \code{max(y)} is used as a fallback when
 reflecting to \code{bottom_left}.}
 }
 \value{
-An aniframe
+An aniframe. \code{time} is movement's \code{time} coordinate, with the first
+frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Imports pose estimation data from netCDF/HDF5 files created by the

@@ -12,7 +12,8 @@
 #'   dimensions (e.g., "mm", "cm", "m"). Default is "mm".
 #'
 #' @return An aniframe (tibble) with the following columns:
-#'   * `time`: Frame number
+#'   * `time`: Frame number, Anipose's `fnum`, with the first frame of the
+#'     video at 0; see "Time" in [read_dataset()]
 #'   * `keypoint`: Name of the tracked body part
 #'   * `x`, `y`, `z`: 3D coordinates in the specified units
 #'   * `confidence`: Mean detection confidence across cameras (0-1 scale)

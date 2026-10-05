@@ -12,7 +12,8 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
 #'
-#' @return An aniframe
+#' @return An aniframe. `time` is FastTrack's `imageNumber`, with the first
+#'   frame of the video at 0; see "Time" in [read_dataset()].
 #'
 #' @examples
 #' path <- system.file("extdata", "fasttrack.txt", package = "aniread")

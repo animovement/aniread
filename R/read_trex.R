@@ -36,7 +36,8 @@
 #'   - x and y coordinates for centroid (x_number_wcentroid_cm, y_number_wcentroid_cm)
 #'
 #' @return A data frame containing movement data with the following columns:
-#'   - `time`: Time values from the tracking
+#'   - `time`: TRex's `time`, in seconds, with the first frame of the video
+#'     at 0; see "Time" in [read_dataset()]
 #'   - `individual`: Factor. The identity TRex assigned, from the `.npz`
 #'     export; `NA` from the CSV export, which does not record it
 #'   - `keypoint`: Factor identifying tracked points (e.g., "head", "centroid")

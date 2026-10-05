@@ -94,7 +94,8 @@
 #'   now `format = "variable"`, and `detailed = FALSE` the fixed one, now
 #'   `format = "fixed"`.
 #'
-#' @return a movement dataframe
+#' @return a movement dataframe. `time` is AnimalTA's `Time` (or `Frame`),
+#'   with the first frame of the video at 0; see "Time" in [read_dataset()].
 #'
 #' @references
 #' - Chiara, V., & Kim, S.-Y. (2023). AnimalTA: A highly flexible and easy-to-use

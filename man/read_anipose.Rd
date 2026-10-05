@@ -17,7 +17,8 @@ dimensions (e.g., "mm", "cm", "m"). Default is "mm".}
 \value{
 An aniframe (tibble) with the following columns:
 \itemize{
-\item \code{time}: Frame number
+\item \code{time}: Frame number, Anipose's \code{fnum}, with the first frame of the
+video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}
 \item \code{keypoint}: Name of the tracked body part
 \item \code{x}, \code{y}, \code{z}: 3D coordinates in the specified units
 \item \code{confidence}: Mean detection confidence across cameras (0-1 scale)

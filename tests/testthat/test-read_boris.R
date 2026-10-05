@@ -868,3 +868,69 @@ test_that("backcalculate_boris_frames is a no-op when fps is unknown", {
   expect_equal(res$start, c(2, 5))
   expect_equal(res$stop, c(1, 10))
 })
+
+# Frames from 0 (#150) ------------------------------------------------------
+
+test_that("the first frame of a video reads as frame 0", {
+  # BORIS takes a video's image index from mpv's frame number, which counts
+  # from 0, so the index is kept as it is.
+  ae <- read_boris(tab_path("flat_dslr_subject.csv"), unit_time = "frame")
+  expect_equal(min(ae$start), 0)
+})
+
+test_that("an observation of images is shifted so its first image is 0", {
+  # BORIS numbers the images of such an observation from 1 (`image_idx + 1`
+  # in core.py), and names the observation type differently in each export.
+  header <- paste(
+    "Observation id",
+    "Observation type",
+    "Subject",
+    "Behavior",
+    "Behavior type",
+    "Start (s)",
+    "Stop (s)",
+    "Image index start",
+    "Image index stop",
+    sep = "\t"
+  )
+  for (type in c("From pictures", "From directories of images", "IMAGES")) {
+    path <- write_tsv_fixture(c(
+      header,
+      paste(
+        "obs1",
+        type,
+        "A",
+        "walk",
+        "STATE",
+        "NA",
+        "NA",
+        "1",
+        "3",
+        sep = "\t"
+      )
+    ))
+    ae <- read_boris(path, unit_time = "frame")
+    expect_equal(ae$start, 0, info = type)
+    expect_equal(ae$stop, 2, info = type)
+  }
+
+  # The same row from a video keeps its index.
+  path <- write_tsv_fixture(c(
+    header,
+    paste(
+      "obs1",
+      "Media file",
+      "A",
+      "walk",
+      "STATE",
+      "NA",
+      "NA",
+      "1",
+      "3",
+      sep = "\t"
+    )
+  ))
+  ae <- read_boris(path, unit_time = "frame")
+  expect_equal(ae$start, 1)
+  expect_equal(ae$stop, 3)
+})
