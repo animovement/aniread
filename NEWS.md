@@ -96,6 +96,10 @@
 
 * `get_sample_data()` downloads the movement sample datasets from their new home, [SWC GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data). They moved from G-Node GIN, which was often unreachable and made these downloads time out (neuroinformatics-unit/movement#1080). The file paths are unchanged.
 
+* `read_fictrac()` reads `.dat` files from every FicTrac 2 release (#172). It named 25 columns whatever the file held, so the 23 columns written by FicTrac 2.0 to 2.02, and the 24 written by untagged versions from July 2019 until 2.03, failed to read. The column count now decides the names, and `time` comes from the time since midnight where the file has one (column 25 from FicTrac 2.03 on, column 22 in a 24-column file) and from the timestamp in column 22 of a 23-column file. A file with any other number of columns gets an error saying so.
+
+* `read_fictrac()` keeps `time` running forward when a recording crosses midnight (#149, #172). The time since midnight that it reads starts again from zero at midnight, so `time` jumped back by a day there. A drop of more than twelve hours between two rows now adds a day from that row on.
+
 * `read_idtracker()` reads an idtracker.ai CSV export that has no time column (#149). idtracker.ai writes none when it could not read the video's frame rate, and the reader aborted with "Column `time` doesn't exist". `time` is now the row number, counted from 1 as the `.h5` reader counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
 
 * `detect_source()`, and so `read_dataset()`, recognises idtracker.ai's `trajectories.csv` whatever its time column: `seconds`, the `time` that newer releases write, or none. It recognised only `seconds`, although `read_idtracker()` has read `time` since #60.
