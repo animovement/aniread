@@ -6,6 +6,32 @@
 #' conventional `bottom_left` origin. The frame height is read from
 #' `Settings/ImageData/@height` in the XML by default.
 #'
+#' The XML also records how the image was calibrated, and the reader keeps
+#' what has a place in the metadata:
+#'
+#' * `timeunits` and `spatialunits`, from the `Model` element, become
+#'   `unit_time` and `unit_space`. TrackMate takes them from the image's
+#'   calibration in ImageJ, where they are free text, so the usual spellings
+#'   are recognised: `"sec"`, `"msec"`, `"min"`, `"frame"` and so on for time,
+#'   `"pixel"`, `"micron"`, `"um"` (with or without the micro sign), `"mm"`
+#'   and so on for space. A unit with no equivalent in anicore (days or
+#'   inches, say) becomes `"unknown"` or `"none"`, with a warning, rather
+#'   than stopping the read.
+#' * `timeinterval`, from `Settings/ImageData`, is the time between frames in
+#'   `timeunits`. Its reciprocal, converted to Hz, becomes `sampling_rate`.
+#'   It stays `NA` when the interval is missing or not positive, or when the
+#'   time unit is frames or not recognised.
+#' * `version`, from the root element, is the TrackMate version that wrote
+#'   the file and becomes `source_version`.
+#'
+#' TrackMate cannot tell an uncalibrated image from one calibrated at one
+#' second per frame. An image with no time calibration has a frame interval
+#' of 0, which TrackMate replaces with 1, and ImageJ's default time unit is
+#' `"sec"`. A file with `timeunits = "sec"` and `timeinterval = 1` may
+#' therefore really count frames, in which case `time` is the frame number
+#' and the 1 Hz `sampling_rate` is not the camera's. If you know the real
+#' rate, set it with [anicore::set_metadata()].
+#'
 #' @param path Path to the TrackMate XML file.
 #' @param slim If TRUE, return only essential columns (default TRUE).
 #' @param video_height Optional numeric height of the source frame in the
@@ -36,27 +62,24 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
     cli::cli_abort("No filtered tracks found in XML file.")
   }
 
-  # Report units
+  # Units, frame interval and version
   model_node <- xml2::xml_find_first(xml, ".//Model")
-  spatial_units <- xml2::xml_attr(model_node, "spatialunits")
-  spatial_units <- if (spatial_units == "pixel") {
-    "px"
-  } else if (spatial_units == "micron") {
-    "um"
-  }
-  time_units <- xml2::xml_attr(model_node, "timeunits")
-  time_units <- if (time_units == "sec") {
-    "s"
-  }
+  unit_space <- trackmate_unit_space(
+    xml2::xml_attr(model_node, "spatialunits")
+  )
+  unit_time <- trackmate_unit_time(xml2::xml_attr(model_node, "timeunits"))
+  image_data <- xml2::xml_find_first(xml, ".//Settings/ImageData")
+  sampling_rate <- trackmate_sampling_rate(
+    xml2::xml_attr(image_data, "timeinterval"),
+    unit_time
+  )
+  source_version <- xml2::xml_attr(xml2::xml_root(xml), "version")
 
   # Frame height for the y-axis reflection (top_left -> bottom_left)
   if (is.null(video_height)) {
-    image_data <- xml2::xml_find_first(xml, ".//Settings/ImageData")
-    if (!inherits(image_data, "xml_missing")) {
-      h <- suppressWarnings(as.numeric(xml2::xml_attr(image_data, "height")))
-      if (!is.na(h)) {
-        video_height <- h
-      }
+    h <- suppressWarnings(as.numeric(xml2::xml_attr(image_data, "height")))
+    if (!is.na(h)) {
+      video_height <- h
     }
   }
 
@@ -98,9 +121,16 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
     anicore::set_metadata(
       source = "trackmate",
       filename = basename(path),
-      unit_time = time_units,
-      unit_space = spatial_units
+      unit_time = unit_time,
+      unit_space = unit_space
     )
+
+  if (!is.na(sampling_rate)) {
+    data <- anicore::set_metadata(data, sampling_rate = sampling_rate)
+  }
+  if (!is.na(source_version) && nzchar(source_version)) {
+    data <- anicore::set_metadata(data, source_version = source_version)
+  }
 
   if (length(unique(data$z)) == 1) {
     data <- data |>
@@ -126,6 +156,115 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   data
 }
 
+
+#' Map a TrackMate time unit onto anicore's
+#'
+#' @param unit The `timeunits` attribute, free text from ImageJ's calibration.
+#'
+#' @return One of anicore's `unit_time` levels, `"unknown"` when the unit has
+#'   no equivalent.
+#' @noRd
+trackmate_unit_time <- function(unit) {
+  units <- list(
+    frame = c("frame", "frames"),
+    ns = c("ns", "nsec", "nanosecond", "nanoseconds"),
+    us = c(
+      "us",
+      "\u00b5s",
+      "\u03bcs",
+      "usec",
+      "\u00b5sec",
+      "\u03bcsec",
+      "microsecond",
+      "microseconds"
+    ),
+    ms = c("ms", "msec", "millisecond", "milliseconds"),
+    s = c("s", "sec", "secs", "second", "seconds"),
+    m = c("min", "mins", "minute", "minutes"),
+    h = c("h", "hr", "hrs", "hour", "hours")
+  )
+  trackmate_match_unit(unit, units, fallback = "unknown", field = "unit_time")
+}
+
+#' Map a TrackMate spatial unit onto anicore's
+#'
+#' @param unit The `spatialunits` attribute, free text from ImageJ's
+#'   calibration.
+#'
+#' @return One of anicore's `unit_space` levels, `"none"` when the unit has
+#'   no equivalent.
+#' @noRd
+trackmate_unit_space <- function(unit) {
+  units <- list(
+    px = c("pixel", "pixels", "px"),
+    nm = c("nm", "nanometer", "nanometers", "nanometre", "nanometres"),
+    um = c(
+      "um",
+      "\u00b5m",
+      "\u03bcm",
+      "micron",
+      "microns",
+      "micrometer",
+      "micrometers",
+      "micrometre",
+      "micrometres"
+    ),
+    mm = c("mm", "millimeter", "millimeters", "millimetre", "millimetres"),
+    cm = c("cm", "centimeter", "centimeters", "centimetre", "centimetres"),
+    m = c("m", "meter", "meters", "metre", "metres"),
+    km = c("km", "kilometer", "kilometers", "kilometre", "kilometres")
+  )
+  trackmate_match_unit(unit, units, fallback = "none", field = "unit_space")
+}
+
+#' Look a unit up among its spellings
+#'
+#' @param unit A unit as written in the file, or `NA`.
+#' @param units A named list: anicore's level, then the spellings that mean it.
+#' @param fallback The level to use when nothing matches.
+#' @param field The metadata field, for the warning.
+#'
+#' @return A single anicore level.
+#' @noRd
+trackmate_match_unit <- function(unit, units, fallback, field) {
+  if (is.na(unit)) {
+    return(fallback)
+  }
+  key <- tolower(trimws(unit))
+  for (level in names(units)) {
+    if (key %in% units[[level]]) {
+      return(level)
+    }
+  }
+  cli::cli_warn(c(
+    "TrackMate unit {.val {unit}} has no equivalent in anicore.",
+    "i" = "Setting {.field {field}} to {.val {fallback}}."
+  ))
+  fallback
+}
+
+#' Sampling rate from TrackMate's frame interval
+#'
+#' @param interval The `timeinterval` attribute of `Settings/ImageData`, the
+#'   time between frames in `unit_time`, as a string or `NA`.
+#' @param unit_time The anicore time unit the interval is in.
+#'
+#' @return The rate in Hz, or `NA` when the interval is not a positive number
+#'   or the unit is not a unit of time.
+#' @noRd
+trackmate_sampling_rate <- function(interval, unit_time) {
+  seconds <- c(ns = 1e-9, us = 1e-6, ms = 1e-3, s = 1, m = 60, h = 3600)
+  interval <- suppressWarnings(as.numeric(interval))
+  if (
+    is.na(interval) ||
+      !is.finite(interval) ||
+      interval <= 0 ||
+      !unit_time %in% names(seconds)
+  ) {
+    return(NA_real_)
+  }
+  1 / (interval * seconds[[unit_time]])
+}
 
 #' Extract spot attributes efficiently
 #'

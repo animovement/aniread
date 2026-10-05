@@ -10,6 +10,8 @@
 
 ## Added
 
+* `read_trackmate()`, and so `read_dataset()`, keeps what a TrackMate XML records about the recording (#149). The frame interval in `Settings/ImageData` becomes `sampling_rate`, converted to Hz, and the TrackMate version on the root element becomes `source_version`. `sampling_rate` stays `NA` when the time unit is frames or not recognised. TrackMate writes an image with no time calibration as one second per frame, so a 1 Hz rate from a file in seconds may really be frames.
+
 * Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
   * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
   * `read_trex()` keeps TRex's `ANGLE`, the direction an individual faces from its posture, as a declared `yaw`, reflected with `y` like the positions. It is read from either export when the run included it.
@@ -91,6 +93,8 @@
 * `read_animalta()` keeps individuals in different arenas apart with an `arena` identity key (#149). AnimalTA numbers individuals from 0 within each arena, and the reader dropped the `Arena` column of the layout for a variable number of targets, formerly called detailed, so in a file with several arenas the first individual of every arena became one individual with several rows per time. The aniframe now has an `arena` column, AnimalTA's arena number, and its keys are `arena`, `individual` and `keypoint`, so functions that work per individual keep arenas apart. `individual` is AnimalTA's name for the target, `Ind<i>`, in every layout: it was `0`, `1`, ... in the variable layout and `arena0_ind0`, ... in the fixed one. A corrected file, where AnimalTA writes `Ind` as `Ind0`, `Ind1`, ..., gives the same names. Every layout has the `arena` column, also for a file with a single arena.
 
 * `read_trex()` declares `unit_space` as `"cm"` (#149). TRex gives positions in centimetres in both exports, but the metadata said pixels, so anything that reads the unit misread them. The positions are unchanged. TRex converts with its `cm_per_pixel`, which assumes an image 30 cm wide unless the real width was set, so the centimetres are only as real as that setting. The `.npz` export's frame width is now recorded too, as the x extent in `axis_extents`.
+
+* `read_trackmate()` reads files in any time or space unit (#149). It recognised only `"sec"`, `"pixel"` and `"micron"`, and aborted on anything else, such as `"frame"`, `"min"`, `"msec"` or `"µm"`. TrackMate's units are now mapped onto anicore's, and one with no equivalent, such as days or inches, becomes `"unknown"` or `"none"` with a warning.
 
 * `write_aniframe()` writes `.csv` files comma-separated (#136). It passed the call to `vroom::vroom_write()`, whose default delimiter is a tab, so `.csv` and `.tsv` both came out tab-separated. The delimiter now follows the extension — a comma for `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
 

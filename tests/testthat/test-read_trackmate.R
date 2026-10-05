@@ -15,6 +15,11 @@
 # - Keeps z and sets cartesian_3d when z varies
 # - Drops z when only one unique value (sets cartesian_2d)
 # - Frame column removed when time stamps exist
+# - Every TrackMate time and space unit maps onto anicore's, falling back to
+#   "unknown" and "none" with a warning
+# - sampling_rate from ImageData/@timeinterval, in Hz, only for a positive
+#   interval in a unit of time
+# - source_version from the root version attribute
 
 test_that("read_trackmate errors on non-existent file", {
   expect_error(
@@ -450,4 +455,201 @@ test_that("read_trackmate removes frame column when time stamps exist", {
   result <- read_trackmate(tmp)
 
   expect_false("frame" %in% names(result))
+})
+
+# Write a minimal TrackMate XML with the calibration given, and return its path.
+# `NULL` leaves an attribute out; `image_data = FALSE` leaves out ImageData.
+write_trackmate_fixture <- function(
+  timeunits = "sec",
+  spatialunits = "pixel",
+  timeinterval = "1.0",
+  version = "7.11.1",
+  image_data = TRUE,
+  env = parent.frame()
+) {
+  attr <- function(name, value) {
+    if (is.null(value)) "" else sprintf(' %s="%s"', name, value)
+  }
+  settings <- if (image_data) {
+    sprintf(
+      '<Settings><ImageData width="500" height="400"%s/></Settings>',
+      attr("timeinterval", timeinterval)
+    )
+  } else {
+    ""
+  }
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    "<TrackMate",
+    attr("version", version),
+    ">",
+    "<Model",
+    attr("spatialunits", spatialunits),
+    attr("timeunits", timeunits),
+    ">",
+    "<AllSpots><SpotsInFrame frame=\"0\">",
+    '<Spot ID="1" POSITION_X="10.0" POSITION_Y="50.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="15.0" POSITION_Y="100.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    '<AllTracks><Track TRACK_ID="0">',
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>',
+    "</Track></AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model>",
+    settings,
+    "</TrackMate>"
+  )
+  tmp <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
+  writeLines(xml_content, tmp, useBytes = TRUE)
+  tmp
+}
+
+read_trackmate_quietly <- function(path) {
+  suppressMessages(read_trackmate(path))
+}
+
+test_that("read_trackmate maps every TrackMate time unit onto anicore's", {
+  cases <- c(
+    sec = "s",
+    s = "s",
+    seconds = "s",
+    msec = "ms",
+    ms = "ms",
+    "\u00b5s" = "us",
+    usec = "us",
+    ns = "ns",
+    min = "m",
+    hour = "h",
+    h = "h",
+    frame = "frame",
+    Frames = "frame"
+  )
+  for (unit in names(cases)) {
+    path <- write_trackmate_fixture(timeunits = unit)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_time")),
+      cases[[unit]],
+      label = unit
+    )
+  }
+})
+
+test_that("read_trackmate maps every TrackMate space unit onto anicore's", {
+  cases <- c(
+    pixel = "px",
+    pixels = "px",
+    micron = "um",
+    microns = "um",
+    um = "um",
+    "\u00b5m" = "um",
+    "\u03bcm" = "um",
+    nm = "nm",
+    mm = "mm",
+    cm = "cm",
+    m = "m",
+    km = "km"
+  )
+  for (unit in names(cases)) {
+    path <- write_trackmate_fixture(spatialunits = unit)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_space")),
+      cases[[unit]],
+      label = unit
+    )
+  }
+})
+
+test_that("read_trackmate falls back to unknown units with a warning", {
+  path <- write_trackmate_fixture(timeunits = "day")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "unknown"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+
+  path <- write_trackmate_fixture(spatialunits = "inch")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+})
+
+test_that("read_trackmate reads a file that records no units", {
+  path <- write_trackmate_fixture(timeunits = NULL, spatialunits = NULL)
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "unknown"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+})
+
+test_that("read_trackmate sets sampling_rate from the frame interval, in Hz", {
+  cases <- list(
+    list(unit = "sec", interval = "0.5", rate = 2),
+    list(unit = "sec", interval = "1.0", rate = 1),
+    list(unit = "msec", interval = "40", rate = 25),
+    list(unit = "\u00b5s", interval = "1000", rate = 1000),
+    list(unit = "ns", interval = "1e6", rate = 1000),
+    list(unit = "min", interval = "0.5", rate = 1 / 30),
+    list(unit = "h", interval = "2", rate = 1 / 7200)
+  )
+  for (case in cases) {
+    path <- write_trackmate_fixture(
+      timeunits = case$unit,
+      timeinterval = case$interval
+    )
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      anicore::get_metadata(result, "sampling_rate"),
+      case$rate,
+      label = paste(case$interval, case$unit)
+    )
+  }
+})
+
+test_that("read_trackmate leaves sampling_rate NA without a usable interval", {
+  # Frames are not a unit of time, so an interval in frames gives no rate
+  path <- write_trackmate_fixture(timeunits = "frame", timeinterval = "1.0")
+  result <- read_trackmate_quietly(path)
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+
+  for (interval in list("0.0", "-1", "NaN", "Infinity", "abc", NULL)) {
+    path <- write_trackmate_fixture(timeinterval = interval)
+    result <- read_trackmate_quietly(path)
+    expect_true(
+      is.na(anicore::get_metadata(result, "sampling_rate")),
+      label = format(interval)
+    )
+  }
+
+  path <- write_trackmate_fixture(image_data = FALSE)
+  result <- read_trackmate_quietly(path)
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+})
+
+test_that("read_trackmate sets source_version from the root version", {
+  path <- write_trackmate_fixture(version = "7.11.1")
+  result <- read_trackmate_quietly(path)
+  expect_equal(anicore::get_metadata(result, "source_version"), "7.11.1")
+
+  for (version in list(NULL, "")) {
+    path <- write_trackmate_fixture(version = version)
+    result <- read_trackmate_quietly(path)
+    expect_true(is.na(anicore::get_metadata(result, "source_version")))
+  }
 })
