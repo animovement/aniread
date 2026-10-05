@@ -8,25 +8,54 @@
 #' `pixelheight` in `spatialunits`, so their product is the height in the
 #' unit of the positions. Without a `pixelheight`, `height` is used as it is.
 #'
-#' Each track is named after its `name` attribute, which TrackMate sets to
-#' `Track_0`, `Track_1`, ... and lets you edit, so the names you gave tracks in
-#' TrackMate become the values of `track`. The numeric `TRACK_ID` is used
-#' instead when any track has no name, or when two tracks share one, with a
-#' warning in that case.
+#' Each track is identified in `track` by the name TrackMate gave it.
+#' TrackMate names tracks `Track_0`, `Track_1`, ..., and the column already
+#' says they are tracks, so a name of that form becomes its number alone:
+#' `Track_12` is read as `12`. A name you gave a track in TrackMate, anything
+#' not of the form `Track_<number>`, is kept as written. Each track's name is
+#' read on its own, so a file in which you renamed some tracks gives, say,
+#' `0`, `2` and `Cell A`. The numeric `TRACK_ID` is used instead when any
+#' track has no name, or, with a warning, when two tracks would get the same
+#' id (such as a track you renamed `3` beside `Track_3`). The levels of
+#' `track` are the numbers in numeric order, `2` before `10`, followed by
+#' any names sorted as text (capitals first, in every locale).
 #'
 #' A track that divides, as a cell lineage does, holds more than one spot in
 #' a frame from its first division on, which a frame keyed by `track` and
-#' `time` cannot hold. Such a track is split into its branches, each a
-#' stretch of the track between divisions, named as TrackMate's auto-naming
-#' names them: the branch before the first division keeps the track's name,
-#' say `Track_0`, its daughters are `Track_0.a` and `Track_0.b`, theirs
-#' `Track_0.aa`, `Track_0.ab`, ..., with sisters lettered by their x position.
-#' A daughter starts at its first spot after the division, so nothing is
+#' `time` cannot hold. Such a track is split into its branches, each the
+#' stretch of the track between divisions, and each branch becomes a track
+#' of its own. The `parent` column records the lineage, as cell tracking
+#' does (the `P` of the Cell Tracking Challenge's `res_track.txt`, Ultrack's
+#' `parent_track_id`): it holds the id of the track a track divided from,
+#' and is `NA` for a track that did not divide from another, so for every
+#' track of a file without divisions. The branch before the first division
+#' keeps the track's id. The other branches are numbered on from the
+#' largest number that identifies any track in the file, by `TRACK_ID` or
+#' by name, so a new id never names another track you can see in TrackMate.
+#' They are numbered track by track, in the order of the tracks' ids, and
+#' within a track by the frame they start in, then by the id of the track
+#' they divided from, so sisters are numbered together, then by x and y. A
+#' daughter starts at its first spot after the division, so nothing is
 #' measured across it. A track whose branches also merge, or whose spots
 #' share a frame in any other way, is left whole, with a warning about the
 #' duplicate track-frame combinations. A split or merge that never puts two
 #' spots in one frame, as when a link skips a frame beside another that does
 #' not, needs no splitting.
+#'
+#' `parent` is not an identity key: the keys are `track` and `keypoint`. It
+#' is a factor with the same levels as `track`, so its values match the
+#' ids in `track`. One row per track gives the lineage, as the Cell Tracking
+#' Challenge's `L B E P` table (label, first and last time, parent):
+#'
+#' ```
+#' dplyr::summarise(
+#'   data,
+#'   start = min(time),
+#'   end = max(time),
+#'   parent = dplyr::first(parent),
+#'   .by = track
+#' )
+#' ```
 #'
 #' The XML also records how the image was calibrated, and the reader keeps
 #' what has a place in the metadata:
@@ -65,7 +94,8 @@
 #'   spatial unit reported by the XML. Overrides the height read from
 #'   `Settings/ImageData` when both are available.
 #'
-#' @return An aniframe with columns including time, x, y, z, frame, and track_id.
+#' @return An aniframe with columns including `time`, `track`, `keypoint`,
+#'   `parent`, `x`, `y`, `z` and `frame`.
 #' @export
 read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   # Check the file
@@ -123,11 +153,14 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   # Build spot-to-track mapping (only for filtered tracks)
   spot_track_map <- build_spot_track_map(track_nodes, filtered_ids)
 
-  # Join, split dividing tracks into their branches, and arrange
+  # Join, split dividing tracks into their branches, and order the ids
   result <- spot_track_map$spots |>
     dplyr::inner_join(spots, by = "spot_id") |>
-    split_dividing_tracks(spot_track_map$edges) |>
+    split_dividing_tracks(spot_track_map$edges, spot_track_map$next_id) |>
     dplyr::select(-"spot_id")
+  ids <- trackmate_sort_ids(unique(result$track))
+  result$track <- factor(result$track, levels = ids)
+  result$parent <- factor(result$parent, levels = ids)
 
   # Check for duplicates
   dupe_count <- sum(duplicated(result[, c("track", "frame")]))
@@ -374,21 +407,39 @@ trackmate_image_height <- function(image_data) {
 #' @param track_names The `name` attribute of each track, `NA` where absent.
 #' @param track_ids The `TRACK_ID` attribute of each track.
 #'
-#' @return `track_names` when every track has one and no two share it,
-#'   otherwise `track_ids`.
+#' @return `track_names`, with TrackMate's default names `Track_<n>` cut to
+#'   `<n>`, when every track has one and no two share it, otherwise
+#'   `track_ids`.
 #' @noRd
 trackmate_track_labels <- function(track_names, track_ids) {
   if (anyNA(track_names) || !all(nzchar(track_names))) {
     return(track_ids)
   }
-  if (anyDuplicated(track_names)) {
+  labels <- sub("^Track_([0-9]+)$", "\\1", track_names)
+  if (anyDuplicated(labels)) {
     cli::cli_warn(c(
-      "TrackMate track names are not unique.",
+      "TrackMate track names do not tell every track apart.",
       "i" = "Labelling tracks by {.field TRACK_ID} instead."
     ))
     return(track_ids)
   }
-  track_names
+  labels
+}
+
+#' Sort track ids, numbers first in numeric order
+#'
+#' @param ids A character vector of track ids.
+#'
+#' @return `ids` sorted: the whole numbers in numeric order, then the rest
+#'   as text, in the same order in every locale.
+#' @noRd
+trackmate_sort_ids <- function(ids) {
+  number <- suppressWarnings(as.numeric(ifelse(
+    grepl("^[0-9]+$", ids),
+    ids,
+    NA
+  )))
+  ids[order(is.na(number), number, ids, method = "radix")]
 }
 
 #' Build a mapping from spot IDs to tracks
@@ -398,18 +449,24 @@ trackmate_track_labels <- function(track_names, track_ids) {
 #'
 #' @return A list of `spots`, a data.frame with spot_id, track and keypoint
 #'   columns, where track is the track's name or ID (see
-#'   `trackmate_track_labels()`), and `edges`, a data.frame of each link's
-#'   track, `source` and `target` spot.
+#'   `trackmate_track_labels()`); `edges`, a data.frame of each link's
+#'   track, `source` and `target` spot; and `next_id`, one more than the
+#'   largest number among the `TRACK_ID`s and names of all tracks in the
+#'   file, the first id free for a branch.
 #' @noRd
 build_spot_track_map <- function(track_nodes, filtered_ids) {
   # Pre-filter to only process tracks we care about
   track_ids <- xml2::xml_attr(track_nodes, "TRACK_ID")
+  track_names <- xml2::xml_attr(track_nodes, "name")
   keep <- track_ids %in% filtered_ids
+
+  # Numbers that identify a track anywhere in the file
+  numbers <- c(track_ids, sub("^Track_", "", track_names))
+  numbers <- as.numeric(numbers[grepl("^[0-9]+$", numbers)])
+  next_id <- if (length(numbers) > 0) max(numbers) + 1 else 0
+
   track_nodes <- track_nodes[keep]
-  track_labels <- trackmate_track_labels(
-    xml2::xml_attr(track_nodes, "name"),
-    track_ids[keep]
-  )
+  track_labels <- trackmate_track_labels(track_names[keep], track_ids[keep])
 
   # Process each track
   edges <- lapply(seq_along(track_nodes), function(i) {
@@ -433,55 +490,81 @@ build_spot_track_map <- function(track_nodes, filtered_ids) {
   }) |>
     dplyr::bind_rows()
 
-  list(spots = spots, edges = edges)
+  list(spots = spots, edges = edges, next_id = next_id)
 }
 
 #' Split tracks that divide into their branches
 #'
-#' @param spots The spots of the filtered tracks: spot_id, track, frame and x
-#'   at least.
+#' @param spots The spots of the filtered tracks: spot_id, track, frame, x
+#'   and y at least.
 #' @param edges The links of those tracks, as `build_spot_track_map()`
 #'   returns them.
+#' @param next_id The first id free for a branch.
 #'
-#' @return `spots`, with `track` naming the branch of each spot of a track
-#'   that holds more than one spot in a frame, where that track is a tree of
-#'   divisions (see `trackmate_branches()`).
+#' @return `spots`, with a `parent` column, and with `track` and `parent`
+#'   giving the branch of each spot of a track that holds more than one spot
+#'   in a frame, where that track is a tree of divisions (see
+#'   `trackmate_branches()`). The branch before the first division keeps the
+#'   track's id, and the others are numbered from `next_id`, track by track
+#'   in the order of their ids, and within a track by the frame they start
+#'   in, then the branch they divided from, then x and y.
 #' @noRd
-split_dividing_tracks <- function(spots, edges) {
+split_dividing_tracks <- function(spots, edges, next_id) {
+  spots$parent <- NA_character_
   shared <- unique(spots$track[duplicated(spots[c("track", "frame")])])
-  for (label in shared) {
-    rows <- spots$track == label
+  for (label in trackmate_sort_ids(shared)) {
+    rows <- which(spots$track == label)
     branches <- trackmate_branches(
       spots[rows, ],
-      edges[edges$track == label, ],
-      label
+      edges[edges$track == label, ]
     )
-    if (!is.null(branches)) {
-      spots$track[rows] <- branches
+    if (is.null(branches)) {
+      next
     }
+    # Number the branches after the root by the frame they start in, then
+    # the branch they divided from, then x and y (y as returned, after the
+    # reflection). A branch starts after the one it divided from, so that
+    # one is numbered first.
+    track_spots <- spots[rows, ]
+    first <- track_spots[match(names(branches$parent), track_spots$spot_id), ]
+    first$mother <- unname(branches$parent[first$spot_id])
+    rank <- stats::setNames(0, branches$root)
+    for (f in sort(unique(first$frame))) {
+      start <- first[first$frame == f, ]
+      start <- start[order(rank[start$mother], start$x, -start$y), ]
+      rank[start$spot_id] <- length(rank) + seq_len(nrow(start)) - 1
+    }
+    ids <- stats::setNames(
+      c(label, sprintf("%.0f", next_id + seq_len(length(rank) - 1) - 1)),
+      names(rank)
+    )
+    next_id <- next_id + length(rank) - 1
+
+    spots$track[rows] <- unname(ids[branches$branch])
+    spots$parent[rows] <- unname(ids[branches$parent[branches$branch]])
   }
   spots
 }
 
-#' Name the branches of a dividing track
+#' Find the branches of a dividing track
 #'
-#' Follows TrackMate's default auto-naming rule (`DefaultAutoNamingRule`,
-#' without the spot number): the root branch keeps the track's name, the
-#' daughters of the root are `<track>.a`, `<track>.b`, ..., and the daughters
-#' of `<track>.a` are `<track>.aa`, `<track>.ab`, ..., sisters lettered in
-#' order of x.
+#' A branch is a stretch of the track between divisions: it starts at the
+#' track's first spot or at a spot just after a division, and ends at a
+#' division or the track's end.
 #'
-#' @param spots The track's spots: spot_id, frame and x.
+#' @param spots The track's spots: spot_id and frame.
 #' @param edges The track's links: source and target.
-#' @param label The track's name.
 #'
-#' @return The branch name of each spot, or `NULL` when the track is not a
-#'   tree of divisions forward in time: when a link joins two spots of one
-#'   frame or a spot outside the track, or a spot has two parents (a merge).
+#' @return A list of `branch`, the first spot of each spot's branch, named by
+#'   spot; `root`, the first spot of the branch before the first division;
+#'   and `parent`, the first spot of the branch each other branch divided
+#'   from, named by the first spot of that branch. `NULL` when the track is
+#'   not a tree of divisions forward in time: when a link joins two spots of
+#'   one frame or a spot outside the track, or a spot has two parents (a
+#'   merge).
 #' @noRd
-trackmate_branches <- function(spots, edges, label) {
+trackmate_branches <- function(spots, edges) {
   frame <- stats::setNames(spots$frame, spots$spot_id)
-  x <- stats::setNames(spots$x, spots$spot_id)
   forward <- frame[edges$source] < frame[edges$target]
   backward <- frame[edges$source] > frame[edges$target]
   if (!isTRUE(all(forward | backward))) {
@@ -495,25 +578,23 @@ trackmate_branches <- function(spots, edges, label) {
   }
 
   # Parents come before their children in time, so in time order each
-  # parent is named before its children are.
+  # parent's branch is known before its children's.
   in_time <- order(frame[child])
   parent <- parent[in_time]
   child <- child[in_time]
-  siblings <- split(child, parent)
-  branch <- stats::setNames(rep(label, nrow(spots)), spots$spot_id)
+  n_children <- table(parent)
+  branch <- stats::setNames(spots$spot_id, spots$spot_id)
+  branch_parent <- character()
   for (i in seq_along(child)) {
-    mother <- branch[[parent[[i]]]]
-    sisters <- siblings[[parent[[i]]]]
-    if (length(sisters) == 1) {
-      branch[[child[[i]]]] <- mother
+    if (n_children[[parent[[i]]]] == 1) {
+      branch[[child[[i]]]] <- branch[[parent[[i]]]]
     } else {
-      sisters <- sisters[order(x[sisters])]
-      branch[[child[[i]]]] <- paste0(
-        mother,
-        if (mother == label) ".",
-        letters[match(child[[i]], sisters)]
-      )
+      branch_parent[[child[[i]]]] <- branch[[parent[[i]]]]
     }
   }
-  unname(branch[spots$spot_id])
+  list(
+    branch = branch,
+    root = setdiff(spots$spot_id, child),
+    parent = branch_parent
+  )
 }

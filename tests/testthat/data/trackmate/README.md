@@ -14,7 +14,7 @@ attribution. The trimmed files are distributed under the same licence.
 What each one covers:
 
 * `crop_1_60_ManualCuration_trimmed.xml`, written before TrackMate 7.
-  `Track_1` splits and merges again, through links that skip a frame, so it
+  `Track_1` (read as track `1`) splits and merges again, through links that skip a frame, so it
   never holds two spots in one frame.
 * `CelegansEarly_MIP_trimmed.xml`, two cells that each divide once.
 * `trpL_150310-11_trimmed.xml`, a blank spatial unit with the time in
