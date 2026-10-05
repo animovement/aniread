@@ -20,6 +20,8 @@
 # - sampling_rate from ImageData/@timeinterval, in Hz, only for a positive
 #   interval in a unit of time
 # - source_version from the root version attribute
+# - Reflects around height * pixelheight, the height in the spatial unit
+# - Labels tracks by Track/@name, falling back to TRACK_ID
 
 test_that("read_trackmate errors on non-existent file", {
   expect_error(
@@ -652,4 +654,114 @@ test_that("read_trackmate sets source_version from the root version", {
     result <- read_trackmate_quietly(path)
     expect_true(is.na(anicore::get_metadata(result, "source_version")))
   }
+})
+
+# Write a TrackMate XML with two filtered tracks and the given ImageData and
+# Track attributes, and return its path.
+write_trackmate_tracks <- function(
+  image_data = 'width="500" height="400"',
+  track_attrs = c('name="Track_0"', 'name="Track_1"'),
+  extra_track = "",
+  env = parent.frame()
+) {
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate version="7.11.1">',
+    '<Model spatialunits="micron" timeunits="sec">',
+    '<AllSpots><SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="10.0" POSITION_Y="50.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="15.0" POSITION_Y="60.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    '<Spot ID="3" POSITION_X="20.0" POSITION_Y="70.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="4" POSITION_X="25.0" POSITION_Y="80.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    "<AllTracks>",
+    sprintf('<Track TRACK_ID="0" %s>', track_attrs[[1]]),
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/></Track>',
+    sprintf('<Track TRACK_ID="1" %s>', track_attrs[[2]]),
+    '<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="4"/></Track>',
+    extra_track,
+    "</AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/><TrackID TRACK_ID="1"/></FilteredTracks>',
+    "</Model>",
+    sprintf("<Settings><ImageData %s/></Settings>", image_data),
+    "</TrackMate>"
+  )
+  tmp <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
+  writeLines(xml_content, tmp)
+  tmp
+}
+
+test_that("read_trackmate reflects around the height in the spatial unit", {
+  # 400 pixels at 0.5 micron per pixel: the image is 200 microns high, and
+  # the positions are in microns
+  path <- write_trackmate_tracks(
+    'width="500" height="400" pixelwidth="0.5" pixelheight="0.5"'
+  )
+  result <- read_trackmate_quietly(path)
+
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 200))
+  expect_equal(sort(result$y), sort(200 - c(50, 60, 70, 80)))
+})
+
+test_that("read_trackmate uses height alone without a usable pixelheight", {
+  for (image_data in c(
+    'width="500" height="400"',
+    'width="500" height="400" pixelheight="0.0"',
+    'width="500" height="400" pixelheight="NaN"'
+  )) {
+    path <- write_trackmate_tracks(image_data)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      anicore::get_metadata(result, "axis_extents"),
+      c(y = 400),
+      label = image_data
+    )
+  }
+})
+
+test_that("read_trackmate `video_height` overrides the calibrated height", {
+  path <- write_trackmate_tracks('width="500" height="400" pixelheight="0.5"')
+  result <- suppressMessages(read_trackmate(path, video_height = 300))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 300))
+})
+
+test_that("read_trackmate labels tracks by their names", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell A"', 'name="Cell B"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_setequal(as.character(unique(result$track)), c("Cell A", "Cell B"))
+
+  # TrackMate's default names
+  path <- write_trackmate_tracks()
+  result <- read_trackmate_quietly(path)
+  expect_setequal(as.character(unique(result$track)), c("Track_0", "Track_1"))
+})
+
+test_that("read_trackmate only needs the names of the filtered tracks to differ", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell A"', 'name="Cell B"'),
+    extra_track = '<Track TRACK_ID="2" name="Cell A"/>'
+  )
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_setequal(as.character(unique(result$track)), c("Cell A", "Cell B"))
+})
+
+test_that("read_trackmate labels tracks by ID when names cannot identify them", {
+  # A track without a name, or with an empty one
+  for (attrs in list(c('name="Cell A"', ""), c('name="Cell A"', 'name=""'))) {
+    path <- write_trackmate_tracks(track_attrs = attrs)
+    expect_no_warning(result <- read_trackmate_quietly(path))
+    expect_setequal(as.character(unique(result$track)), c("0", "1"))
+  }
+
+  # Two tracks sharing a name
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell A"', 'name="Cell A"')
+  )
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "track names are not unique"
+  )
+  expect_setequal(as.character(unique(result$track)), c("0", "1"))
 })
