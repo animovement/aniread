@@ -13,9 +13,9 @@
 #' * `version`, the idtracker.ai version that tracked it, becomes the
 #'   `source_version` metadata field.
 #' * `frames_per_second`, the frame rate of the video, becomes the
-#'   `sampling_rate` metadata field. `time` stays the frame number counted
-#'   from 1, so `unit_time` is still `"frame"`; the frame rate is what
-#'   converts it to seconds.
+#'   `sampling_rate` metadata field. `time` stays the frame number, counted
+#'   from 0 as idtracker.ai counts frames, so `unit_time` is still `"frame"`;
+#'   the frame rate is what converts it to seconds.
 #' * `height`, the height of the video frame, is what y is reflected
 #'   around, unless `video_height` is given. A `height` dataset is used
 #'   when there is no such attribute.
@@ -44,9 +44,9 @@
 #'
 #' When idtracker.ai could not read the video's frame rate, it writes the
 #' CSV export without a time column, and `frames_per_second` as `null` in
-#' `attributes.json`. `time` is then the row number, counted from 1 as the
-#' h5 reader counts frames, `unit_time` is `"frame"`, and `sampling_rate` is
-#' `NA`. Set the rate with [anicore::set_metadata()] if you know it.
+#' `attributes.json`. `time` is then the frame number, the row counted from
+#' 0 as the h5 reader counts frames, `unit_time` is `"frame"`, and
+#' `sampling_rate` is `NA`. Set the rate with [anicore::set_metadata()] if you know it.
 #'
 #' @section Tidy CSV and Parquet exports:
 #' idtracker.ai 6.0.13 added a Parquet export, `trajectories.parquet`, and
@@ -70,8 +70,8 @@
 #' frame rate, as the CSV export times its rows, with `unit_time` `"s"` and
 #' the frame rate as `sampling_rate`. When idtracker.ai could not read the
 #' frame rate it still writes a `time` column, but as the frame over 1, so
-#' `time` is then the frame counted from 1, as the other exports number it,
-#' with `unit_time` `"frame"` and `sampling_rate` `NA`. Without
+#' `time` is then the frame, counted from 0, with `unit_time` `"frame"` and
+#' `sampling_rate` `NA`. Without
 #' `attributes_tidy.json`, a tidy CSV whose `time` equals its `frame` in every
 #' row is read as one without a frame rate, and otherwise the rate is taken
 #' from the two columns, as for the CSV export.
@@ -88,7 +88,8 @@
 #'   them apart by the suffix and, for a CSV, by its header. Which one was
 #'   read is recorded in the `source_format` metadata field.
 #'
-#' @return a movement dataframe
+#' @return a movement dataframe. The first frame of the video is at
+#'   `time = 0`, in frames or in seconds; see "Time" in [read_dataset()].
 #' @examples
 #' path <- system.file("extdata", "idtracker.csv", package = "aniread")
 #' read_idtracker(path)
@@ -284,8 +285,7 @@ read_idtracker_tidy <- function(path, format) {
       recorded$sampling_rate <- rate_from_frames(rows$frame, rows$time)
     }
   } else {
-    # Counted from 1, as the other exports number frames.
-    time <- rows$frame + 1
+    time <- rows$frame
     unit_time <- "frame"
   }
 
@@ -449,14 +449,14 @@ read_idtracker_probabilities <- function(path) {
 # idtracker.ai renamed the leading time column from `seconds` to `time`
 # in newer releases. Accept either, normalising to `time`. It writes no
 # time column when it could not read the video's frame rate; the rows are
-# then numbered as the h5 reader numbers frames, from 1.
+# then numbered as idtracker.ai numbers frames, from 0.
 #' @keywords internal
 rename_idtracker_time_column <- function(data) {
   if ("seconds" %in% names(data) && !"time" %in% names(data)) {
     data <- dplyr::rename(data, time = "seconds")
   }
   if (!"time" %in% names(data)) {
-    data <- dplyr::mutate(data, time = dplyr::row_number(), .before = 1)
+    data <- dplyr::mutate(data, time = dplyr::row_number() - 1, .before = 1)
   }
   data
 }
@@ -504,7 +504,8 @@ read_idtracker_h5 <- function(path, version = version) {
       dplyr::mutate(
         individual = factor(i),
         keypoint = factor("centroid"),
-        time = dplyr::row_number()
+        # One row per frame of the video, from idtracker.ai's frame 0.
+        time = dplyr::row_number() - 1
       )
 
     data <- dplyr::bind_rows(data, data_temp)

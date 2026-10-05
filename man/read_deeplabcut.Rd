@@ -13,7 +13,8 @@ read_deeplabcut(path, video_height = NULL)
 in pixels. Not used for 3D files.}
 }
 \value{
-an aniframe
+an aniframe. \code{time} is DeepLabCut's frame index, with the first
+frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read files from DeepLabCut (DLC) in either csv or h5 format.

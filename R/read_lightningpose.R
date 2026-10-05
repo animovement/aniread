@@ -18,7 +18,8 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels. Falls back to `max(y)` when not supplied.
 #'
-#' @return an aniframe
+#' @return an aniframe. `time` is Lightning Pose's frame index, with the
+#'   first frame of the video at 0; see "Time" in [read_dataset()].
 #' @examples
 #' path <- system.file("extdata", "lightningpose.csv", package = "aniread")
 #' read_lightningpose(path)

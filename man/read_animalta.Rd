@@ -33,7 +33,8 @@ now \code{format = "variable"}, and \code{detailed = FALSE} the fixed one, now
 \code{format = "fixed"}.}
 }
 \value{
-a movement dataframe
+a movement dataframe. \code{time} is AnimalTA's \code{Time} (or \code{Frame}),
+with the first frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read a data frame from AnimalTA. AnimalTA exports tracking

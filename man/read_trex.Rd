@@ -26,7 +26,8 @@ is used as a fallback when reflecting to \code{bottom_left}.}
 \value{
 A data frame containing movement data with the following columns:
 \itemize{
-\item \code{time}: Time values from the tracking
+\item \code{time}: TRex's \code{time}, in seconds, with the first frame of the video
+at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}
 \item \code{individual}: Factor. The identity TRex assigned, from the \code{.npz}
 export; \code{NA} from the CSV export, which does not record it
 \item \code{keypoint}: Factor identifying tracked points (e.g., "head", "centroid")

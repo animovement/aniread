@@ -21,7 +21,8 @@
 #'   Default is an empty list.
 #'
 #' @return An aniframe with the selected and renamed columns, and attached
-#'   metadata.
+#'   metadata. `time` is the column as it is in the file; see "Time" in
+#'   [read_dataset()] for the convention the other readers follow.
 #'
 #' @examples
 #' \dontrun{

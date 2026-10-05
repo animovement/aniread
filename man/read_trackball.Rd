@@ -47,7 +47,8 @@ cannot be used to cross-reference the two files. A warning is emitted if
 the count of malformed rows dropped from each file.}
 }
 \value{
-a movement dataframe
+a movement dataframe. \code{time} is in seconds from the first sample
+both sensors share; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read trackball data from a variety of setups and configurations.

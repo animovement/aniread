@@ -19,7 +19,8 @@ When supplied the \code{x} and \code{y} coordinates are multiplied by this value
 An anipoint with columns \code{time}, \code{x}, \code{y} and \code{yaw}. Metadata
 includes the source (\code{"fictrac"}), original filename, sampling rate,
 time unit (\code{"s"}), space unit (either \code{"none"} or the value of
-\code{unit_ball_radius}), and a Cartesian 2‑D coordinate system.
+\code{unit_ball_radius}), and a Cartesian 2‑D coordinate system. \code{time} is in
+seconds from the first row; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 This helper loads a FicTrac \verb{*.dat} file, keeps the timestamp, the 2‑D

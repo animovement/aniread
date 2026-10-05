@@ -30,7 +30,8 @@
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels. Takes precedence over the height the file records.
 #'
-#' @return a movement dataframe
+#' @return a movement dataframe. `time` is in seconds from the first row; see
+#'   "Time" in [read_dataset()].
 #'
 #' @examples
 #' path <- system.file("extdata", "bonsai.csv", package = "aniread")

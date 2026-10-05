@@ -21,7 +21,8 @@ only some readers take are supplied, e.g. \code{sampling_rate} for
 }
 \value{
 An \link[anicore:anipoint]{anipoint} or
-\link[anicore:anievent]{anievent}, depending on the reader.
+\link[anicore:anievent]{anievent}, depending on the reader. \code{time} (or an
+event's \code{start} and \code{stop}) follows the convention in the Time section.
 }
 \description{
 One entry point for every format \code{aniread} supports. By default the source
@@ -41,6 +42,61 @@ read with \code{\link[=read_deeplabcut]{read_deeplabcut()}} - the parse is the s
 \code{source} metadata is set to \code{"deeplabcut/lightningpose"} to record that the
 distinction is undetermined. Pass \code{source} explicitly to override this.
 }
+\section{Time}{
+
+Every reader gives \code{time} as the time elapsed since the first frame of the
+video, so the first frame of the video is at \code{time = 0}, whatever the unit
+(\href{https://github.com/animovement/aniread/issues/150}{#150}):
+\itemize{
+\item In frames, \code{time} is the frame number counted from 0: the first frame of
+the video is 0, the next 1, and so on. Converting to seconds is then a
+division by the frame rate, with no offset.
+\item In seconds, the first frame of the video is at 0 s.
+\item Offsets are kept. A file whose first row is frame 500 of the video has
+\code{time = 500} there, not 0, so it stays aligned with the video.
+}
+
+Sources that count frames from 0 are read as they are. Sources that count
+them from 1 are shifted by one. Where a source gives times in seconds,
+they are kept. The table lists each source's own convention, what
+\code{time} was before aniread 0.8.0 and what it is now. Sources not marked as
+changed read as before.\tabular{llll}{
+   Source (reader) \tab The source's own time \tab \code{time} before \tab \code{time} now \cr
+   aniframe (\code{\link[=read_aniframe]{read_aniframe()}}) \tab As written by \code{\link[=write_aniframe]{write_aniframe()}} \tab As written \tab Unchanged \cr
+   AnimalTA (\code{\link[=read_animalta]{read_animalta()}}) \tab \code{Frame} counts the video's frames from 0, keeping a cropped start; \code{Time} is the frame over the frame rate, in s \tab \code{Time} in s; a detailed file without \code{Time} in frames, from its \code{Frame} \tab Unchanged \cr
+   Anipose (\code{\link[=read_anipose]{read_anipose()}}) \tab \code{fnum} counts frames from 0 \tab \code{fnum} \tab Unchanged \cr
+   Bonsai (\code{\link[=read_bonsai]{read_bonsai()}}) \tab A clock time per row, set by the workflow; no frame number \tab Seconds from the first row \tab Unchanged \cr
+   BORIS (\code{\link[=read_boris]{read_boris()}}) \tab \code{Start (s)}/\code{Stop (s)} are media time in s. The image index counts a video's frames from 0 (mpv's frame number), and the images of an observation of images from 1 \tab In s, or the image index as written \tab In s unchanged; in frames, an observation of images is \strong{shifted by 1} so its first image is 0, and a video's frames are unchanged \cr
+   C3D (\code{\link[=read_c3d]{read_c3d()}}) \tab Frames count from 1; the header records the recording frame the file starts at \tab Seconds from the file's first frame, which was always 0 \tab \strong{Seconds from the recording's first frame}: 0 for a file that starts at frame 1, \verb{(first frame - 1) / rate} for a trimmed one \cr
+   DeepLabCut (\code{\link[=read_deeplabcut]{read_deeplabcut()}}) \tab The row index counts frames from 0 \tab The index \tab Unchanged \cr
+   FastTrack (\code{\link[=read_fasttrack]{read_fasttrack()}}) \tab \code{imageNumber} is the video's frame, from 0 \tab \code{imageNumber} \tab Unchanged \cr
+   FicTrac (\code{\link[=read_fictrac]{read_fictrac()}}) \tab A clock time per row, in ms \tab Seconds from the first row \tab Unchanged \cr
+   FreeMoCap (\code{\link[=read_freemocap]{read_freemocap()}}) \tab \code{frame} counts from 0, or the row is the frame; v1 also writes timestamps \tab Seconds from the first frame's timestamp, or the frame from 0 \tab Unchanged \cr
+   idtracker.ai \code{.h5} (\code{\link[=read_idtracker]{read_idtracker()}}) \tab Rows are the video's frames, from 0 \tab The row, counted from 1 \tab \strong{The frame, from 0} \cr
+   idtracker.ai CSV, with a time column \tab \code{time} (or \code{seconds}) is the frame over the frame rate, in s \tab The time in s \tab Unchanged \cr
+   idtracker.ai CSV, without a time column \tab Rows are the video's frames, from 0 \tab The row, counted from 1 \tab \strong{The frame, from 0} \cr
+   idtracker.ai tidy CSV and Parquet \tab \code{frame} counts from 0; \code{time} is the frame over the frame rate, or over 1 when the rate is unknown \tab The time in s, or the frame + 1 \tab In s unchanged; \strong{without a rate, the frame, from 0} \cr
+   Lightning Pose (\code{\link[=read_lightningpose]{read_lightningpose()}}) \tab The row index counts frames from 0 \tab The index \tab Unchanged \cr
+   movement (\code{\link[=read_movement]{read_movement()}}) \tab The \code{time} coordinate: frames from 0, or the frame over the frame rate in s \tab As written \tab Unchanged \cr
+   OCTRON (\code{\link[=read_octron]{read_octron()}}) \tab \code{frame_idx} is the video's frame, from 0 \tab \code{frame_idx} \tab Unchanged \cr
+   SLEAP \code{.h5} (\code{\link[=read_sleap]{read_sleap()}}) \tab The frame axis starts at \code{frame_idx} 0 \tab The position on the axis, counted from 1 \tab \strong{\code{frame_idx}, from 0} \cr
+   SLEAP CSV \tab \code{frame_idx} counts from 0 \tab \code{frame_idx + 1} \tab \strong{\code{frame_idx}} \cr
+   Trackball (\code{\link[=read_trackball]{read_trackball()}}) \tab Sensor samples with a clock or counter; no video \tab Seconds from the first shared sample \tab Unchanged \cr
+   TrackMate (\code{\link[=read_trackmate]{read_trackmate()}}) \tab \code{FRAME} counts from 0; \code{POSITION_T} is the frame times the frame interval \tab \code{POSITION_T} \tab Unchanged \cr
+   TRex (\code{\link[=read_trex]{read_trex()}}) \tab \code{frame} counts from 0; \code{time} is in s, 0 at frame 0 \tab \code{time} \tab Unchanged \cr
+   \code{\link[=read_custom]{read_custom()}} \tab Whatever the file holds \tab As in the file \tab Unchanged \cr
+}
+
+
+Where a source keeps only clock times (Bonsai, FicTrac, the FreeMoCap v1
+timestamps), nothing in the file marks the first frame of the video, so
+the first row is taken as 0. That is the first frame the tool logged:
+FicTrac writes no row for a frame it could not match, so if it lost its
+first frames, 0 is the first one it matched. A SLEAP \code{.h5} written without its leading untracked frames
+(sleap-io's \code{all_frames = FALSE}) does not record where it starts, so its
+first row reads as frame 0.
+}
+
 \examples{
 \dontrun{
 # Let aniread work out the format

@@ -13,7 +13,8 @@ read_bonsai(path, video_height = NULL)
 in pixels. Takes precedence over the height the file records.}
 }
 \value{
-a movement dataframe
+a movement dataframe. \code{time} is in seconds from the first row; see
+"Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read a Bonsai data frame. Bonsai centroid coordinates

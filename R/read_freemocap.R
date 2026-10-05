@@ -39,7 +39,8 @@
 #' @return An aniframe with `time`, `model`, `keypoint`, `confidence` and
 #'   `x`/`y`/`z` in millimetres on a 3D cartesian coordinate system. `time`
 #'   is seconds elapsed from `start_datetime` where the layout carries
-#'   timestamps, and frames where it does not.
+#'   timestamps, and frames where it does not. Either way the first frame is
+#'   at 0; see "Time" in [read_dataset()].
 #'
 #' @details
 #' `confidence` comes from `reprojection_error`, which the 9-column

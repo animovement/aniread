@@ -13,7 +13,8 @@ read_lightningpose(path, video_height = NULL)
 in pixels. Falls back to \code{max(y)} when not supplied.}
 }
 \value{
-an aniframe
+an aniframe. \code{time} is Lightning Pose's frame index, with the
+first frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read csv files from LightningPose (LP). Like DeepLabCut, the source

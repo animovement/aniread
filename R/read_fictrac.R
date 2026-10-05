@@ -38,7 +38,8 @@
 #' @return An anipoint with columns `time`, `x`, `y` and `yaw`. Metadata
 #'   includes the source (`"fictrac"`), original filename, sampling rate,
 #'   time unit (`"s"`), space unit (either `"none"` or the value of
-#'   `unit_ball_radius`), and a Cartesian 2‑D coordinate system.
+#'   `unit_ball_radius`), and a Cartesian 2‑D coordinate system. `time` is in
+#'   seconds from the first row; see "Time" in [read_dataset()].
 #'
 #' @examples
 #' \dontrun{

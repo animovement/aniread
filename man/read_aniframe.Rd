@@ -10,7 +10,8 @@ read_aniframe(path)
 \item{path}{Path to a Parquet file.}
 }
 \value{
-An anipoint, or an anievent if that is what was written.
+An anipoint, or an anievent if that is what was written. \code{time} is
+as it was written; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads movement data from a Parquet file and returns an aniframe object.

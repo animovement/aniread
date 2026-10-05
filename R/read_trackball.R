@@ -43,7 +43,8 @@
 #' shared sample, and the `start_datetime` metadata is the wall-clock instant of
 #' that sample.
 #'
-#' @return a movement dataframe
+#' @return a movement dataframe. `time` is in seconds from the first sample
+#'   both sensors share; see "Time" in [read_dataset()].
 #' @examples
 #' # A free-floating ball is tracked by two optical flow sensors,
 #' # so both files are supplied together

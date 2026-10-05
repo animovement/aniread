@@ -30,10 +30,10 @@ track names. sleap-io writes a frame's user-labelled instances before its
 predicted ones, and where a track has both in one frame, the
 user-labelled one is kept, as sleap-io's \code{.h5} export keeps it.
 
-Two things are aligned with \code{\link[=read_sleap_h5]{read_sleap_h5()}} so that one recording reads
-the same from either export: \code{time} counts from 1, where \code{frame_idx}
-counts from 0; and a frame in which an instance was not detected comes
-back as an all-\code{NA} row rather than being absent, since the CSV holds a
-row per \emph{instance} and omits those entirely.
+\code{time} is \code{frame_idx}, which counts from 0, as \code{\link[=read_sleap_h5]{read_sleap_h5()}} counts
+frames, so one recording reads the same from either export. A frame in
+which an instance was not detected comes back as an all-\code{NA} row rather
+than being absent, as it does from the h5, since the CSV holds a row per
+\emph{instance} and omits those entirely.
 }
 \keyword{internal}

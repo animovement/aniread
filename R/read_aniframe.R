@@ -6,7 +6,8 @@
 #'
 #' @param path Path to a Parquet file.
 #'
-#' @return An anipoint, or an anievent if that is what was written.
+#' @return An anipoint, or an anievent if that is what was written. `time` is
+#'   as it was written; see "Time" in [read_dataset()].
 #' @export
 #'
 #' @examples
