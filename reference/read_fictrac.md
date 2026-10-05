@@ -38,6 +38,31 @@ the source (`"fictrac"`), original filename, sampling rate, time unit
 (`"s"`), space unit (either `"none"` or the value of
 `unit_ball_radius`), and a Cartesian 2‑D coordinate system.
 
+## Details
+
+FicTrac 2 has written three layouts, told apart by their number of
+columns. Columns 1 to 21 are the same in all of them; the rest hold
+timestamps:
+
+- **23 columns** (FicTrac 2.0 to 2.02): 22 is the timestamp, 23 the
+  sequence counter. `time` is taken from the timestamp, which is the
+  position in the video file (ms) or the frame capture time (ms).
+
+- **24 columns** (untagged versions from July 2019, before 2.03): 22 is
+  the frame capture time in ms since midnight, 23 the sequence counter,
+  24 the time since the last frame (ms). `time` is taken from column 22.
+
+- **25 columns** (FicTrac 2.03 onward): 22 is the timestamp, 23 the
+  sequence counter, 24 the time since the last frame, 25 the "alt.
+  timestamp", the frame capture time in ms since midnight. `time` is
+  taken from column 25.
+
+`time` counts in seconds from the first row. A time in ms since midnight
+starts again from zero at midnight, so where it drops by more than
+twelve hours from one row to the next, the reader takes it as having
+passed midnight and adds a day from there on. A recording that crosses
+midnight therefore keeps running forward rather than jumping back.
+
 ## Examples
 
 ``` r

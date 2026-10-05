@@ -3,11 +3,15 @@
 as an aniframe. TrackMate stores spot coordinates in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in the
 conventional bottom_left origin. The frame height is read from
-Settings/ImageData/@height in the XML by default."><meta property="og:description" content="Parses a TrackMate XML file and returns spot data from filtered tracks
+Settings/ImageData in the XML by default: height is in pixels and
+pixelheight in spatialunits, so their product is the height in the
+unit of the positions. Without a pixelheight, height is used as it is."><meta property="og:description" content="Parses a TrackMate XML file and returns spot data from filtered tracks
 as an aniframe. TrackMate stores spot coordinates in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in the
 conventional bottom_left origin. The frame height is read from
-Settings/ImageData/@height in the XML by default."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
+Settings/ImageData in the XML by default: height is in pixels and
+pixelheight in spatialunits, so their product is the height in the
+unit of the positions. Without a pixelheight, height is used as it is."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,7 +67,9 @@ Settings/ImageData/@height in the XML by default."><meta property="og:image" con
 as an aniframe. TrackMate stores spot coordinates in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in the
 conventional <code>bottom_left</code> origin. The frame height is read from
-<code>Settings/ImageData/@height</code> in the XML by default.</p>
+<code>Settings/ImageData</code> in the XML by default: <code>height</code> is in pixels and
+<code>pixelheight</code> in <code>spatialunits</code>, so their product is the height in the
+unit of the positions. Without a <code>pixelheight</code>, <code>height</code> is used as it is.</p>
     </div>
 
     <div class="section level2">
@@ -85,13 +91,87 @@ conventional <code>bottom_left</code> origin. The frame height is read from
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>
 <dd><p>Optional numeric height of the source frame in the
-units reported by the XML. Overrides the value parsed from
-<code>Settings/ImageData/@height</code> when both are available.</p></dd>
+spatial unit reported by the XML. Overrides the height read from
+<code>Settings/ImageData</code> when both are available.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An aniframe with columns including time, x, y, z, frame, and track_id.</p>
+    <p>An aniframe with columns including <code>time</code>, <code>track</code>, <code>keypoint</code>,
+<code>parent</code>, <code>x</code>, <code>y</code>, <code>z</code> and <code>frame</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Each track is identified in <code>track</code> by the name TrackMate gave it.
+TrackMate names tracks <code>Track_0</code>, <code>Track_1</code>, ..., and the column already
+says they are tracks, so a name of that form becomes its number alone:
+<code>Track_12</code> is read as <code>12</code>. A name you gave a track in TrackMate, anything
+not of the form <code>Track_&lt;number&gt;</code>, is kept as written. Each track's name is
+read on its own, so a file in which you renamed some tracks gives, say,
+<code>0</code>, <code>2</code> and <code>Cell A</code>. The numeric <code>TRACK_ID</code> is used instead when any
+track has no name, or, with a warning, when two tracks would get the same
+id (such as a track you renamed <code>3</code> beside <code>Track_3</code>). The levels of
+<code>track</code> are the numbers in numeric order, <code>2</code> before <code>10</code>, followed by
+any names sorted as text (capitals first, in every locale).</p>
+<p>A track that divides, as a cell lineage does, holds more than one spot in
+a frame from its first division on, which a frame keyed by <code>track</code> and
+<code>time</code> cannot hold. Such a track is split into its branches, each the
+stretch of the track between divisions, and each branch becomes a track
+of its own. The <code>parent</code> column records the lineage, as cell tracking
+does (the <code>P</code> of the Cell Tracking Challenge's <code>res_track.txt</code>, Ultrack's
+<code>parent_track_id</code>): it holds the id of the track a track divided from,
+and is <code>NA</code> for a track that did not divide from another, so for every
+track of a file without divisions. The branch before the first division
+keeps the track's id. The other branches are numbered on from the
+largest number that identifies any track in the file, by <code>TRACK_ID</code> or
+by name, so a new id never names another track you can see in TrackMate.
+They are numbered track by track, in the order of the tracks' ids, and
+within a track by the frame they start in, then by the id of the track
+they divided from, so sisters are numbered together, then by x and y. A
+daughter starts at its first spot after the division, so nothing is
+measured across it. A track whose branches also merge, or whose spots
+share a frame in any other way, is left whole, with a warning about the
+duplicate track-frame combinations. A split or merge that never puts two
+spots in one frame, as when a link skips a frame beside another that does
+not, needs no splitting.</p>
+<p><code>parent</code> is not an identity key: the keys are <code>track</code> and <code>keypoint</code>. It
+is a factor with the same levels as <code>track</code>, so its values match the
+ids in <code>track</code>. One row per track gives the lineage, as the Cell Tracking
+Challenge's <code>L B E P</code> table (label, first and last time, parent):</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">summarise</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  data,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>  <span class="at">start =</span> <span class="fu">min</span>(time),</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>  <span class="at">end =</span> <span class="fu">max</span>(time),</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>  <span class="at">parent =</span> dplyr<span class="sc">::</span><span class="fu">first</span>(parent),</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="at">.by =</span> track</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>)</span></code></pre><p></p></div>
+<p>The XML also records how the image was calibrated, and the reader keeps
+what has a place in the metadata:</p><ul><li><p><code>timeunits</code> and <code>spatialunits</code>, from the <code>Model</code> element, become
+<code>unit_time</code> and <code>unit_space</code>. TrackMate takes them from the image's
+calibration in ImageJ, where they are free text, so the usual spellings
+are recognised: <code>"sec"</code>, <code>"msec"</code>, <code>"min"</code>, <code>"frame"</code> and so on for time,
+<code>"pixel"</code>, <code>"micron"</code>, <code>"um"</code> (with or without the micro sign), <code>"mm"</code>
+and so on for space. A unit with no equivalent in anicore (days or
+inches, say) becomes <code>"unknown"</code> or <code>"none"</code>, with a warning, rather
+than stopping the read. A blank spatial unit, which TrackMate writes for
+an image whose length unit is a space, is read as pixels when the pixel
+size in <code>Settings/ImageData</code> is 1 or not recorded, as ImageJ calls an
+image with no length unit <code>"pixel"</code>. With any other pixel size the
+positions are scaled by a unit nobody named, so it becomes <code>"none"</code>
+with a warning.</p></li>
+<li><p><code>timeinterval</code>, from <code>Settings/ImageData</code>, is the time between frames in
+<code>timeunits</code>. Its reciprocal, converted to Hz, becomes <code>sampling_rate</code>.
+It stays <code>NA</code> when the interval is missing or not positive, or when the
+time unit is frames or not recognised.</p></li>
+<li><p><code>version</code>, from the root element, is the TrackMate version that wrote
+the file and becomes <code>source_version</code>.</p></li>
+</ul><p>TrackMate cannot tell an uncalibrated image from one calibrated at one
+second per frame. An image with no time calibration has a frame interval
+of 0, which TrackMate replaces with 1, and ImageJ's default time unit is
+<code>"sec"</code>. A file with <code>timeunits = "sec"</code> and <code>timeinterval = 1</code> may
+therefore really count frames, in which case <code>time</code> is the frame number
+and the 1 Hz <code>sampling_rate</code> is not the camera's. If you know the real
+rate, set it with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

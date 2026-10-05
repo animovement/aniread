@@ -62,7 +62,7 @@ get_supported_sources()
 #>  8 fasttrack        read_fasttrack     <chr [1]>
 #>  9 fictrac          read_fictrac       <chr [1]>
 #> 10 freemocap        read_freemocap     <chr [1]>
-#> 11 idtrackerai      read_idtracker     <chr [2]>
+#> 11 idtrackerai      read_idtracker     <chr [3]>
 #> 12 lightningpose    read_lightningpose <chr [1]>
 #> 13 movement         read_movement      <chr [2]>
 #> 14 octron           read_octron        <chr [1]>

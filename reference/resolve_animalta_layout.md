@@ -1,30 +1,27 @@
 # Work out which AnimalTA export layout a file uses
 
-The two layouts are separable from their first line — the raw export
-continues into `X_Arena<n>_Ind<n>` columns, the detailed one into
-`Arena;Ind;X;Y` — and
-[`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
-already encodes both header sets. It just used to consult its argument
-instead of looking, so a detailed file read with the default gave a
-header error naming columns the user had never heard of rather than
-pointing at `detailed` (#88).
+AnimalTA's layouts are separable from their first line, so `"auto"`
+reads the layout from the header rather than asking for it. Before it
+looked, a file read with the wrong default gave a header error naming
+columns the user had never heard of rather than pointing at the argument
+(#88).
 
 ## Usage
 
 ``` r
-resolve_animalta_layout(path, detailed)
+resolve_animalta_layout(path, format)
 ```
 
 ## Arguments
 
 - path:
 
-  Path to the file.
+  Path to the file, or several detailed files.
 
-- detailed:
+- format:
 
-  `"auto"`, or a logical stating the layout outright.
+  `"auto"`, or the layout to require.
 
 ## Value
 
-`TRUE` for the detailed layout, `FALSE` for the raw one.
+`"fixed"`, `"variable"` or `"detailed"`.

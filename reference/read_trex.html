@@ -6,14 +6,46 @@ per tracked individual, so a whole recording is a vector of paths. It
 carries the pose keypoints, a per-frame detection probability, the
 identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
-metadata, so several columns come back NA."><meta property="og:description" content="Reads movement tracking data exported from TRex (Walter &amp;amp; Couzin, 2021),
+metadata, so several columns come back NA.
+Both exports give time in seconds, so unit_time is &quot;s&quot;. The .npz
+records the frame rate as frame_rate, which becomes sampling_rate. The
+CSV does not record it, but when it has both a frame and a time column,
+and every time is the frame number divided by one rate (to within the
+rounding of time), that rate becomes sampling_rate: the frames between
+the first and last row over the seconds between them, or the whole number
+nearest to it when that fits every row as well. Otherwise, as when the
+times are camera timestamps that vary from frame to frame, it is left NA.
+Both exports give positions in centimetres, so unit_space is &quot;cm&quot;.
+TRex converts from pixels with its cm_per_pixel, the real width of the
+image (meta_real_width) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The .npz records the frame size as video_size, in
+pixels, and cm_per_pixel; their product is the frame's width and height
+in centimetres, which become the axis_extents of x and y and what y is
+reflected around."><meta property="og:description" content="Reads movement tracking data exported from TRex (Walter &amp;amp; Couzin, 2021),
 from either of its two exports.
 The .npz export is TRex's native one: a zip of .npy arrays, one file
 per tracked individual, so a whole recording is a vector of paths. It
 carries the pose keypoints, a per-frame detection probability, the
 identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
-metadata, so several columns come back NA."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
+metadata, so several columns come back NA.
+Both exports give time in seconds, so unit_time is &quot;s&quot;. The .npz
+records the frame rate as frame_rate, which becomes sampling_rate. The
+CSV does not record it, but when it has both a frame and a time column,
+and every time is the frame number divided by one rate (to within the
+rounding of time), that rate becomes sampling_rate: the frames between
+the first and last row over the seconds between them, or the whole number
+nearest to it when that fits every row as well. Otherwise, as when the
+times are camera timestamps that vary from frame to frame, it is left NA.
+Both exports give positions in centimetres, so unit_space is &quot;cm&quot;.
+TRex converts from pixels with its cm_per_pixel, the real width of the
+image (meta_real_width) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The .npz records the frame size as video_size, in
+pixels, and cm_per_pixel; their product is the frame's width and height
+in centimetres, which become the axis_extents of x and y and what y is
+reflected around."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -73,6 +105,22 @@ carries the pose keypoints, a per-frame detection probability, the
 identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
 metadata, so several columns come back <code>NA</code>.</p>
+<p>Both exports give <code>time</code> in seconds, so <code>unit_time</code> is <code>"s"</code>. The <code>.npz</code>
+records the frame rate as <code>frame_rate</code>, which becomes <code>sampling_rate</code>. The
+CSV does not record it, but when it has both a <code>frame</code> and a <code>time</code> column,
+and every time is the frame number divided by one rate (to within the
+rounding of <code>time</code>), that rate becomes <code>sampling_rate</code>: the frames between
+the first and last row over the seconds between them, or the whole number
+nearest to it when that fits every row as well. Otherwise, as when the
+times are camera timestamps that vary from frame to frame, it is left <code>NA</code>.</p>
+<p>Both exports give positions in centimetres, so <code>unit_space</code> is <code>"cm"</code>.
+TRex converts from pixels with its <code>cm_per_pixel</code>, the real width of the
+image (<code>meta_real_width</code>) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The <code>.npz</code> records the frame size as <code>video_size</code>, in
+pixels, and <code>cm_per_pixel</code>; their product is the frame's width and height
+in centimetres, which become the <code>axis_extents</code> of x and y and what y is
+reflected around.</p>
     </div>
 
     <div class="section level2">
@@ -99,8 +147,7 @@ file: the <code>.npz</code> export is a zip of <code>.npy</code> arrays, the CSV
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>
 <dd><p>Optional numeric height of the source video frame
-in the same spatial units as the tracking output (TRex defaults to
-centimetres). The <code>.npz</code> export records this as <code>video_size</code> and it is
+in the same spatial units as the tracking output, centimetres. The <code>.npz</code> export records this as <code>video_size</code> and it is
 used automatically; TRex's CSV export does not, so without it <code>max(y)</code>
 is used as a fallback when reflecting to <code>bottom_left</code>.</p></dd>
 

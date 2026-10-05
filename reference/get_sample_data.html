@@ -82,7 +82,10 @@ Currently supported software names:</p><ul><li><p>"animalta": Data from AnimalTA
 <li><p>"freemocap": FreeMoCap motion capture test data</p></li>
 <li><p>"idtracker": Trajectories from idtracker.ai</p></li>
 <li><p>"lightningpose": Mouse tracking from LightningPose (2 datasets)</p></li>
-<li><p>"movement": Movement package native format (2 datasets)</p></li>
+<li><p>"movement": netCDF files saved by the movement Python package
+(2 datasets). The default, "two-mice_octagon", has the dimension names
+movement uses since 0.17.0; "legacy-plural" is the same recording
+with the plural names of earlier versions</p></li>
 <li><p>"sleap": Animal tracking from SLEAP (3 datasets)</p></li>
 <li><p>"trex": Multi-animal tracking from TRex (2 datasets). The default,
 "five-locusts", unpacks to one <code>.npz</code> per individual and returns a

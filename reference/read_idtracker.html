@@ -75,7 +75,8 @@ height, so pass <code>video_height</code> explicitly to get an accurate flip
 <span>  <span class="va">path</span>,</span>
 <span>  path_probabilities <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  version <span class="op">=</span> <span class="fl">6</span>,</span>
-<span>  video_height <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  video_height <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"h5"</span>, <span class="st">"csv"</span>, <span class="st">"csv_tidy"</span>, <span class="st">"parquet"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,8 +98,16 @@ height, so pass <code>video_height</code> explicitly to get an accurate flip
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>
 <dd><p>Optional numeric height of the source video frame in
-pixels. Overrides the value read from the h5 file when both are
-available.</p></dd>
+pixels. Overrides the value read from the h5 or Parquet file when both
+are available.</p></dd>
+
+
+<dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
+<dd><p>Which idtracker.ai export <code>path</code> is: <code>"h5"</code>, the CSV export
+(<code>"csv"</code>, <code>trajectories.csv</code>), the tidy CSV export (<code>"csv_tidy"</code>,
+<code>trajectories_tidy.csv</code>) or <code>"parquet"</code>. The default, <code>"auto"</code>, tells
+them apart by the suffix and, for a CSV, by its header. Which one was
+read is recorded in the <code>source_format</code> metadata field.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -117,19 +126,68 @@ converts it to seconds.</p></li>
 <li><p><code>height</code>, the height of the video frame, is what y is reflected
 around, unless <code>video_height</code> is given. A <code>height</code> dataset is used
 when there is no such attribute.</p></li>
-</ul><p>Both fields stay <code>NA</code> when the file does not record them. The CSV
-export keeps these in a separate <code>attributes.json</code> rather than in
-<code>trajectories.csv</code>, so a frame read from the CSV has neither
-<code>source_version</code> nor <code>sampling_rate</code>; set them with
-<code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code>.</p>
+<li><p><code>width</code>, the width of the video frame, written by newer releases,
+becomes the x extent in the <code>axis_extents</code> metadata field.</p></li>
+<li><p><code>identities_labels</code>, the names of the identities, which can be changed
+in idtracker.ai's validator, name the individuals. idtracker.ai writes
+<code>"1"</code>, <code>"2"</code>, ... when none were set, which are also the names used
+when the file has no usable labels (one distinct, non-empty label per
+individual).</p></li>
+</ul><p><code>source_version</code> and <code>sampling_rate</code> stay <code>NA</code> when the file does not
+record them, and no x extent is recorded without a <code>width</code>.</p>
+<p>The CSV export keeps these in a separate <code>attributes.json</code> rather than in
+<code>trajectories.csv</code>, and the reader does not read it, so a frame read from
+the CSV has no <code>source_version</code>; set it with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code>.
+Its time column (<code>seconds</code>, or <code>time</code> in newer releases) is the time in
+seconds, so <code>unit_time</code> is <code>"s"</code>, where a frame read from the h5 has
+<code>"frame"</code>. The time column still states the frame rate: idtracker.ai
+writes one row per frame, with the time as the row number divided by the
+frame rate, rounded to 1 ms. The reader takes the rate from the rows over
+the time they span, or the whole number nearest to it when that fits every
+row as well, and sets it as <code>sampling_rate</code>. It is left <code>NA</code> when the
+times are not evenly spaced.</p>
+<p>When idtracker.ai could not read the video's frame rate, it writes the
+CSV export without a time column, and <code>frames_per_second</code> as <code>null</code> in
+<code>attributes.json</code>. <code>time</code> is then the row number, counted from 1 as the
+h5 reader counts frames, <code>unit_time</code> is <code>"frame"</code>, and <code>sampling_rate</code> is
+<code>NA</code>. Set the rate with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code> if you know it.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="tidy-csv-and-parquet-exports">Tidy CSV and Parquet exports<a class="anchor" aria-label="anchor" href="#tidy-csv-and-parquet-exports"></a></h2>
+
+
+<p>idtracker.ai 6.0.13 added a Parquet export, <code>trajectories.parquet</code>, and
+6.0.14 a tidy CSV export, <code>trajectories_tidy.csv</code>. Both hold one row per
+frame and individual, with the columns <code>frame</code>, <code>time</code>, <code>individual</code>, <code>x</code>,
+<code>y</code> and <code>probability</code>, and are written only when asked for in
+<code>TRAJECTORIES_FORMATS</code> (or by <code>idtrackerai_format --formats csv_tidy parquet</code>).</p><ul><li><p>The Parquet file stores the attributes the h5 keeps (<code>version</code>,
+<code>frames_per_second</code>, <code>height</code>, <code>width</code>, <code>identities_labels</code>, ...) as JSON
+in its own metadata, and the reader uses them as it does the h5's.</p></li>
+<li><p>The tidy CSV keeps them in <code>attributes_tidy.json</code> beside it, which the
+reader reads when it is there, since idtracker.ai writes the two together
+as one export.</p></li>
+</ul><p><code>frame</code> and <code>individual</code> count from 0. Individuals are numbered from 1, as
+the h5 reader numbers them, and named by <code>identities_labels</code> where those
+are usable. <code>probability</code> becomes <code>confidence</code>. When the frame rate is
+known, <code>time</code> is the file's time in seconds, which is the frame over the
+frame rate, as the CSV export times its rows, with <code>unit_time</code> <code>"s"</code> and
+the frame rate as <code>sampling_rate</code>. When idtracker.ai could not read the
+frame rate it still writes a <code>time</code> column, but as the frame over 1, so
+<code>time</code> is then the frame counted from 1, as the other exports number it,
+with <code>unit_time</code> <code>"frame"</code> and <code>sampling_rate</code> <code>NA</code>. Without
+<code>attributes_tidy.json</code>, a tidy CSV whose <code>time</code> equals its <code>frame</code> in every
+row is read as one without a frame rate, and otherwise the rate is taken
+from the two columns, as for the CSV export.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"idtracker.csv"</span>, package <span class="op">=</span> <span class="st">"aniread"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">read_idtracker</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Individuals: 1, 2, 3, 4, 5, 6, 7, 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:   centroid</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Individuals:   1, 2, 3, 4, 5, 6, 7, 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:     centroid</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Sampling rate: 28 Hz</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Time:          00:00:00.000 to 00:00:00.321</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    individual keypoint  time     x     y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1          centroid 0      853.  216.</span>

@@ -92,14 +92,28 @@ resolution, so pass <code>video_height</code> to get an accurate flip — otherw
 <p><code>individual</code> is the track name SLEAP recorded, from either export. A
 recording with no tracks - a single unnamed instance, or predictions that
 were never tracked - has no names to use, and falls back to
-<code>individual1</code>, <code>individual2</code>, and so on.</p>
+<code>individual1</code>, <code>individual2</code>, and so on. In the CSV, where such rows have
+an empty <code>track</code>, they are numbered in the order they appear within each
+frame. sleap-io (which writes SLEAP's exports from SLEAP 1.6.3 on) gives
+the instances of an untracked recording the names <code>track_0</code>, <code>track_1</code>,
+... in the <code>.h5</code>, and those are kept like any other track name.</p>
+<p>Both the files SLEAP wrote itself and those written by sleap-io are read.
+sleap-io can store the <code>.h5</code> arrays in another axis order (its <code>"standard"</code>
+preset, or custom axes) and records the order in each dataset's <code>dims</code>
+attribute, which the reader follows; a file without it has SLEAP's
+original layout. The frame axis of a sleap-io <code>.h5</code> runs to the end of the
+video, so frames after the last detection come back as <code>NA</code> rows, as
+undetected frames always have. Very old <code>.h5</code> files have no
+<code>point_scores</code>, and give <code>NA</code> confidence.</p>
 <p>The <code>.h5</code> also carries the skeleton the recording was tracked with and a
 record of the run, and both are kept:</p><ul><li><p>The skeleton is attached as the frame's <code>keypoint</code> structure, read as
 <code><a href="read_structure.html">read_structure_sleap()</a></code> reads it: the nodes become points and the body
 edges segments. A file written without edges gives points alone.</p></li>
 <li><p>The SLEAP version that ran the tracking, from the file's <code>provenance</code>
-record, becomes the <code>source_version</code> metadata field. It stays <code>NA</code> when
-the file has no such record.</p></li>
+record, becomes the <code>source_version</code> metadata field. When the record
+names none, a file written by sleap-io gives the sleap-io version that
+wrote it instead, as <code>"sleap-io 0.9.2"</code> for example. It stays <code>NA</code> when
+the file records neither.</p></li>
 </ul><p>The CSV carries neither, so a frame read from it has no structure and no
 <code>source_version</code>. Attach one with <code><a href="read_structure.html">read_structure()</a></code> and
 <code><a href="https://animovement.dev/anicore/reference/structures.html" class="external-link">anicore::set_structure()</a></code>.</p>

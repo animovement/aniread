@@ -8,7 +8,7 @@ turns the vertical axis over, so downstream sees one convention.
 ## Usage
 
 ``` r
-reflect_to_bottom_left(data, video_height = NULL)
+reflect_to_bottom_left(data, video_height = NULL, video_width = NULL)
 ```
 
 ## Arguments
@@ -22,6 +22,12 @@ reflect_to_bottom_left(data, video_height = NULL)
   Optional numeric height of the source video frame in y-axis units.
   When supplied, takes precedence over the extent inferred from the
   data.
+
+- video_width:
+
+  Optional numeric width of the source video frame in x-axis units,
+  recorded as the x extent. Nothing is inferred when it is not supplied,
+  since x is not reflected.
 
 ## Value
 

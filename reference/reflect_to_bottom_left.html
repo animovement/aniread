@@ -65,7 +65,7 @@ turns the vertical axis over, so downstream sees one convention.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">reflect_to_bottom_left</span><span class="op">(</span><span class="va">data</span>, video_height <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">reflect_to_bottom_left</span><span class="op">(</span><span class="va">data</span>, video_height <span class="op">=</span> <span class="cn">NULL</span>, video_width <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -80,6 +80,12 @@ turns the vertical axis over, so downstream sees one convention.</p>
 <dd><p>Optional numeric height of the source video frame
 in y-axis units. When supplied, takes precedence over the extent
 inferred from the data.</p></dd>
+
+
+<dt id="arg-video-width">video_width<a class="anchor" aria-label="anchor" href="#arg-video-width"></a></dt>
+<dd><p>Optional numeric width of the source video frame in
+x-axis units, recorded as the x extent. Nothing is inferred when it is
+not supplied, since x is not reflected.</p></dd>
 
 </dl></div>
     <div class="section level2">

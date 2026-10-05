@@ -89,7 +89,30 @@ scores, and time. This function reads that structure and reshapes it into
 a tidy aniframe format. The underlying tracking software outputs
 image (top-left) coordinates, so the reader reflects y to
 <code>bottom_left</code> before returning.</p>
-    </div>
+<p>Since version 0.17.0, movement names the dimensions <code>individual</code> and
+<code>keypoint</code>; files saved by earlier versions name them <code>individuals</code> and
+<code>keypoints</code>. Both read the same way.</p>
+<p>The axes are taken from the file's <code>space</code> coordinate, so a 2D dataset
+gives <code>x</code> and <code>y</code> and a 3D one <code>x</code>, <code>y</code> and <code>z</code>. The <code>confidence</code>
+variable becomes the <code>confidence</code> column. movement stores it either for
+each point, with dimensions (<code>time</code>, <code>keypoint</code>, <code>individual</code>), or for
+each individual, with dimensions (<code>time</code>, <code>individual</code>); a per-individual
+score is repeated for every keypoint of that individual.</p>
+<p>Only poses datasets are read. A bounding boxes dataset (<code>ds_type</code>
+<code>"bboxes"</code>) or a multi-view dataset, which has a further <code>view</code>
+dimension, is an error.</p>
+<p>The file's root attributes describe the recording, and the reader keeps
+what has a place in the metadata:</p><ul><li><p><code>source_software</code> becomes <code>source</code>, and the name of <code>source_file</code>
+becomes <code>filename</code>. A file without <code>source_file</code> (a dataset movement
+built from arrays rather than loaded from a file) takes the name of the
+file read.</p></li>
+<li><p><code>time_unit</code> becomes <code>unit_time</code>. movement writes <code>"seconds"</code> when it was
+given the frame rate and <code>"frames"</code> when it was not; these become <code>"s"</code>
+and <code>"frame"</code>.</p></li>
+<li><p><code>fps</code> becomes <code>sampling_rate</code>. movement writes it only when it was
+given one, so a file whose time is in frames leaves <code>sampling_rate</code>
+<code>NA</code>. Set it with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code> if you know it.</p></li>
+</ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

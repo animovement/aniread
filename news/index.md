@@ -40,6 +40,64 @@
 
 ### Added
 
+- [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
+  reads FreeMoCap v2’s output
+  ([\#171](https://github.com/animovement/aniread/issues/171)). The tidy
+  `freemocap_data_by_frame.csv`, and the `.parquet` beside it (with
+  arrow installed), are read as `source_format` `"v2_by_frame"`, and the
+  per-trajectory files such as `output_data/mediapipe_body_3d_xyz.csv`
+  as `"v2_trajectory"`. Those per-trajectory files keep the names of
+  v1’s wide per-model files but are long, so they are told apart by
+  their columns. Models are named `<tracker>_<aspect>` as in v1
+  (`rtmpose.left_hand` becomes `rtmpose_left_hand`). Each keypoint
+  appears once per trajectory in the tidy export: the new `trajectory`
+  argument chooses `"3d_xyz"` (default) or `"rigid_3d_xyz"` for the
+  positions, and the centres of mass become keypoints of a
+  `<tracker>_com` model, as v1’s `mediapipe_com`. v2 writes no
+  timestamps, so `time` is in frames.
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+  and
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  recognise the tidy CSV. The 9-column v1.8 `by_frame.csv` already read;
+  it now has a test fixture written by FreeMoCap v1.8.2’s own saver, and
+  `model` and `keypoint` are now always read as text, so a face keypoint
+  such as `0000` can no longer be guessed to be the number 0.
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md),
+  and so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  reads idtracker.ai’s tidy CSV export, `trajectories_tidy.csv`
+  (idtracker.ai 6.0.14), and its Parquet export, `trajectories.parquet`
+  (6.0.13), which idtracker.ai recommends for R and for large datasets
+  ([\#165](https://github.com/animovement/aniread/issues/165)). Both
+  hold one row per frame and individual. The Parquet file records the
+  version, frame rate, frame size and identity labels in its own
+  metadata, and the tidy CSV in `attributes_tidy.json` beside it, which
+  the reader reads when it is there; both are then used as for the
+  `.h5`. `time` is in seconds when the frame rate is known; when it is
+  not, idtracker.ai writes the frame as the time, so `time` is the frame
+  counted from 1, with `unit_time` `"frame"`, as for the other exports.
+  A new `format` argument names the export when the suffix and header do
+  not, and which one was read is recorded in `source_format` for every
+  idtracker.ai file.
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+  recognises both: an idtracker.ai Parquet file was detected as an
+  `"aniframe"`, since every Parquet file opens with the same bytes, and
+  is now told apart by the attributes in its metadata (with arrow
+  installed).
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md),
+  and so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  keeps what a TrackMate XML records about the recording
+  ([\#149](https://github.com/animovement/aniread/issues/149)). The
+  frame interval in `Settings/ImageData` becomes `sampling_rate`,
+  converted to Hz, and the TrackMate version on the root element becomes
+  `source_version`. `sampling_rate` stays `NA` when the time unit is
+  frames or not recognised. TrackMate writes an image with no time
+  calibration as one second per frame, so a 1 Hz rate from a file in
+  seconds may really be frames.
+
 - Readers keep orientation where the source records it rather than
   deriving it from positions (animovement/anicore#46):
 
@@ -84,6 +142,59 @@
   parses it, and the SLEAP version from the file’s `provenance` record
   becomes `source_version`. The CSV export carries neither, so a frame
   read from it is unchanged.
+
+- [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  reads AnimalTA’s detailed data files,
+  `Results/Detailed_data/<video>/Arena_<a><target>.csv`, which “Run
+  analyses” writes one per target. A file keeps its time and positions
+  (`X` and `Y`, or `X_Smoothed` and `Y_Smoothed`) and drops the measures
+  derived from them; its `arena` and `individual` are read from the file
+  name, and several files can be read together as one recording. Its
+  positions are in the unit of the scale set in AnimalTA, which the file
+  does not record, so `unit_space` should be declared when a scale was
+  set.
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+  and
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  recognise these files too.
+
+- [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  reads coordinates files tracked with AnimalTA’s “Separate head from
+  tail” option. A target alone in its arena then has
+  `X_Arena<a>_Ind<i>_Head` and `_Tail` columns instead of a single pair,
+  which broke the reader’s pivot; they become the keypoints `head` and
+  `tail` of that individual, while other targets keep `centroid`. Once
+  corrected, AnimalTA saves the head and tail as two targets,
+  `Ind<i>_part0` and `Ind<i>_part1`, in the coordinates file and in the
+  names of the detailed data files; these read as the same `head` and
+  `tail`. AnimalTA writes no centroid for such a target. A target
+  renamed in AnimalTA keeps its name, with its case, as its
+  `individual`.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  (CSV export),
+  [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  and
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  (CSV export) set `sampling_rate` from the frame rate their time column
+  states ([\#149](https://github.com/animovement/aniread/issues/149)).
+  None of these files records the rate, but each times its rows by
+  frame: TRex and AnimalTA write a frame number beside the time, and
+  idtracker.ai writes one row per frame. When every time is the frame
+  number divided by one rate, to within the rounding of the time column,
+  that rate is set, as a whole number when one fits; otherwise
+  `sampling_rate` stays `NA`. All three sample files give their recorded
+  rate: 30, 30 and 28 Hz.
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  names the individuals of an idtracker.ai `.h5` by its
+  `identities_labels` attribute, the identity names set in
+  idtracker.ai’s validator, rather than by position, and records its
+  `width` attribute, written by newer releases, as the x extent in
+  `axis_extents`
+  ([\#149](https://github.com/animovement/aniread/issues/149)). A file
+  whose identities were never renamed reads as before, since
+  idtracker.ai then writes `"1"`, `"2"`, ….
 
 - [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md),
   and so
@@ -160,7 +271,7 @@
 - [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
   reads the 9-column tidy export
   ([\#117](https://github.com/animovement/aniread/issues/117)).
-  FreeMoCap added a `reprojection_error` column at v1.8.0; the reader
+  FreeMoCap added a `reprojection_error` column at v1.7.4; the reader
   accepted a file with fewer than ten columns and rejected everything
   else, so the current export was read only by accident of that
   threshold. Both the 8- and the 9-column form are now read
@@ -204,6 +315,55 @@
   in whether reading happened to work.
 
 ### Changed
+
+- The FreeMoCap v1 example files, `freemocap.csv`,
+  `freemocap_by_trajectory.csv` and `freemocap_wide.csv` in
+  `inst/extdata`, are now written by FreeMoCap’s own code (v1.8.2’s
+  `split_and_save()`, `DataLoader` and `DataSaver`) from one synthetic
+  recording, and so are distributed under aniread’s licence. They were
+  excerpts of FreeMoCap’s v1.8.0 test-data release, whose licence is
+  unknown.
+  [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)’s
+  examples therefore show other values, and the three layouts now hold
+  the same points, so they can be compared row for row.
+  `tests/testthat/data/freemocap/README.md` records how they were made.
+
+- `get_sample_data("movement")` downloads
+  `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement
+  0.17.0 or later with the singular dimension names
+  ([\#167](https://github.com/animovement/aniread/issues/167)). The file
+  it used to download, the same recording saved with the plural names of
+  earlier versions, is the dataset `"legacy-plural"`. Both are cached
+  under new file names, so a cache from before holds no stale copy.
+
+- [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  takes the layout as
+  `format = c("auto", "fixed", "variable", "detailed")`, following
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  and
+  [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
+  ([\#118](https://github.com/animovement/aniread/issues/118)), and
+  records it in the `source_format` metadata field. The layout
+  `detailed = TRUE` named, `Frame;Time;Arena;Ind;X;Y`, is not AnimalTA’s
+  detailed data but its coordinates file for a variable number of
+  targets, so it is now `format = "variable"`, the one-pair-per-target
+  coordinates file is `format = "fixed"`, and `format = "detailed"`
+  names the detailed data files. `detailed` is deprecated:
+  `detailed = TRUE` and `detailed = FALSE` still read as `"variable"`
+  and `"fixed"`, with a warning.
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  labels tracks by the name TrackMate gave them rather than by the
+  numeric `TRACK_ID`
+  ([\#149](https://github.com/animovement/aniread/issues/149)).
+  TrackMate’s default names `Track_0`, `Track_1`, … are read as their
+  numbers, `0`, `1`, …, since the column already says they are tracks,
+  and a name you gave a track in TrackMate is kept as written, so a file
+  with some tracks renamed reads as, say, `0`, `2` and `Cell A`. It
+  falls back to `TRACK_ID` when a track has no name, or with a warning
+  when two tracks would get the same id. The levels of `track` are now
+  in numeric order, `2` before `10`, rather than sorted as text, with
+  any names after the numbers.
 
 - Functions carry a lifecycle badge when they are not stable
   (animovement/.github#46).
@@ -270,12 +430,241 @@
 
 ### Fixed
 
+- [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  reads the analysis exports that sleap-io writes, as SLEAP does from
+  1.6.3 on ([\#170](https://github.com/animovement/aniread/issues/170)).
+
+  - An `.h5` written with sleap-io’s `"standard"` preset or custom axes
+    failed or came back scrambled, since the reader assumed SLEAP’s
+    original axis order. The order is now read from each dataset’s
+    `dims` attribute, and SLEAP’s layout is assumed only where there is
+    none, so files SLEAP wrote itself read as before.
+  - A very old `.h5` without `point_scores` failed; it now reads with
+    `NA` confidence.
+  - When the `provenance` record names no SLEAP version,
+    `source_version` is the sleap-io version that wrote the file, as
+    `"sleap-io 0.9.2"` for example, rather than `NA`.
+  - A sleap-io `.h5` spans the whole video, so frames after the last
+    detection come back as `NA` rows, as undetected frames always have.
+  - In the CSV, a row with an empty `track` is an untracked instance. It
+    had `individual` `NA`, and an untracked recording with several
+    instances in a frame failed; such rows are now named `individual1`,
+    `individual2`, … by their place in the frame, as the `.h5` reader
+    names the instances of a file without track names. sleap-io’s own
+    `.h5` of an untracked recording names them `track_0`, `track_1`, …,
+    and those names are kept. Where a track has two rows in one frame, a
+    user-labelled and a predicted instance, the first, user-labelled,
+    one is kept, as sleap-io’s `.h5` export keeps it. A CSV without
+    score columns reads with `NA` confidence.
+  - sleap-io sorts the CSV’s node columns by name, with `.score` before
+    `.x` and `.y`. The reader matches them by name, so this needed no
+    change, and is now tested.
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  splits a track that divides, as a cell lineage does, into its
+  branches, and records the lineage in a new `parent` column. From its
+  first division such a track holds more than one spot in a frame, which
+  a frame keyed by `track` and `time` cannot hold, and the reader warned
+  about duplicate track-frame combinations and returned them. Each
+  branch is now a track of its own, starting at its first spot after the
+  division, so nothing is measured across one. The branch before the
+  first division keeps the track’s id, and the others are numbered on
+  from the largest track number in the file, track by track and, within
+  a track, by the frame they start in, then the track they divided from,
+  then x. `parent` holds the id of the track each track divided from, as
+  the `P` of the Cell Tracking Challenge’s `res_track.txt` does, and is
+  `NA` for a track that did not divide from another, so for every track
+  of a file without divisions. It is a plain column with the levels of
+  `track`, not an identity key. A track whose branches also merge is
+  left whole, with the warning as before.
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  reads the blank spatial unit (`spatialunits=" "`) that TrackMate
+  writes for an image whose length unit is a space, as in files from
+  TrackMate 7.13, as pixels when the pixel size is 1, as ImageJ treats
+  an image with no length unit. It warned that `" "` had no equivalent
+  in anicore and set `unit_space` to `"none"`, as it still does when the
+  pixels are scaled.
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  no longer replaces factors with their codes when it turns the NaN
+  idtracker.ai writes for a lost position into `NA`
+  ([\#165](https://github.com/animovement/aniread/issues/165)). An `.h5`
+  read with the keypoint `"1"` rather than `"centroid"`, and a CSV
+  export of ten or more individuals mixed them up: their names sort as
+  text (`"1"`, `"10"`, `"11"`, `"2"`, …), so individual 10 was named
+  `"2"`. The individuals of a CSV export are now also ordered by number.
+
 - [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
   downloads the movement sample datasets from their new home, [SWC
   GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data).
   They moved from G-Node GIN, which was often unreachable and made these
   downloads time out (neuroinformatics-unit/movement#1080). The file
   paths are unchanged.
+
+- [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
+  reads `.dat` files from every FicTrac 2 release
+  ([\#172](https://github.com/animovement/aniread/issues/172)). It named
+  25 columns whatever the file held, so the 23 columns written by
+  FicTrac 2.0 to 2.02, and the 24 written by untagged versions from July
+  2019 until 2.03, failed to read. The column count now decides the
+  names, and `time` comes from the time since midnight where the file
+  has one (column 25 from FicTrac 2.03 on, column 22 in a 24-column
+  file) and from the timestamp in column 22 of a 23-column file. A file
+  with any other number of columns gets an error saying so.
+
+- [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
+  keeps `time` running forward when a recording crosses midnight
+  ([\#149](https://github.com/animovement/aniread/issues/149),
+  [\#172](https://github.com/animovement/aniread/issues/172)). The time
+  since midnight that it reads starts again from zero at midnight, so
+  `time` jumped back by a day there. A drop of more than twelve hours
+  between two rows now adds a day from that row on.
+
+- [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  sets `sampling_rate` for an observation of several media files
+  ([\#173](https://github.com/animovement/aniread/issues/173)). BORIS
+  lists one FPS per file in a single cell, such as `25.000;25.000`,
+  which did not parse as a number, so the rate was left out. It is now
+  set when the files agree.
+
+- [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  puts a behaviour without a category in the `"behavior"` channel when
+  reading an aggregated export from current BORIS
+  ([\#173](https://github.com/animovement/aniread/issues/173)). That
+  export writes `"Not defined"` in the `Behavioral category` column
+  where older exports and the tabular export leave it empty, so such
+  behaviours landed in a channel called `"Not defined"`.
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  reads an idtracker.ai CSV export that has no time column
+  ([\#149](https://github.com/animovement/aniread/issues/149)).
+  idtracker.ai writes none when it could not read the video’s frame
+  rate, and the reader aborted with “Column `time` doesn’t exist”.
+  `time` is now the row number, counted from 1 as the `.h5` reader
+  counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
+
+- [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md),
+  and so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  recognises idtracker.ai’s `trajectories.csv` whatever its time column:
+  `seconds`, the `time` that newer releases write, or none. It
+  recognised only `seconds`, although
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  has read `time` since
+  [\#60](https://github.com/animovement/aniread/issues/60).
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  (CSV export),
+  [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  and
+  [`read_bonsai()`](https://animovement.dev/aniread/reference/read_bonsai.md)
+  declare `unit_time` as `"s"`
+  ([\#148](https://github.com/animovement/aniread/issues/148),
+  [\#149](https://github.com/animovement/aniread/issues/149)). Their
+  `time` is in seconds, but the metadata said frames, so anything that
+  reads the unit misread it:
+  [`anicore::convert_unit_time()`](https://animovement.dev/anicore/reference/convert_unit_time.html)
+  divided the seconds by the frame rate, and speeds came out per frame
+  rather than per second. The `time` values are unchanged, but results
+  that depend on the unit will differ.
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  keeps `"frame"` for the `.h5`, whose `time` is the frame number.
+
+- [`read_bonsai()`](https://animovement.dev/aniread/reference/read_bonsai.md)
+  reflects y around the frame height the file records
+  ([\#149](https://github.com/animovement/aniread/issues/149)). A
+  workflow that writes the image alongside the centroid writes its
+  `Size.Width` and `Size.Height` on every row, but the reader reflected
+  y around the largest tracked y, so every y was off by the difference:
+  254 px on the 1080 px frame of the test file. When every image in the
+  file has the same size, that size is now used, and recorded as the
+  `axis_extents` of x and y. `video_height` still takes precedence.
+
+- [`read_animalta()`](https://animovement.dev/aniread/reference/read_animalta.md)
+  keeps individuals in different arenas apart with an `arena` identity
+  key ([\#149](https://github.com/animovement/aniread/issues/149)).
+  AnimalTA numbers individuals from 0 within each arena, and the reader
+  dropped the `Arena` column of the layout for a variable number of
+  targets, formerly called detailed, so in a file with several arenas
+  the first individual of every arena became one individual with several
+  rows per time. The aniframe now has an `arena` column, AnimalTA’s
+  arena number, and its keys are `arena`, `individual` and `keypoint`,
+  so functions that work per individual keep arenas apart. `individual`
+  is AnimalTA’s name for the target, `Ind<i>`, in every layout: it was
+  `0`, `1`, … in the variable layout and `arena0_ind0`, … in the fixed
+  one. A corrected file, where AnimalTA writes `Ind` as `Ind0`, `Ind1`,
+  …, gives the same names. Every layout has the `arena` column, also for
+  a file with a single arena.
+
+- [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
+  declares `unit_space` as `"cm"`
+  ([\#149](https://github.com/animovement/aniread/issues/149)). TRex
+  gives positions in centimetres in both exports, but the metadata said
+  pixels, so anything that reads the unit misread them. The positions
+  are unchanged. TRex converts with its `cm_per_pixel`, which assumes an
+  image 30 cm wide unless the real width was set, so the centimetres are
+  only as real as that setting. The `.npz` export’s frame width is now
+  recorded too, as the x extent in `axis_extents`.
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  reflects y around the height of the image in the unit of the
+  positions, `height * pixelheight` from `Settings/ImageData`, rather
+  than around `height` in pixels
+  ([\#149](https://github.com/animovement/aniread/issues/149)). In a
+  file calibrated in microns or any other unit than pixels, every y was
+  off by the difference.
+
+- [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  reads files in any time or space unit
+  ([\#149](https://github.com/animovement/aniread/issues/149)). It
+  recognised only `"sec"`, `"pixel"` and `"micron"`, and aborted on
+  anything else, such as `"frame"`, `"min"`, `"msec"` or `"µm"`.
+  TrackMate’s units are now mapped onto anicore’s, and one with no
+  equivalent, such as days or inches, becomes `"unknown"` or `"none"`
+  with a warning.
+
+- [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  keeps the `confidence` of each point
+  ([\#149](https://github.com/animovement/aniread/issues/149)). It was
+  read from the file and never joined, so every frame came back without
+  one.
+
+- [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  reads 3D files
+  ([\#149](https://github.com/animovement/aniread/issues/149)). The axes
+  were fixed at `x` and `y`, so a dataset whose `space` coordinate holds
+  `x`, `y` and `z` aborted; they are now read from `space`.
+
+- [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  and
+  [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+  read files saved by movement 0.17.0 and later
+  ([\#167](https://github.com/animovement/aniread/issues/167)). movement
+  renamed the dimensions `individuals` and `keypoints` to `individual`
+  and `keypoint`, so these files were not detected and
+  [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  aborted with “Object ‘individuals’ does not exist”. Both names are now
+  read, so files saved by earlier versions keep reading. Along with the
+  rename:
+
+  - A `confidence` scored per individual, with dimensions (`time`,
+    `individual`), which movement accepts since 0.17.0, is repeated for
+    every keypoint of that individual.
+  - A file without a `source_file` attribute, such as a dataset movement
+    built from arrays, takes the name of the file read as its `filename`
+    rather than aborting.
+  - A movement bounding boxes dataset or a multi-view dataset now aborts
+    with a message saying it is not a single-view poses dataset, rather
+    than with an error from deep inside the reader.
+
+- [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md)
+  reads files that movement saved without a frame rate
+  ([\#149](https://github.com/animovement/aniread/issues/149)). movement
+  then writes `time_unit = "frames"` and no `fps`, and the reader
+  aborted because `"frames"` is not one of anicore’s units. It now
+  becomes `"frame"`, and `sampling_rate` stays `NA` rather than becoming
+  an empty number.
 
 - [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
   writes `.csv` files comma-separated
@@ -292,7 +681,7 @@
   which only `by_trajectory` carries.
 
 - [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
-  recognises FreeMoCap files written by v1.8.0 and later
+  recognises FreeMoCap files written by v1.7.4 and later
   ([\#117](https://github.com/animovement/aniread/issues/117)). It
   compared the header for exact equality with the eight columns of the
   older export, so a file with `reprojection_error` was not identified

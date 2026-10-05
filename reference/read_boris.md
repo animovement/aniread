@@ -23,10 +23,11 @@ later if you need to convert between frames and seconds.
 
 Channels: each row's `channel` is the value of BORIS's
 `Behavioral category` column when populated, falling back to the literal
-`"behavior"` otherwise; `label` is the behaviour name, and `type` is
-`"state"` or `"point"` mapped from BORIS's `Behavior type` column.
-Overlap between bouts of the same channel is permitted on the `anievent`
-side;
+`"behavior"` otherwise, including where the aggregated export writes
+`"Not defined"` for a behaviour without a category; `label` is the
+behaviour name, and `type` is `"state"` or `"point"` mapped from BORIS's
+`Behavior type` column. Overlap between bouts of the same channel is
+permitted on the `anievent` side;
 [`anicore::validate_anievent()`](https://animovement.dev/anicore/reference/validate_anievent.html)
 flags overlapping state bouts with a warning rather than rejecting them.
 Modifiers travel via the optional `modifiers` list-column; the
@@ -66,7 +67,10 @@ read_boris(
 An
 [`anicore::anievent()`](https://animovement.dev/anicore/reference/anievent.html)
 with metadata fields `source`, `filename`, `unit_time`, and
-`sampling_rate` (when FPS is a single numeric in the export) populated.
+`sampling_rate` populated. The sampling rate is set when every media
+file in the export has the same FPS; an observation of several media
+files lists one FPS per file in a single cell, separated by `;` (and `|`
+between players).
 
 ## References
 

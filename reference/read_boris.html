@@ -19,7 +19,9 @@ timestamps; call anicore::convert_unit_time() later if you
 need to convert between frames and seconds.
 Channels: each row's channel is the value of BORIS's
 Behavioral category column when populated, falling back to the
-literal &quot;behavior&quot; otherwise; label is the behaviour name,
+literal &quot;behavior&quot; otherwise, including where the aggregated
+export writes &quot;Not defined&quot; for a behaviour without a category;
+label is the behaviour name,
 and type is &quot;state&quot; or &quot;point&quot; mapped from BORIS's
 Behavior type column. Overlap between bouts of the same channel
 is permitted on the anievent side; anicore::validate_anievent()
@@ -48,7 +50,9 @@ timestamps; call anicore::convert_unit_time() later if you
 need to convert between frames and seconds.
 Channels: each row's channel is the value of BORIS's
 Behavioral category column when populated, falling back to the
-literal &quot;behavior&quot; otherwise; label is the behaviour name,
+literal &quot;behavior&quot; otherwise, including where the aggregated
+export writes &quot;Not defined&quot; for a behaviour without a category;
+label is the behaviour name,
 and type is &quot;state&quot; or &quot;point&quot; mapped from BORIS's
 Behavior type column. Overlap between bouts of the same channel
 is permitted on the anievent side; anicore::validate_anievent()
@@ -129,7 +133,9 @@ timestamps; call <code><a href="https://animovement.dev/anicore/reference/conver
 need to convert between frames and seconds.</p>
 <p>Channels: each row's <code>channel</code> is the value of BORIS's
 <code>Behavioral category</code> column when populated, falling back to the
-literal <code>"behavior"</code> otherwise; <code>label</code> is the behaviour name,
+literal <code>"behavior"</code> otherwise, including where the aggregated
+export writes <code>"Not defined"</code> for a behaviour without a category;
+<code>label</code> is the behaviour name,
 and <code>type</code> is <code>"state"</code> or <code>"point"</code> mapped from BORIS's
 <code>Behavior type</code> column. Overlap between bouts of the same channel
 is permitted on the <code>anievent</code> side; <code><a href="https://animovement.dev/anicore/reference/validate_anievent.html" class="external-link">anicore::validate_anievent()</a></code>
@@ -173,8 +179,10 @@ anievent with an anipoint to keep frame-aligned semantics.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An <code><a href="https://animovement.dev/anicore/reference/anievent.html" class="external-link">anicore::anievent()</a></code> with metadata fields <code>source</code>,
-<code>filename</code>, <code>unit_time</code>, and <code>sampling_rate</code> (when FPS is a
-single numeric in the export) populated.</p>
+<code>filename</code>, <code>unit_time</code>, and <code>sampling_rate</code> populated. The
+sampling rate is set when every media file in the export has the
+same FPS; an observation of several media files lists one FPS per
+file in a single cell, separated by <code>;</code> (and <code>|</code> between players).</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -10,6 +10,25 @@ identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
 metadata, so several columns come back `NA`.
 
+Both exports give `time` in seconds, so `unit_time` is `"s"`. The `.npz`
+records the frame rate as `frame_rate`, which becomes `sampling_rate`.
+The CSV does not record it, but when it has both a `frame` and a `time`
+column, and every time is the frame number divided by one rate (to
+within the rounding of `time`), that rate becomes `sampling_rate`: the
+frames between the first and last row over the seconds between them, or
+the whole number nearest to it when that fits every row as well.
+Otherwise, as when the times are camera timestamps that vary from frame
+to frame, it is left `NA`.
+
+Both exports give positions in centimetres, so `unit_space` is `"cm"`.
+TRex converts from pixels with its `cm_per_pixel`, the real width of the
+image (`meta_real_width`) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The `.npz` records the frame size as `video_size`, in
+pixels, and `cm_per_pixel`; their product is the frame's width and
+height in centimetres, which become the `axis_extents` of x and y and
+what y is reflected around.
+
 ## Usage
 
 ``` r
@@ -38,10 +57,10 @@ read_trex(path, format = c("auto", "csv", "npz"), video_height = NULL)
 - video_height:
 
   Optional numeric height of the source video frame in the same spatial
-  units as the tracking output (TRex defaults to centimetres). The
-  `.npz` export records this as `video_size` and it is used
-  automatically; TRex's CSV export does not, so without it `max(y)` is
-  used as a fallback when reflecting to `bottom_left`.
+  units as the tracking output, centimetres. The `.npz` export records
+  this as `video_size` and it is used automatically; TRex's CSV export
+  does not, so without it `max(y)` is used as a fallback when reflecting
+  to `bottom_left`.
 
 ## Value
 

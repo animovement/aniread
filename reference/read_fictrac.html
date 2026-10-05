@@ -105,6 +105,25 @@ includes the source (<code>"fictrac"</code>), original filename, sampling rate,
 time unit (<code>"s"</code>), space unit (either <code>"none"</code> or the value of
 <code>unit_ball_radius</code>), and a Cartesian 2‑D coordinate system.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>FicTrac 2 has written three layouts, told apart by their number of columns.
+Columns 1 to 21 are the same in all of them; the rest hold timestamps:</p><ul><li><p><strong>23 columns</strong> (FicTrac 2.0 to 2.02): 22 is the timestamp, 23 the
+sequence counter. <code>time</code> is taken from the timestamp, which is the
+position in the video file (ms) or the frame capture time (ms).</p></li>
+<li><p><strong>24 columns</strong> (untagged versions from July 2019, before 2.03): 22 is
+the frame capture time in ms since midnight, 23 the sequence counter, 24
+the time since the last frame (ms). <code>time</code> is taken from column 22.</p></li>
+<li><p><strong>25 columns</strong> (FicTrac 2.03 onward): 22 is the timestamp, 23 the
+sequence counter, 24 the time since the last frame, 25 the "alt.
+timestamp", the frame capture time in ms since midnight. <code>time</code> is taken
+from column 25.</p></li>
+</ul><p><code>time</code> counts in seconds from the first row. A time in ms since midnight
+starts again from zero at midnight, so where it drops by more than twelve
+hours from one row to the next, the reader takes it as having passed
+midnight and adds a day from there on. A recording that crosses midnight
+therefore keeps running forward rather than jumping back.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

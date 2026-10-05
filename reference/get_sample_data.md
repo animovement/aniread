@@ -39,7 +39,10 @@ get_sample_data(
 
   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
 
-  - "movement": Movement package native format (2 datasets)
+  - "movement": netCDF files saved by the movement Python package (2
+    datasets). The default, "two-mice_octagon", has the dimension names
+    movement uses since 0.17.0; "legacy-plural" is the same recording
+    with the plural names of earlier versions
 
   - "sleap": Animal tracking from SLEAP (3 datasets)
 
