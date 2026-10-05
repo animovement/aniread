@@ -227,19 +227,20 @@ detect_freemocap_file <- function(path) {
   # Matched by inclusion rather than identity: FreeMoCap added a
   # `reprojection_error` column at v1.8.0, and an exact match would stop
   # recognising the format the next time a column is appended.
-  all(
-    c(
-      "frame",
-      "timestamp",
-      "timestamp_by_camera",
-      "model",
-      "keypoint",
-      "x",
-      "y",
-      "z"
-    ) %in%
-      peek_header(path)
+  header <- peek_header(path)
+  v1 <- c(
+    "frame",
+    "timestamp",
+    "timestamp_by_camera",
+    "model",
+    "keypoint",
+    "x",
+    "y",
+    "z"
   )
+  # v2's tidy export (skellyforge) has no timestamps but adds `trajectory`.
+  v2 <- c("frame", "keypoint", "x", "y", "z", "model", "trajectory")
+  all(v1 %in% header) || all(v2 %in% header)
 }
 
 #' @rdname source_detectors

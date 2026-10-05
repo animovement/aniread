@@ -111,6 +111,15 @@ detection_cases <- list(
     path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
   ),
   list(
+    source = "freemocap",
+    path = fixture("freemocap", "v1.8", "recording_by_frame.csv")
+  ),
+  # FreeMoCap v2's tidy export, written by skellyforge.
+  list(
+    source = "freemocap",
+    path = system.file("extdata", "freemocap_v2.csv", package = "aniread")
+  ),
+  list(
     source = "idtrackerai",
     path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")
   ),
@@ -219,6 +228,15 @@ test_that("no detector fires on another source's file", {
       )
     }
   }
+})
+
+test_that("FreeMoCap v2's per-trajectory files are left to read_freemocap()", {
+  # `frame, keypoint, x, y, z` is too generic a header to claim for one
+  # source, so detection does not; read_freemocap() reads it when asked.
+  expect_error(
+    detect_source(fixture("freemocap", "v2", "rtmpose_body_3d_xyz.csv")),
+    "Cannot detect the source software"
+  )
 })
 
 test_that("files that are not datasets detect as nothing", {
