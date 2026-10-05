@@ -33,7 +33,12 @@ get_sample_data(
 
   - "fictrac": Fictrac sample data
 
-  - "freemocap": FreeMoCap motion capture test data
+  - "freemocap": FreeMoCap motion capture of a person doing star jumps
+    (4 datasets), from movement's sample data, written by FreeMoCap's
+    own saver. The default, "star-jump", is the 9-column `by_frame.csv`
+    of v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
+    versions; "star-jump_by_trajectory" and "star-jump_wide" are the
+    recording's `by_trajectory.csv` and `mediapipe_body_3d_xyz.csv`
 
   - "idtracker": Trajectories from idtracker.ai
 

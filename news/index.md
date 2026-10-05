@@ -355,6 +355,19 @@
   [`?read_dataset`](https://animovement.dev/aniread/reference/read_dataset.md)
   lists each source’s own convention and what its reader does.
 
+- `get_sample_data("freemocap")` downloads a real recording with a clear
+  licence: movement’s FreeMoCap star-jump session (CC BY 4.0, shared by
+  Max Staras), written by FreeMoCap’s own saver without the face mesh
+  (animovement/movement-data#10). The default dataset, `"star-jump"`, is
+  the 9-column `by_frame.csv` FreeMoCap writes from v1.7.4, with
+  `reprojection_error`; `"star-jump_v1.7"` is the same recording in the
+  8-column layout of earlier versions, and `"star-jump_by_trajectory"`
+  and `"star-jump_wide"` are its `by_trajectory.csv` and
+  `mediapipe_body_3d_xyz.csv`. The 10.7 MB 8-column file it used to
+  download, `"test-data"`, whose origin and licence are unclear, is no
+  longer offered. The files are cached under new names, so a cache from
+  before holds no stale copy.
+
 - `get_sample_data("movement")` downloads
   `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement
   0.17.0 or later with the singular dimension names
