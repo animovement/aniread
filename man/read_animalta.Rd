@@ -39,6 +39,17 @@ row over the seconds between them, or the whole number nearest to it when
 that fits every row as well. Otherwise it is left \code{NA}. In a short file
 the rounding leaves the rate uncertain by about 0.01 s over the file's
 duration.
+
+AnimalTA numbers individuals from 0 within each arena, so an individual is
+identified by its arena and its name together. The arena is its own
+identity column, \code{arena}, holding AnimalTA's arena number (\code{"0"}, \code{"1"},
+...), and \code{individual} holds AnimalTA's name for the target, \verb{Ind<i>}.
+Both layouts give the same values: the raw layout's columns are named
+\verb{X_Arena<a>_Ind<i>}, and the detailed layout's \code{Arena} and \code{Ind} columns
+hold the same numbers. \code{arena}, \code{individual} and \code{keypoint} are the
+aniframe's identity keys, so functions that work per individual keep
+arenas apart. The \code{arena} column is there for every file, also when it has
+a single arena.
 }
 \examples{
 path <- system.file("extdata", "animalta.csv", package = "aniread")

@@ -110,3 +110,72 @@ test_that("a Time column that disagrees with Frame leaves the rate NA", {
   data <- read_animalta(path)
   expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
 })
+
+# ---- Arenas ------------------------------------------------------------
+
+test_that("the detailed layout keeps individuals in different arenas apart", {
+  # AnimalTA numbers individuals from 0 within each arena. Dropping the
+  # arena merged Ind 0 of arena 0 and Ind 0 of arena 1 into one individual
+  # with two rows per time.
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "Frame;Time;Arena;Ind;X;Y",
+      "0.0;0.0;0;0;10;20",
+      "0.0;0.0;1;0;30;40",
+      "1.0;0.03;0;0;11;21",
+      "1.0;0.03;1;0;31;41"
+    ),
+    path
+  )
+  result <- read_animalta(path)
+
+  expect_equal(anicore::get_keys(result), c("arena", "individual", "keypoint"))
+  expect_equal(levels(result$arena), c("0", "1"))
+  expect_equal(levels(result$individual), "Ind0")
+  expect_equal(nrow(result), 4)
+  expect_equal(anyDuplicated(result[c("arena", "individual", "time")]), 0)
+  arena1 <- result[result$arena == "1", ]
+  expect_equal(arena1$x, c(30, 31))
+})
+
+test_that("the raw layout gives each arena its own key", {
+  path <- testthat::test_path("data/animalta/single_individual_multi_arena.csv")
+  raw <- utils::read.csv(path, sep = ";")
+  result <- read_animalta(path)
+
+  expect_equal(anicore::get_keys(result), c("arena", "individual", "keypoint"))
+  expect_equal(levels(result$arena), as.character(0:8))
+  expect_equal(levels(result$individual), "Ind0")
+  expect_equal(result$x[result$arena == "3"], raw$X_Arena3_Ind0)
+})
+
+test_that("arenas sort by number, not as text", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "Frame;Time;Arena;Ind;X;Y",
+      "0.0;0.0;10;0;10;20",
+      "0.0;0.0;2;0;30;40"
+    ),
+    path
+  )
+
+  expect_equal(levels(read_animalta(path)$arena), c("2", "10"))
+})
+
+test_that("both layouts name arenas and individuals the same way", {
+  raw <- read_animalta(
+    testthat::test_path("data/animalta/single_individual_multi_arena.csv")
+  )
+  detailed <- read_animalta(
+    testthat::test_path("data/animalta/variable_individuals_single_arena.csv")
+  )
+
+  # The arena is there for a file with a single arena too, so the columns do
+  # not depend on the file.
+  expect_equal(names(raw), names(detailed))
+  expect_equal(levels(detailed$arena), "0")
+  expect_equal(levels(detailed$individual), "Ind0")
+  expect_true("0" %in% levels(raw$arena))
+})
