@@ -11,7 +11,7 @@ test_that("read_dataset returns what the direct reader returns", {
     list(path = fixture("octron", "octron_sample.csv"), reader = read_octron),
     list(path = fixture("trex", "beetle.csv"), reader = read_trex),
     list(
-      path = fixture("freemocap", "freemocap_test_data_by_frame.csv"),
+      path = fixture("freemocap", "v1.7", "recording_by_frame.csv"),
       reader = read_freemocap
     ),
     list(

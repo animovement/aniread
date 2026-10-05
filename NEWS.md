@@ -52,7 +52,7 @@
 
 * `read_trex()` gains a `format` argument, defaulting to `"auto"`, which reads the export from the file rather than its extension.
 
-* `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.8.0; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.
+* `read_freemocap()` reads the 9-column tidy export (#117). FreeMoCap added a `reprojection_error` column at v1.7.4; the reader accepted a file with fewer than ten columns and rejected everything else, so the current export was read only by accident of that threshold. Both the 8- and the 9-column form are now read deliberately.
 
 * FreeMoCap data gains a `confidence` column, from `reprojection_error` where the file has one and all-`NA` where it does not. The two run in opposite directions — an error is a distance in pixels, so zero is best, while `confidence` everywhere else in aniread comes from a likelihood or probability where larger is best — so it is mapped through `1 / (1 + error)` rather than renamed. That is monotone onto `(0, 1]`, gives 1 for a perfect reprojection, and is invertible: the original error is `1 / confidence - 1`. Renaming it would have made `aniprocess::filter_na_across(method = "confidence")` discard the best-tracked points.
 
@@ -63,6 +63,8 @@
 * The layout a file was read as is recorded in the `source_format` metadata field, as `"by_frame_8col"` or `"by_frame_9col"`, so drift between FreeMoCap releases is visible on the aniframe rather than only in whether reading happened to work.
 
 ## Changed
+
+* The FreeMoCap v1 example files, `freemocap.csv`, `freemocap_by_trajectory.csv` and `freemocap_wide.csv` in `inst/extdata`, are now written by FreeMoCap's own code (v1.8.2's `split_and_save()`, `DataLoader` and `DataSaver`) from one synthetic recording, and so are distributed under aniread's licence. They were excerpts of FreeMoCap's v1.8.0 test-data release, whose licence is unknown. `read_freemocap()`'s examples therefore show other values, and the three layouts now hold the same points, so they can be compared row for row. `tests/testthat/data/freemocap/README.md` records how they were made.
 
 * `get_sample_data("movement")` downloads `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement 0.17.0 or later with the singular dimension names (#167). The file it used to download, the same recording saved with the plural names of earlier versions, is the dataset `"legacy-plural"`. Both are cached under new file names, so a cache from before holds no stale copy.
 
@@ -143,7 +145,7 @@
 
 * `detect_freemocap_format()` no longer mistakes a `by_trajectory` file for a wide one. It told them apart by a `frame` column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only `by_trajectory` carries.
 
-* `detect_source()` recognises FreeMoCap files written by v1.8.0 and later (#117). It compared the header for exact equality with the eight columns of the older export, so a file with `reprojection_error` was not identified as FreeMoCap at all and `read_dataset()` failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.
+* `detect_source()` recognises FreeMoCap files written by v1.7.4 and later (#117). It compared the header for exact equality with the eight columns of the older export, so a file with `reprojection_error` was not identified as FreeMoCap at all and `read_dataset()` failed on it. The header is now matched by inclusion, which also survives the next column FreeMoCap appends.
 
 # aniread 0.7.0 (2026-08-28)
 

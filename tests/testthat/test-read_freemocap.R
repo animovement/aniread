@@ -272,7 +272,7 @@ test_that("read_freemocap output works with aniframe functions", {
 })
 
 # Export layouts ----------------------------------------------------------
-# FreeMoCap added a reprojection_error column to the tidy export at v1.8.0,
+# FreeMoCap added a reprojection_error column to the tidy export at v1.7.4,
 # so by_frame.csv exists in an 8- and a 9-column form. Both are read, and
 # the layout that was parsed is recorded rather than inferred again later.
 
@@ -292,7 +292,9 @@ test_that("confidence inverts reprojection_error onto (0, 1]", {
   raw <- vroom::vroom(path, show_col_types = FALSE)
   data <- read_freemocap(path)
 
-  expect_true(all(data$confidence > 0 & data$confidence <= 1))
+  # FreeMoCap gives the centres of mass no reprojection error.
+  expect_equal(is.na(data$confidence), data$model == "mediapipe_com")
+  expect_true(all(data$confidence > 0 & data$confidence <= 1, na.rm = TRUE))
 
   # The mapping is invertible, so every original error comes back.
   # Compared as sets, because as_aniframe() reorders rows.
@@ -477,8 +479,8 @@ test_that("a name with no underscore keeps the bare model", {
 })
 
 test_that("by_frame and by_trajectory agree on the same recording", {
-  # Both fixtures are excerpts of the same v1.8.0 release asset, so every
-  # keypoint they share must carry identical coordinates at the same frame.
+  # FreeMoCap v1.8.2's DataSaver wrote both from one recording, so every
+  # keypoint must carry identical coordinates at the same frame.
   bf <- read_freemocap(
     system.file("extdata", "freemocap.csv", package = "aniread")
   )
@@ -507,10 +509,22 @@ test_that("by_frame and by_trajectory agree on the same recording", {
     suffixes = c("_bf", "_bt")
   )
 
-  expect_gt(nrow(joined), 0)
+  # Every point is in both.
+  expect_equal(nrow(joined), nrow(bf))
+  expect_equal(nrow(joined), nrow(bt))
   expect_equal(joined$x_bf, joined$x_bt, tolerance = 1e-9)
   expect_equal(joined$y_bf, joined$y_bt, tolerance = 1e-9)
   expect_equal(joined$z_bf, joined$z_bt, tolerance = 1e-9)
+
+  # The per-model wide file the DataLoader read them from holds the body.
+  wide <- read_freemocap(
+    system.file("extdata", "freemocap_wide.csv", package = "aniread")
+  )
+  body <- key(bf)[bf$model == "mediapipe_body", ]
+  body <- body[order(body$keypoint, body$time), ]
+  wide <- key(wide)[order(wide$keypoint, wide$time), ]
+  rownames(body) <- rownames(wide) <- NULL
+  expect_equal(wide, body)
 })
 
 test_that("frames count from zero in every layout", {
@@ -583,6 +597,33 @@ test_that("a by_frame.csv from FreeMoCap v1.8's writer is read", {
     sort(raw$reprojection_error[!is.na(raw$reprojection_error)]),
     tolerance = 1e-9
   )
+})
+
+# FreeMoCap v1.7 ----------------------------------------------------------
+# An 8-column by_frame.csv written by v1.7.3's own DataSaver from the same
+# synthetic recording as inst/extdata/freemocap.csv; see
+# data/freemocap/README.md for its origin.
+
+test_that("a by_frame.csv from FreeMoCap v1.7's writer is read", {
+  path <- test_path("data", "freemocap", "v1.7", "recording_by_frame.csv")
+  data <- read_freemocap(path)
+  meta <- anicore::get_metadata(data)
+
+  expect_equal(meta$source_format, "by_frame_8col")
+  expect_equal(as.character(meta$unit_time), "frame")
+  expect_true(all(is.na(data$confidence)))
+
+  # The same positions as v1.8.2's 9-column file of the same recording
+  v18 <- read_freemocap(
+    system.file("extdata", "freemocap.csv", package = "aniread")
+  )
+  plain <- function(d) {
+    d <- as.data.frame(d)[c("time", "model", "keypoint", "x", "y", "z")]
+    d$model <- as.character(d$model)
+    d$keypoint <- as.character(d$keypoint)
+    d
+  }
+  expect_equal(plain(data), plain(v18))
 })
 
 test_that("numbered keypoints stay text in a file of only those", {

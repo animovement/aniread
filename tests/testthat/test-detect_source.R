@@ -144,7 +144,7 @@ detection_cases <- list(
   ),
   list(
     source = "freemocap",
-    path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
+    path = fixture("freemocap", "v1.7", "recording_by_frame.csv")
   ),
   list(
     source = "freemocap",
@@ -602,7 +602,7 @@ test_that("detect_source() recognises both FreeMoCap tidy layouts", {
   path_9col <- system.file("extdata", "freemocap.csv", package = "aniread")
   expect_equal(detect_source(path_9col), "freemocap")
 
-  # The 8-column form, which is what FreeMoCap wrote before v1.8.0.
+  # The 8-column form, which is what FreeMoCap wrote before v1.7.4.
   path_8col <- withr::local_tempfile(fileext = ".csv")
   vroom::vroom_write(
     data.frame(
