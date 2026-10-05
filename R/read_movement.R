@@ -19,6 +19,10 @@
 #' image (top-left) coordinates, so the reader reflects y to
 #' `bottom_left` before returning.
 #'
+#' The axes are taken from the file's `space` coordinate, so a 2D dataset
+#' gives `x` and `y` and a 3D one `x`, `y` and `z`. The `confidence`
+#' variable becomes the `confidence` column.
+#'
 #' The file's root attributes describe the recording, and the reader keeps
 #' what has a place in the metadata:
 #'
@@ -45,27 +49,46 @@ read_movement <- function(path, video_height = NULL) {
   unit_time <- movement_unit_time(metadata$time_unit)
   sampling_rate <- movement_sampling_rate(metadata$fps)
 
-  #
-  individuals <- rhdf5::h5read(path, "individuals")
-  keypoints <- rhdf5::h5read(path, "keypoints")
+  individuals <- as.vector(rhdf5::h5read(path, "individuals"))
+  keypoints <- as.vector(rhdf5::h5read(path, "keypoints"))
+  axes <- as.vector(rhdf5::h5read(path, "space"))
+  time <- as.vector(rhdf5::h5read(path, "time"))
   position <- rhdf5::h5read(path, "position")
   confidence <- rhdf5::h5read(path, "confidence")
-  space <- rhdf5::h5read(path, "space")
-  time <- rhdf5::h5read(path, "time")
 
+  # rhdf5 reverses movement's (time, space, keypoints, individuals) order
   dimnames(position) <- list(
     individual = individuals,
     keypoint = keypoints,
-    coord = c("x", "y"),
+    coord = axes,
     time_idx = seq_along(time)
   )
+  dimnames(confidence) <- list(
+    individual = individuals,
+    keypoint = keypoints,
+    time_idx = seq_along(time)
+  )
+
+  confidence <- as.data.frame.table(confidence, responseName = "confidence") |>
+    dplyr::as_tibble() |>
+    dplyr::mutate(time_idx = as.integer(as.character(.data$time_idx)))
 
   data <- as.data.frame.table(position, responseName = "value") |>
     dplyr::as_tibble() |>
     dplyr::mutate(time_idx = as.integer(as.character(.data$time_idx))) |>
     tidyr::pivot_wider(names_from = "coord", values_from = "value") |>
+    dplyr::left_join(
+      confidence,
+      by = c("individual", "keypoint", "time_idx")
+    ) |>
     dplyr::mutate(time = time[.data$time_idx]) |>
-    dplyr::select("individual", "keypoint", "time", "x", "y") |>
+    dplyr::select(
+      "individual",
+      "keypoint",
+      "time",
+      tidyselect::all_of(axes),
+      "confidence"
+    ) |>
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = metadata$source_software,

@@ -29,6 +29,10 @@ a tidy aniframe format. The underlying tracking software outputs
 image (top-left) coordinates, so the reader reflects y to
 \code{bottom_left} before returning.
 
+The axes are taken from the file's \code{space} coordinate, so a 2D dataset
+gives \code{x} and \code{y} and a 3D one \code{x}, \code{y} and \code{z}. The \code{confidence}
+variable becomes the \code{confidence} column.
+
 The file's root attributes describe the recording, and the reader keeps
 what has a place in the metadata:
 \itemize{
