@@ -8,8 +8,8 @@ write_intracktive(data, filename, quiet = FALSE)
 }
 \arguments{
 \item{data}{An aniframe containing tracking data with required columns
-\code{time}, \code{x}, and \code{y}. Optional columns include \code{z} for 3D data and
-grouping columns (\code{session}, \code{trial}, \code{model}, \code{individual}, \code{keypoint}).}
+\code{time}, \code{x}, and \code{y}. Optional columns are \code{z} for 3D data and \code{parent}
+for lineage (see Details).}
 
 \item{filename}{File path to write the CSV.}
 
@@ -21,13 +21,15 @@ Returns the input data unchanged.
 \description{
 Converts an aniframe to the CSV format required by inTRACKtive for
 browser-based interactive visualization of tracking data. The function
-creates unique integer track identifiers from combinations of grouping
-columns present in the data.
+creates unique integer track identifiers from combinations of the
+aniframe's identity keys, and writes the lineage of dividing tracks.
 }
 \details{
 inTRACKtive requires tracking data with a unique integer \code{track_id} for each
-tracked object. This function automatically generates track IDs from any
-combination of aniframe grouping columns that are present in the data.
+tracked object. This function numbers the tracks from 1, one for each
+combination of the aniframe's identity keys (\code{\link[anicore:get_keys]{anicore::get_keys()}}), such
+as \code{individual} and \code{keypoint}, or \code{track} and \code{keypoint} for a frame read
+by \code{\link[=read_trackmate]{read_trackmate()}}.
 
 The output format includes:
 \itemize{
@@ -35,7 +37,19 @@ The output format includes:
 \item \code{t}: Time values (renamed from \code{time})
 \item \code{x}, \code{y}: Spatial coordinates
 \item \code{z}: Optional third dimension if present
+\item \code{parent_track_id}: Only when \code{data} has a \code{parent} column, as
+\code{\link[=read_trackmate]{read_trackmate()}} gives a frame with dividing tracks. \code{parent} names the
+\code{track} a track divided from, and \code{parent_track_id} is that track's
+\code{track_id} (with the same values of the other keys), so inTRACKtive draws
+the lineage. A track with no parent gets \code{-1}, inTRACKtive's value for
+one, as does a track whose parent is not in \code{data} (with a warning).
+Without a \code{parent} column the column is left out, which inTRACKtive
+reads as no divisions.
 }
+
+inTRACKtive reads \code{t} as whole frames counted from 0. \code{time} is written as
+it is, so a frame whose time is in seconds or minutes should be converted
+to frames first.
 
 The resulting CSV can be converted to inTRACKtive's Zarr format using their
 command-line tools or Python package.
