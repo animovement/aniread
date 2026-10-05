@@ -4,7 +4,15 @@
 #' as an aniframe. TrackMate stores spot coordinates in image (top-left)
 #' coordinates; the reader reflects y so the returned aniframe is in the
 #' conventional `bottom_left` origin. The frame height is read from
-#' `Settings/ImageData/@height` in the XML by default.
+#' `Settings/ImageData` in the XML by default: `height` is in pixels and
+#' `pixelheight` in `spatialunits`, so their product is the height in the
+#' unit of the positions. Without a `pixelheight`, `height` is used as it is.
+#'
+#' Each track is named after its `name` attribute, which TrackMate sets to
+#' `Track_0`, `Track_1`, ... and lets you edit, so the names you gave tracks in
+#' TrackMate become the values of `track`. The numeric `TRACK_ID` is used
+#' instead when any track has no name, or when two tracks share one, with a
+#' warning in that case.
 #'
 #' The XML also records how the image was calibrated, and the reader keeps
 #' what has a place in the metadata:
@@ -35,8 +43,8 @@
 #' @param path Path to the TrackMate XML file.
 #' @param slim If TRUE, return only essential columns (default TRUE).
 #' @param video_height Optional numeric height of the source frame in the
-#'   units reported by the XML. Overrides the value parsed from
-#'   `Settings/ImageData/@height` when both are available.
+#'   spatial unit reported by the XML. Overrides the height read from
+#'   `Settings/ImageData` when both are available.
 #'
 #' @return An aniframe with columns including time, x, y, z, frame, and track_id.
 #' @export
@@ -75,13 +83,9 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   )
   source_version <- xml2::xml_attr(xml2::xml_root(xml), "version")
 
-  # Frame height for the y-axis reflection (top_left -> bottom_left)
-  if (is.null(video_height)) {
-    h <- suppressWarnings(as.numeric(xml2::xml_attr(image_data, "height")))
-    if (!is.na(h)) {
-      video_height <- h
-    }
-  }
+  # Frame height for the y-axis reflection (top_left -> bottom_left), in the
+  # spatial unit of the positions
+  video_height <- video_height %||% trackmate_image_height(image_data)
 
   # if (spatial_units == "pixel") {
   # 	cli::cli_warn(
@@ -311,19 +315,69 @@ extract_spot_attrs <- function(spot_nodes, slim) {
 }
 
 
-#' Build a mapping from spot IDs to track IDs
+#' Height of the image in the spatial unit of the positions
+#'
+#' @param image_data The `Settings/ImageData` node, possibly missing.
+#'
+#' @return `height` (pixels) times `pixelheight` (spatial unit per pixel), or
+#'   `height` alone when there is no usable `pixelheight`. `NULL` when there
+#'   is no `height`.
+#' @noRd
+trackmate_image_height <- function(image_data) {
+  height <- suppressWarnings(
+    as.numeric(xml2::xml_attr(image_data, "height"))
+  )
+  if (is.na(height)) {
+    return(NULL)
+  }
+  pixel_height <- suppressWarnings(
+    as.numeric(xml2::xml_attr(image_data, "pixelheight"))
+  )
+  if (is.na(pixel_height) || !is.finite(pixel_height) || pixel_height <= 0) {
+    return(height)
+  }
+  height * pixel_height
+}
+
+#' Label tracks by name, or by ID when the names cannot identify them
+#'
+#' @param track_names The `name` attribute of each track, `NA` where absent.
+#' @param track_ids The `TRACK_ID` attribute of each track.
+#'
+#' @return `track_names` when every track has one and no two share it,
+#'   otherwise `track_ids`.
+#' @noRd
+trackmate_track_labels <- function(track_names, track_ids) {
+  if (anyNA(track_names) || !all(nzchar(track_names))) {
+    return(track_ids)
+  }
+  if (anyDuplicated(track_names)) {
+    cli::cli_warn(c(
+      "TrackMate track names are not unique.",
+      "i" = "Labelling tracks by {.field TRACK_ID} instead."
+    ))
+    return(track_ids)
+  }
+  track_names
+}
+
+#' Build a mapping from spot IDs to tracks
 #'
 #' @param track_nodes XML nodeset of Track elements.
 #' @param filtered_ids Character vector of filtered track IDs to include.
 #'
-#' @return A data.frame with spot_id and track_id columns.
+#' @return A data.frame with spot_id, track and keypoint columns, where track
+#'   is the track's name or ID (see `trackmate_track_labels()`).
 #' @noRd
 build_spot_track_map <- function(track_nodes, filtered_ids) {
   # Pre-filter to only process tracks we care about
   track_ids <- xml2::xml_attr(track_nodes, "TRACK_ID")
   keep <- track_ids %in% filtered_ids
   track_nodes <- track_nodes[keep]
-  track_ids <- track_ids[keep]
+  track_labels <- trackmate_track_labels(
+    xml2::xml_attr(track_nodes, "name"),
+    track_ids[keep]
+  )
 
   # Process each track
   lapply(seq_along(track_nodes), function(i) {
@@ -334,7 +388,7 @@ build_spot_track_map <- function(track_nodes, filtered_ids) {
 
     data.frame(
       spot_id = spot_ids,
-      track = track_ids[[i]], # This should be changed to "track" once the tidy movement syntax is implemented in aniframe
+      track = track_labels[[i]],
       keypoint = "centroid",
       stringsAsFactors = FALSE
     )

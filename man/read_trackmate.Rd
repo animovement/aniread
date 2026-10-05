@@ -12,8 +12,8 @@ read_trackmate(path, slim = TRUE, video_height = NULL)
 \item{slim}{If TRUE, return only essential columns (default TRUE).}
 
 \item{video_height}{Optional numeric height of the source frame in the
-units reported by the XML. Overrides the value parsed from
-\verb{Settings/ImageData/@height} when both are available.}
+spatial unit reported by the XML. Overrides the height read from
+\code{Settings/ImageData} when both are available.}
 }
 \value{
 An aniframe with columns including time, x, y, z, frame, and track_id.
@@ -23,9 +23,17 @@ Parses a TrackMate XML file and returns spot data from filtered tracks
 as an aniframe. TrackMate stores spot coordinates in image (top-left)
 coordinates; the reader reflects y so the returned aniframe is in the
 conventional \code{bottom_left} origin. The frame height is read from
-\verb{Settings/ImageData/@height} in the XML by default.
+\code{Settings/ImageData} in the XML by default: \code{height} is in pixels and
+\code{pixelheight} in \code{spatialunits}, so their product is the height in the
+unit of the positions. Without a \code{pixelheight}, \code{height} is used as it is.
 }
 \details{
+Each track is named after its \code{name} attribute, which TrackMate sets to
+\code{Track_0}, \code{Track_1}, ... and lets you edit, so the names you gave tracks in
+TrackMate become the values of \code{track}. The numeric \code{TRACK_ID} is used
+instead when any track has no name, or when two tracks share one, with a
+warning in that case.
+
 The XML also records how the image was calibrated, and the reader keeps
 what has a place in the metadata:
 \itemize{
