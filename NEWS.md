@@ -20,6 +20,8 @@
 
 * `read_sleap()`, and so `read_dataset()`, keeps what a SLEAP analysis `.h5` records besides the tracks (#143). The skeleton is attached as the frame's `keypoint` structure, parsed as `read_structure_sleap()` parses it, and the SLEAP version from the file's `provenance` record becomes `source_version`. The CSV export carries neither, so a frame read from it is unchanged.
 
+* `read_idtracker()`, and so `read_dataset()`, keeps what an idtracker.ai `.h5` records about the recording (#146). The `version` attribute becomes `source_version` and `frames_per_second` becomes `sampling_rate`, each left `NA` when the file does not record it. `time` stays the frame number, so `unit_time` is still `"frame"`. The frame height is now read from the `height` attribute, where idtracker.ai writes it, so y is reflected around the frame rather than around the furthest tracked point. The CSV export keeps these in a separate `attributes.json`, so a frame read from it is unchanged.
+
 * `read_sleap()` reads SLEAP's analysis CSV export (#87). `get_supported_sources()` advertised `csv` for SLEAP while the reader aborted with "We hope to support SLEAP CSV import soon!", so the registry had been narrowed to `h5` as a stopgap; it advertises both again.
 
   The columns are `track`, `frame_idx`, `instance.score` and a `.x`/`.y`/`.score` triple per node, which is how sleap-io defines the format. Node names are read from the columns rather than assumed, since a recording has whatever skeleton it was tracked with, and `instance.score` is dropped rather than becoming a keypoint called `instance` — it scores the whole instance, where the h5 reader takes confidence from the per-node scores.
