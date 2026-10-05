@@ -65,6 +65,26 @@ detection_cases <- list(
     source = "animalta",
     path = fixture("animalta", "variable_individuals_single_arena.csv")
   ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "head_tail_two_arenas.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "head_tail_two_arenas_corrected.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video1", "Arena_0Ind0.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video3", "Arena_0Ind0_part0.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video2", "Arena_1Ind2.csv")
+  ),
   list(source = "bonsai", path = fixture("bonsai", "LI850.csv")),
   list(
     source = "boris",

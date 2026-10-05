@@ -187,10 +187,10 @@ peek_h5_names <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_animalta_file <- function(path) {
-  # Both AnimalTA layouts open the same way: the raw export continues into
-  # X_Arena<n>_Ind<n> columns, the detailed one into Arena;Ind;X;Y.
-  header <- peek_header(path, delim = ";")
-  length(header) >= 3 && identical(header[1:2], c("Frame", "Time"))
+  # The coordinates files open with Frame;Time and continue into
+  # X_Arena<a>_Ind<i> columns or Arena;Ind;X;Y; a detailed data file opens
+  # with Frame or Time and has X;Y.
+  !is.na(detect_animalta_format(path))
 }
 
 #' @rdname source_detectors

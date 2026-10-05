@@ -65,10 +65,10 @@ path_trackball_2 <- testthat::test_path(
 
 # Read file
 test_that("Read file", {
-  expect_no_error(read_animalta(path_animalta_raw, detailed = FALSE))
-  expect_no_error(read_animalta(path_animalta_detailed, detailed = TRUE))
-  expect_error(read_animalta(path_animalta_raw, detailed = TRUE))
-  expect_error(read_animalta(path_animalta_detailed, detailed = FALSE))
+  expect_no_error(read_animalta(path_animalta_raw, format = "fixed"))
+  expect_no_error(read_animalta(path_animalta_detailed, format = "variable"))
+  expect_error(read_animalta(path_animalta_raw, format = "variable"))
+  expect_error(read_animalta(path_animalta_detailed, format = "fixed"))
   expect_no_error(read_bonsai(path_bonsai))
   expect_no_error(read_deeplabcut(path_dlc_single))
   expect_no_error(read_deeplabcut(path_dlc_multi))
