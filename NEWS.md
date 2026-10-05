@@ -84,6 +84,14 @@
 
 ## Fixed
 
+* `read_sleap()` reads the analysis exports that sleap-io writes, as SLEAP does from 1.6.3 on (#170).
+  * An `.h5` written with sleap-io's `"standard"` preset or custom axes failed or came back scrambled, since the reader assumed SLEAP's original axis order. The order is now read from each dataset's `dims` attribute, and SLEAP's layout is assumed only where there is none, so files SLEAP wrote itself read as before.
+  * A very old `.h5` without `point_scores` failed; it now reads with `NA` confidence.
+  * When the `provenance` record names no SLEAP version, `source_version` is the sleap-io version that wrote the file, as `"sleap-io 0.9.2"` for example, rather than `NA`.
+  * A sleap-io `.h5` spans the whole video, so frames after the last detection come back as `NA` rows, as undetected frames always have.
+  * In the CSV, a row with an empty `track` is an untracked instance. It had `individual` `NA`, and an untracked recording with several instances in a frame failed; such rows are now named `individual1`, `individual2`, ... by their place in the frame, as the `.h5` reader names the instances of a file without track names. sleap-io's own `.h5` of an untracked recording names them `track_0`, `track_1`, ..., and those names are kept. Where a track has two rows in one frame, a user-labelled and a predicted instance, the first, user-labelled, one is kept, as sleap-io's `.h5` export keeps it. A CSV without score columns reads with `NA` confidence.
+  * sleap-io sorts the CSV's node columns by name, with `.score` before `.x` and `.y`. The reader matches them by name, so this needed no change, and is now tested.
+
 * `get_sample_data()` downloads the movement sample datasets from their new home, [SWC GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data). They moved from G-Node GIN, which was often unreachable and made these downloads time out (neuroinformatics-unit/movement#1080). The file paths are unchanged.
 
 * `read_idtracker()` reads an idtracker.ai CSV export that has no time column (#149). idtracker.ai writes none when it could not read the video's frame rate, and the reader aborted with "Column `time` doesn't exist". `time` is now the row number, counted from 1 as the `.h5` reader counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
