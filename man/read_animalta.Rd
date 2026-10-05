@@ -26,6 +26,10 @@ a movement dataframe
 Read a data frame from AnimalTA. AnimalTA exports tracking
 data in image (top-left) coordinates; the reader reflects y so the
 returned aniframe is in the conventional \code{bottom_left} origin.
+
+AnimalTA writes the time since the start of the video in seconds, rounded
+to 0.01 s, in its \code{Time} column. The reader keeps it as \code{time}, so
+\code{unit_time} is \code{"s"}.
 }
 \examples{
 path <- system.file("extdata", "animalta.csv", package = "aniread")

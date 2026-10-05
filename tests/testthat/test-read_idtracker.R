@@ -104,6 +104,22 @@ test_that("read_dataset() records them too", {
   expect_equal(anicore::get_metadata(data, "sampling_rate"), 28)
 })
 
+test_that("the CSV export's time is in seconds, the h5's in frames (#148)", {
+  csv <- read_idtracker(
+    test_path("data/idtrackerai/trajectories_csv", "trajectories.csv")
+  )
+  raw <- utils::read.csv(
+    test_path("data/idtrackerai/trajectories_csv", "trajectories.csv")
+  )
+
+  expect_equal(as.character(anicore::get_metadata(csv, "unit_time")), "s")
+  expect_equal(sort(unique(csv$time)), raw$seconds)
+
+  skip_if_not_installed("rhdf5")
+  h5 <- read_idtracker(test_path("data/idtrackerai/trajectories.h5"))
+  expect_equal(as.character(anicore::get_metadata(h5, "unit_time")), "frame")
+})
+
 test_that("the CSV export records neither", {
   # They are in attributes.json beside it, not in trajectories.csv.
   data <- read_idtracker(

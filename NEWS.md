@@ -70,6 +70,8 @@
 
 * `get_sample_data()` downloads the movement sample datasets from their new home, [SWC GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data). They moved from G-Node GIN, which was often unreachable and made these downloads time out (neuroinformatics-unit/movement#1080). The file paths are unchanged.
 
+* `read_idtracker()` (CSV export), `read_animalta()` and `read_bonsai()` declare `unit_time` as `"s"` (#148, #149). Their `time` is in seconds, but the metadata said frames, so anything that reads the unit misread it: `anicore::convert_unit_time()` divided the seconds by the frame rate, and speeds came out per frame rather than per second. The `time` values are unchanged, but results that depend on the unit will differ. `read_idtracker()` keeps `"frame"` for the `.h5`, whose `time` is the frame number.
+
 * `write_aniframe()` writes `.csv` files comma-separated (#136). It passed the call to `vroom::vroom_write()`, whose default delimiter is a tab, so `.csv` and `.tsv` both came out tab-separated. The delimiter now follows the extension — a comma for `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
 
 * `detect_freemocap_format()` no longer mistakes a `by_trajectory` file for a wide one. It told them apart by a `frame` column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only `by_trajectory` carries.

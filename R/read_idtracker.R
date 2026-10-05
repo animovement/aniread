@@ -26,6 +26,10 @@
 #' `source_version` nor `sampling_rate`; set them with
 #' [anicore::set_metadata()].
 #'
+#' The CSV export's time column (`seconds`, or `time` in newer releases) is
+#' the time in seconds, so a frame read from it has `unit_time` `"s"`, where
+#' one read from the h5 has `"frame"`.
+#'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
 #' @param version idtracker.ai version. Currently only v6 output is implemented
@@ -55,9 +59,11 @@ read_idtracker <- function(
   if (get_file_ext(path) == "csv") {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
     recorded <- list(source_version = NA_character_, sampling_rate = NA_real_)
+    unit_time <- "s"
   } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)
     recorded <- read_idtracker_h5_attributes(path)
+    unit_time <- "frame"
     if (is.null(video_height) && !is.na(recorded$height)) {
       video_height <- recorded$height
     }
@@ -77,7 +83,7 @@ read_idtracker <- function(
       source_version = recorded$source_version,
       filename = basename(path),
       unit_space = "px",
-      unit_time = "frame",
+      unit_time = unit_time,
       sampling_rate = recorded$sampling_rate
     ) |>
     reflect_to_bottom_left(video_height = video_height)

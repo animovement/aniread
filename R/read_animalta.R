@@ -5,6 +5,10 @@
 #' data in image (top-left) coordinates; the reader reflects y so the
 #' returned aniframe is in the conventional `bottom_left` origin.
 #'
+#' AnimalTA writes the time since the start of the video in seconds, rounded
+#' to 0.01 s, in its `Time` column. The reader keeps it as `time`, so
+#' `unit_time` is `"s"`.
+#'
 #' @param path An AnimalTA data frame
 #' @param detailed Which export layout the file uses. `"auto"` (the
 #'   default) reads it from the header: the raw layout continues into
@@ -59,7 +63,8 @@ read_animalta <- function(path, detailed = "auto", video_height = NULL) {
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "animalta",
-      filename = basename(path)
+      filename = basename(path),
+      unit_time = "s"
     ) |>
     reflect_to_bottom_left(video_height = video_height)
 

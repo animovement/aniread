@@ -14,6 +14,13 @@
 #' is not declared as the frame's orientation (a `yaw`), and it is turned with
 #' `y` when y is reflected.
 #'
+#' `time` is the seconds elapsed since the first `Timestamp`, so `unit_time`
+#' is `"s"`, and the first `Timestamp` itself is kept as `start_datetime`.
+#' `sampling_rate` is left `NA`. A Bonsai `Timestamp` is the time the
+#' software received each frame, not when the camera captured it, so the
+#' intervals between rows vary from frame to frame and do not state the
+#' camera's rate. If you know it, set it with [anicore::set_metadata()].
+#'
 #' @param path Path to a Bonsai data file
 #' @param video_height Optional numeric height of the source video frame
 #'   in pixels.
@@ -63,7 +70,8 @@ read_bonsai <- function(path, video_height = NULL) {
     anicore::set_metadata(
       source = "bonsai",
       filename = basename(path),
-      start_datetime = data$time[[1]]
+      start_datetime = data$time[[1]],
+      unit_time = "s"
     ) |>
     dplyr::mutate(
       time = as.numeric(.data$time - min(.data$time, na.rm = TRUE))
