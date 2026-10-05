@@ -123,7 +123,9 @@ read_animalta(
 
 ## Value
 
-a movement dataframe
+a movement dataframe. `time` is AnimalTA's `Time` (or `Frame`), with the
+first frame of the video at 0; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## References
 

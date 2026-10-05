@@ -112,7 +112,8 @@ read is recorded in the <code>source_format</code> metadata field.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a movement dataframe</p>
+    <p>a movement dataframe. The first frame of the video is at
+<code>time = 0</code>, in frames or in seconds; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -120,9 +121,9 @@ read is recorded in the <code>source_format</code> metadata field.</p></dd>
 was tracked, and the reader keeps what has a place in the metadata:</p><ul><li><p><code>version</code>, the idtracker.ai version that tracked it, becomes the
 <code>source_version</code> metadata field.</p></li>
 <li><p><code>frames_per_second</code>, the frame rate of the video, becomes the
-<code>sampling_rate</code> metadata field. <code>time</code> stays the frame number counted
-from 1, so <code>unit_time</code> is still <code>"frame"</code>; the frame rate is what
-converts it to seconds.</p></li>
+<code>sampling_rate</code> metadata field. <code>time</code> stays the frame number, counted
+from 0 as idtracker.ai counts frames, so <code>unit_time</code> is still <code>"frame"</code>;
+the frame rate is what converts it to seconds.</p></li>
 <li><p><code>height</code>, the height of the video frame, is what y is reflected
 around, unless <code>video_height</code> is given. A <code>height</code> dataset is used
 when there is no such attribute.</p></li>
@@ -148,9 +149,9 @@ row as well, and sets it as <code>sampling_rate</code>. It is left <code>NA</cod
 times are not evenly spaced.</p>
 <p>When idtracker.ai could not read the video's frame rate, it writes the
 CSV export without a time column, and <code>frames_per_second</code> as <code>null</code> in
-<code>attributes.json</code>. <code>time</code> is then the row number, counted from 1 as the
-h5 reader counts frames, <code>unit_time</code> is <code>"frame"</code>, and <code>sampling_rate</code> is
-<code>NA</code>. Set the rate with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code> if you know it.</p>
+<code>attributes.json</code>. <code>time</code> is then the frame number, the row counted from
+0 as the h5 reader counts frames, <code>unit_time</code> is <code>"frame"</code>, and
+<code>sampling_rate</code> is <code>NA</code>. Set the rate with <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code> if you know it.</p>
     </div>
     <div class="section level2">
     <h2 id="tidy-csv-and-parquet-exports">Tidy CSV and Parquet exports<a class="anchor" aria-label="anchor" href="#tidy-csv-and-parquet-exports"></a></h2>
@@ -173,8 +174,8 @@ known, <code>time</code> is the file's time in seconds, which is the frame over 
 frame rate, as the CSV export times its rows, with <code>unit_time</code> <code>"s"</code> and
 the frame rate as <code>sampling_rate</code>. When idtracker.ai could not read the
 frame rate it still writes a <code>time</code> column, but as the frame over 1, so
-<code>time</code> is then the frame counted from 1, as the other exports number it,
-with <code>unit_time</code> <code>"frame"</code> and <code>sampling_rate</code> <code>NA</code>. Without
+<code>time</code> is then the frame, counted from 0, with <code>unit_time</code> <code>"frame"</code> and
+<code>sampling_rate</code> <code>NA</code>. Without
 <code>attributes_tidy.json</code>, a tidy CSV whose <code>time</code> equals its <code>frame</code> in every
 row is read as one without a frame rate, and otherwise the rate is taken
 from the two columns, as for the CSV export.</p>

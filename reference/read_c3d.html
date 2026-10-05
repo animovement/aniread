@@ -67,14 +67,22 @@ metadata including source software, units, and sampling rate.</p>
 
 
 <dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
-<dd><p>Path to a <code>.c3d</code> file.</p></dd>
+<dd><p>Path to a <code>.c3d</code> file.</p>
+<p>C3D numbers frames from 1, and a file's header records the frame of the
+recording its first frame is, which is not frame 1 when the recording was
+trimmed. <code>time</code> is in seconds from the first frame of the recording, so
+a file that starts at frame 1 starts at <code>time = 0</code>, and one trimmed to
+start at frame 705 of a 200 Hz recording starts at 3.52 s. A recording
+longer than 65535 frames records its first frame in the <code>TRIAL</code> group's
+<code>ACTUAL_START_FIELD</code> parameter instead, which is used when it is there.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An aniframe with columns <code>time</code>, <code>keypoint</code>, <code>x</code>, <code>y</code>, and <code>z</code>.
 Metadata includes source software, filename, time/space units, and
-sampling rate. Time is in seconds, starting at 0.</p>
+sampling rate. <code>time</code> is in seconds, with the first frame of the
+recording at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

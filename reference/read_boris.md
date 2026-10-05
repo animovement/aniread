@@ -10,8 +10,10 @@ per START / STOP / POINT transition; paired into bouts by the reader).
 Time units come from the columns BORIS provides. The default
 `unit_time = "s"` uses `Start (s)` / `Stop (s)` and works on any BORIS
 export. With `unit_time = "frame"` the reader uses the
-`Image index start` / `Image index stop` columns instead; frames stay
-aligned with rows of a host
+`Image index start` / `Image index stop` columns instead, with the first
+frame of the video at 0 (BORIS counts a video's frames from 0, and the
+images of an observation of images from 1, which are shifted so the
+first image is 0); frames stay aligned with rows of a host
 [`anicore::anipoint()`](https://animovement.dev/anicore/reference/anipoint.html),
 which keeps event timing robust against effective-FPS drift when the
 export is paired with movement data. If `"frame"` is requested but the
@@ -67,10 +69,13 @@ read_boris(
 An
 [`anicore::anievent()`](https://animovement.dev/anicore/reference/anievent.html)
 with metadata fields `source`, `filename`, `unit_time`, and
-`sampling_rate` populated. The sampling rate is set when every media
-file in the export has the same FPS; an observation of several media
-files lists one FPS per file in a single cell, separated by `;` (and `|`
-between players).
+`sampling_rate` populated. `start` and `stop` are BORIS's times in
+seconds, or its frame numbers with the first frame of the video at 0;
+see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
+The sampling rate is set when every media file in the export has the
+same FPS; an observation of several media files lists one FPS per file
+in a single cell, separated by `;` (and `|` between players).
 
 ## References
 

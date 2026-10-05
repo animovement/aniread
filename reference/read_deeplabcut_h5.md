@@ -1,6 +1,9 @@
-# Read DeepLabCut H5 file
+# Read a DeepLabCut h5 file
 
-Read DeepLabCut H5 file
+Reads the pandas DataFrame under the key `df_with_missing` (predictions)
+or `tracks` (stitched tracklets), stored in pandas' "table" format, as
+DeepLabCut writes it, or its "fixed" format, as pandas writes by
+default.
 
 ## Usage
 
@@ -12,8 +15,10 @@ read_deeplabcut_h5(path)
 
 - path:
 
-  Path to the DLC .h5 file
+  Path to a DeepLabCut `.h5` file.
 
 ## Value
 
-An aniframe with columns: time, individual, keypoint, x, y, confidence
+A list of `columns`, a data frame with one row per kept column and one
+column per level; `values`, a frames-by-columns matrix; and `index`, the
+frame index.

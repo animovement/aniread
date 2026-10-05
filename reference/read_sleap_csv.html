@@ -98,11 +98,11 @@ its frame, as <code><a href="read_sleap_h5.html">read_sleap_h5()</a></code> name
 track names. sleap-io writes a frame's user-labelled instances before its
 predicted ones, and where a track has both in one frame, the
 user-labelled one is kept, as sleap-io's <code>.h5</code> export keeps it.</p>
-<p>Two things are aligned with <code><a href="read_sleap_h5.html">read_sleap_h5()</a></code> so that one recording reads
-the same from either export: <code>time</code> counts from 1, where <code>frame_idx</code>
-counts from 0; and a frame in which an instance was not detected comes
-back as an all-<code>NA</code> row rather than being absent, since the CSV holds a
-row per <em>instance</em> and omits those entirely.</p>
+<p><code>time</code> is <code>frame_idx</code>, which counts from 0, as <code><a href="read_sleap_h5.html">read_sleap_h5()</a></code> counts
+frames, so one recording reads the same from either export. A frame in
+which an instance was not detected comes back as an all-<code>NA</code> row rather
+than being absent, as it does from the h5, since the CSV holds a row per
+<em>instance</em> and omits those entirely.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

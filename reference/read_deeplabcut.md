@@ -5,7 +5,7 @@ stores predictions in image (top-left) coordinates; the reader reflects
 y so the returned aniframe is in the conventional `bottom_left` origin.
 DLC's csv/h5 exports do not contain the source video resolution (it
 lives in the project's `config.yaml`), so pass `video_height` to get an
-accurate flip — otherwise `max(y)` is used as a fallback.
+accurate flip; otherwise `max(y)` is used as a fallback.
 
 ## Usage
 
@@ -21,11 +21,41 @@ read_deeplabcut(path, video_height = NULL)
 
 - video_height:
 
-  Optional numeric height of the source video frame in pixels.
+  Optional numeric height of the source video frame in pixels. Not used
+  for 3D files.
 
 ## Value
 
-an aniframe
+an aniframe. `time` is DeepLabCut's frame index, with the first frame of
+the video at 0; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
+
+## Layouts read
+
+The file is read from its column header, the `scorer`, `individuals`
+(multi-animal projects only), `bodyparts` and `coords` levels, so the
+same data reads the same from a csv and an h5. An h5 is read whichever
+way pandas stored it: DeepLabCut writes the "table" format, while a file
+saved again with pandas' defaults, as movement's `to_dlc_file()` does,
+is in the "fixed" format. Predictions are read from the HDF key
+`df_with_missing`, and the stitched tracklets of a multi-animal project
+(`*_el.h5`) from the key `tracks`.
+
+Of the coords, `x`, `y`, `z` and `likelihood` are read, and `likelihood`
+becomes `confidence`. Any other coords, such as the variances the
+Ensemble Kalman Smoother adds, are not read.
+
+A multi-animal project tracks the bodyparts it does not assign to an
+animal (its `uniquebodyparts`) under the pseudo-individual `single`.
+They are kept as the keypoints of an `individual` called `"single"`.
+
+## 3D files
+
+DeepLabCut's triangulation writes `x`, `y` and `z` and no likelihood, so
+`confidence` is `NA`. Triangulated positions are in the units and frame
+of the stereo calibration rather than in image pixels, so they are
+returned as stored: y is not reflected and `video_height` is not used.
+The aniframe is 3D from its `z` column.
 
 ## Examples
 

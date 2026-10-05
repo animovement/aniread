@@ -66,7 +66,9 @@ read_trex(path, format = c("auto", "csv", "npz"), video_height = NULL)
 
 A data frame containing movement data with the following columns:
 
-- `time`: Time values from the tracking
+- `time`: TRex's `time`, in seconds, with the first frame of the video
+  at 0; see "Time" in
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 
 - `individual`: Factor. The identity TRex assigned, from the `.npz`
   export; `NA` from the CSV export, which does not record it

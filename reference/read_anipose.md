@@ -28,7 +28,9 @@ read_anipose(path, unit_space = "mm")
 
 An aniframe (tibble) with the following columns:
 
-- `time`: Frame number
+- `time`: Frame number, Anipose's `fnum`, with the first frame of the
+  video at 0; see "Time" in
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 
 - `keypoint`: Name of the tracked body part
 

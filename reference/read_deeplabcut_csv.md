@@ -1,25 +1,22 @@
-# Read DeepLabCut data
+# Read a DeepLabCut csv file
 
-Read csv files from DeepLabCut (DLC). The function recognises whether it
-is a single- or multi-animal dataset.
+The header rows are the column levels, each named in the first column;
+the data rows follow, with the frame index in the first column.
 
 ## Usage
 
 ``` r
-read_deeplabcut_csv(path, multianimal = NULL)
+read_deeplabcut_csv(path)
 ```
 
 ## Arguments
 
 - path:
 
-  Path to a DeepLabCut data file
-
-- multianimal:
-
-  By default, whether a file is multi-animal is detected automatically.
-  This gives an option to ensure it. logical TRUE/FALSE.
+  Path to a DeepLabCut `.csv` file.
 
 ## Value
 
-a movement dataframe
+A list of `columns`, a data frame with one row per kept column and one
+column per level; `values`, a frames-by-columns matrix; and `index`, the
+frame index.

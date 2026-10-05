@@ -36,10 +36,9 @@ frame's user-labelled instances before its predicted ones, and where a
 track has both in one frame, the user-labelled one is kept, as
 sleap-io's `.h5` export keeps it.
 
-Two things are aligned with
+`time` is `frame_idx`, which counts from 0, as
 [`read_sleap_h5()`](https://animovement.dev/aniread/reference/read_sleap_h5.md)
-so that one recording reads the same from either export: `time` counts
-from 1, where `frame_idx` counts from 0; and a frame in which an
-instance was not detected comes back as an all-`NA` row rather than
-being absent, since the CSV holds a row per *instance* and omits those
-entirely.
+counts frames, so one recording reads the same from either export. A
+frame in which an instance was not detected comes back as an all-`NA`
+row rather than being absent, as it does from the h5, since the CSV
+holds a row per *instance* and omits those entirely.

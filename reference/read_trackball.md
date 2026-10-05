@@ -81,7 +81,9 @@ read_trackball(
 
 ## Value
 
-a movement dataframe
+a movement dataframe. `time` is in seconds from the first sample both
+sensors share; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Details
 

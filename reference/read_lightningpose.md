@@ -23,7 +23,22 @@ read_lightningpose(path, video_height = NULL)
 
 ## Value
 
-an aniframe
+an aniframe. `time` is Lightning Pose's frame index, with the first
+frame of the video at 0; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
+
+## Details
+
+Lightning Pose writes DeepLabCut's csv layout, so the file is read by
+[`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md).
+That includes the output of its Ensemble Kalman Smoother (EKS, scorer
+`ensemble-kalman_tracker`), which has nine coords per keypoint: `x`, `y`
+and `likelihood` are read, and the ensemble medians and variances and
+the posterior variances (`x_ens_median`, `y_ens_median`, `x_ens_var`,
+`y_ens_var`, `x_posterior_var`, `y_posterior_var`) are not. Its
+multi-camera 3D output, `multicam_3d_results.csv`, reads as 3D with `x`,
+`y` and `z`, without confidence and without reflecting y; see
+[`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md).
 
 ## Examples
 

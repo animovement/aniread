@@ -14,10 +14,11 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Mikkel Roald-Arbøl <animovement.84w1m@passmail.com>
+**Maintainer**: Mikkel Roald-Arb\<c3\>\<b8\>l
+<animovement.84w1m@passmail.com>
 ([ORCID](https://orcid.org/0000-0002-9998-0058))
 
 Authors:
 
-- Mikkel Roald-Arbøl <animovement.84w1m@passmail.com>
+- Mikkel Roald-Arb\<c3\>\<b8\>l <animovement.84w1m@passmail.com>
   ([ORCID](https://orcid.org/0000-0002-9998-0058))

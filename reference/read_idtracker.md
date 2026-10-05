@@ -49,7 +49,9 @@ read_idtracker(
 
 ## Value
 
-a movement dataframe
+a movement dataframe. The first frame of the video is at `time = 0`, in
+frames or in seconds; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Details
 
@@ -60,9 +62,9 @@ was tracked, and the reader keeps what has a place in the metadata:
   `source_version` metadata field.
 
 - `frames_per_second`, the frame rate of the video, becomes the
-  `sampling_rate` metadata field. `time` stays the frame number counted
-  from 1, so `unit_time` is still `"frame"`; the frame rate is what
-  converts it to seconds.
+  `sampling_rate` metadata field. `time` stays the frame number, counted
+  from 0 as idtracker.ai counts frames, so `unit_time` is still
+  `"frame"`; the frame rate is what converts it to seconds.
 
 - `height`, the height of the video frame, is what y is reflected
   around, unless `video_height` is given. A `height` dataset is used
@@ -95,9 +97,9 @@ when the times are not evenly spaced.
 
 When idtracker.ai could not read the video's frame rate, it writes the
 CSV export without a time column, and `frames_per_second` as `null` in
-`attributes.json`. `time` is then the row number, counted from 1 as the
-h5 reader counts frames, `unit_time` is `"frame"`, and `sampling_rate`
-is `NA`. Set the rate with
+`attributes.json`. `time` is then the frame number, the row counted from
+0 as the h5 reader counts frames, `unit_time` is `"frame"`, and
+`sampling_rate` is `NA`. Set the rate with
 [`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html)
 if you know it.
 
@@ -126,11 +128,11 @@ rate is known, `time` is the file's time in seconds, which is the frame
 over the frame rate, as the CSV export times its rows, with `unit_time`
 `"s"` and the frame rate as `sampling_rate`. When idtracker.ai could not
 read the frame rate it still writes a `time` column, but as the frame
-over 1, so `time` is then the frame counted from 1, as the other exports
-number it, with `unit_time` `"frame"` and `sampling_rate` `NA`. Without
-`attributes_tidy.json`, a tidy CSV whose `time` equals its `frame` in
-every row is read as one without a frame rate, and otherwise the rate is
-taken from the two columns, as for the CSV export.
+over 1, so `time` is then the frame, counted from 0, with `unit_time`
+`"frame"` and `sampling_rate` `NA`. Without `attributes_tidy.json`, a
+tidy CSV whose `time` equals its `frame` in every row is read as one
+without a frame rate, and otherwise the rate is taken from the two
+columns, as for the CSV export.
 
 ## Examples
 

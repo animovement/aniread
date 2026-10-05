@@ -154,7 +154,8 @@ is used as a fallback when reflecting to <code>bottom_left</code>.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame containing movement data with the following columns:</p><ul><li><p><code>time</code>: Time values from the tracking</p></li>
+    <p>A data frame containing movement data with the following columns:</p><ul><li><p><code>time</code>: TRex's <code>time</code>, in seconds, with the first frame of the video
+at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code></p></li>
 <li><p><code>individual</code>: Factor. The identity TRex assigned, from the <code>.npz</code>
 export; <code>NA</code> from the CSV export, which does not record it</p></li>
 <li><p><code>keypoint</code>: Factor identifying tracked points (e.g., "head", "centroid")</p></li>

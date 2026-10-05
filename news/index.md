@@ -76,7 +76,7 @@
   the reader reads when it is there; both are then used as for the
   `.h5`. `time` is in seconds when the frame rate is known; when it is
   not, idtracker.ai writes the frame as the time, so `time` is the frame
-  counted from 1, with `unit_time` `"frame"`, as for the other exports.
+  counted from 0, with `unit_time` `"frame"`, as for the other exports.
   A new `format` argument names the export when the suffix and header do
   not, and which one was read is recorded in `source_format` for every
   idtracker.ai file.
@@ -226,11 +226,11 @@
   confidence from the per-node scores.
 
   One recording reads the same from either export, checked against the
-  h5 it was generated from. Two things make that true: `time` counts
-  from 1 as it does for the h5, where `frame_idx` counts from 0; and a
-  frame in which an instance was not detected comes back as an all-`NA`
-  row rather than being absent, since the CSV holds a row per *instance*
-  and omits those entirely — the same reinstatement
+  h5 it was generated from. Two things make that true: `time` is
+  `frame_idx`, counted from 0 as the h5 counts frames; and a frame in
+  which an instance was not detected comes back as an all-`NA` row
+  rather than being absent, since the CSV holds a row per *instance* and
+  omits those entirely — the same reinstatement
   [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md)
   does.
 
@@ -327,6 +327,33 @@
   examples therefore show other values, and the three layouts now hold
   the same points, so they can be compared row for row.
   `tests/testthat/data/freemocap/README.md` records how they were made.
+
+- `time` is the time elapsed since the first frame of the video, so the
+  first frame of the video is at `time = 0`, whatever the unit
+  ([\#150](https://github.com/animovement/aniread/issues/150)). In
+  frames, `time` is the frame number counted from 0, and converting it
+  to seconds is a division by the frame rate with no offset; a file that
+  starts later in the video keeps its offset. Sources that count frames
+  from 0 (most of them) are read as they are, and sources that count
+  from 1 are shifted by one. This shifts `time` for anyone indexing by
+  frame number in:
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  (`.h5` and CSV, one frame earlier),
+  [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)
+  (`.h5`, and the CSV export and tidy CSV and Parquet exports when they
+  have no frame rate, one frame earlier),
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  with `unit_time = "frame"` for an observation of images (one image
+  earlier; a video’s frames are unchanged), and
+  [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md),
+  which now keeps the frame of the recording the file starts at from its
+  header, so a trimmed file no longer starts at 0 s. Every other reader
+  already started at 0. Code that picks rows by frame number from the
+  SLEAP, idtracker.ai and BORIS readers needs the number one lower
+  (frame `n` is now `time == n - 1`), and code that subtracted 1 to line
+  them up with other sources no longer should. The “Time” section of
+  [`?read_dataset`](https://animovement.dev/aniread/reference/read_dataset.md)
+  lists each source’s own convention and what its reader does.
 
 - `get_sample_data("movement")` downloads
   `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement
@@ -495,6 +522,53 @@
   text (`"1"`, `"10"`, `"11"`, `"2"`, …), so individual 10 was named
   `"2"`. The individuals of a CSV export are now also ordered by number.
 
+- [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md),
+  and so
+  [`read_lightningpose()`](https://animovement.dev/aniread/reference/read_lightningpose.md)
+  and
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  reads every DeepLabCut-layout file it rejected or misread
+  ([\#168](https://github.com/animovement/aniread/issues/168)):
+
+  - An `.h5` in pandas’ “fixed” format, which is what pandas writes by
+    default and so what movement’s `to_dlc_file()` and any other re-save
+    produce. Only DeepLabCut’s own “table” format was read, so
+    movement’s DBTravelator sample files aborted.
+  - Stitched multi-animal tracklets (`*_el.h5`), which DeepLabCut keeps
+    under the HDF key `tracks` rather than `df_with_missing`.
+    [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
+    recognises them too; a SLEAP analysis file, which has a `tracks`
+    dataset rather than a group, is not taken for one.
+  - 3D files, from DeepLabCut’s triangulation or movement, whose coords
+    are `x`, `y` and `z` with no likelihood. `confidence` is `NA`, the
+    aniframe is 3D, and y is not reflected, since triangulated positions
+    are not in image pixels; `video_height` is not used.
+  - Multi-animal `.h5` files. The check for an `individuals` level read
+    the attributes of the wrong node, so it never found one, and a
+    multi-animal file was parsed as single-animal: there was no
+    `individual` column, the individuals came back as keypoints, and the
+    values did not belong to the keypoints they were on.
+  - Multi-animal `.csv` files whose bodyparts or individuals have an
+    underscore in their name, such as `left_ear`. The names were split
+    at the underscore and the reader aborted.
+  - `.h5` files with a bodypart or individual name outside ASCII, which
+    aborted.
+  - Lightning Pose’s Ensemble Kalman Smoother output, which has nine
+    coords per keypoint. The ensemble medians and the ensemble and
+    posterior variances became extra keypoints such as `nose_x_ens` and
+    stray `median` and `var` columns; now `x`, `y` and `likelihood` are
+    read and the rest is not. Its multi-camera 3D output,
+    `multicam_3d_results.csv`, aborted and now reads as 3D.
+
+  A multi-animal project tracks the bodyparts it does not assign to an
+  animal, its unique bodyparts, under the pseudo-individual `single`;
+  these are kept as the keypoints of an individual called `"single"`.
+  The header is read from the file’s own levels in every case, so the
+  `.csv` and `.h5` of the same data read the same, and the `time` read
+  from an `.h5` is a plain vector rather than a one-dimensional array. A
+  missing value from an `.h5` is `NA` rather than `NaN`, as it is from a
+  `.csv`.
+
 - [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
   downloads the movement sample datasets from their new home, [SWC
   GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data).
@@ -541,8 +615,9 @@
   ([\#149](https://github.com/animovement/aniread/issues/149)).
   idtracker.ai writes none when it could not read the video’s frame
   rate, and the reader aborted with “Column `time` doesn’t exist”.
-  `time` is now the row number, counted from 1 as the `.h5` reader
-  counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
+  `time` is now the frame number, the row counted from 0 as the `.h5`
+  reader counts frames, with `unit_time` `"frame"` and `sampling_rate`
+  `NA`.
 
 - [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md),
   and so

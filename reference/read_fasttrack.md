@@ -26,7 +26,9 @@ read_fasttrack(path, video_height = NULL)
 
 ## Value
 
-An aniframe
+An aniframe. `time` is FastTrack's `imageNumber`, with the first frame
+of the video at 0; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Examples
 

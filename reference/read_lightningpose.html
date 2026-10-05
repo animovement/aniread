@@ -80,7 +80,20 @@ in pixels. Falls back to <code>max(y)</code> when not supplied.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>an aniframe</p>
+    <p>an aniframe. <code>time</code> is Lightning Pose's frame index, with the
+first frame of the video at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Lightning Pose writes DeepLabCut's csv layout, so the file is read by
+<code><a href="read_deeplabcut.html">read_deeplabcut()</a></code>. That includes the output of its Ensemble Kalman
+Smoother (EKS, scorer <code>ensemble-kalman_tracker</code>), which has nine coords
+per keypoint: <code>x</code>, <code>y</code> and <code>likelihood</code> are read, and the ensemble
+medians and variances and the posterior variances (<code>x_ens_median</code>,
+<code>y_ens_median</code>, <code>x_ens_var</code>, <code>y_ens_var</code>, <code>x_posterior_var</code>,
+<code>y_posterior_var</code>) are not. Its multi-camera 3D output,
+<code>multicam_3d_results.csv</code>, reads as 3D with <code>x</code>, <code>y</code> and <code>z</code>, without
+confidence and without reflecting y; see <code><a href="read_deeplabcut.html">read_deeplabcut()</a></code>.</p>
     </div>
 
     <div class="section level2">

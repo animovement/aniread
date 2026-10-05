@@ -78,7 +78,9 @@ read_octron(
 
 ## Value
 
-An anipoint
+An anipoint. `time` is OCTRON's `frame_idx`, with the first frame of the
+video at 0; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Details
 

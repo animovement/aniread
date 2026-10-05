@@ -22,7 +22,9 @@ read_sleap(path, video_height = NULL)
 
 ## Value
 
-a movement dataframe
+a movement dataframe. `time` is SLEAP's frame index, so the first frame
+of the video is at `time = 0`; see "Time" in
+[`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Details
 

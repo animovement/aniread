@@ -4,13 +4,13 @@ DeepLabCut stores predictions in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
 bottom_left origin. DLC's csv/h5 exports do not contain the source
 video resolution (it lives in the project's config.yaml), so pass
-video_height to get an accurate flip — otherwise max(y) is used
+video_height to get an accurate flip; otherwise max(y) is used
 as a fallback."><meta property="og:description" content="Read files from DeepLabCut (DLC) in either csv or h5 format.
 DeepLabCut stores predictions in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
 bottom_left origin. DLC's csv/h5 exports do not contain the source
 video resolution (it lives in the project's config.yaml), so pass
-video_height to get an accurate flip — otherwise max(y) is used
+video_height to get an accurate flip; otherwise max(y) is used
 as a fallback."><meta property="og:image" content="https://animovement.dev/aniread/logo.svg"><!-- The animovement suite icon, shared by every package site (animovement/.github#43) --><link rel="icon" type="image/svg+xml" href="../favicon.svg"><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png"><link rel="icon" sizes="any" href="../favicon.ico"><link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -68,7 +68,7 @@ DeepLabCut stores predictions in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
 <code>bottom_left</code> origin. DLC's csv/h5 exports do not contain the source
 video resolution (it lives in the project's <code>config.yaml</code>), so pass
-<code>video_height</code> to get an accurate flip — otherwise <code>max(y)</code> is used
+<code>video_height</code> to get an accurate flip; otherwise <code>max(y)</code> is used
 as a fallback.</p>
     </div>
 
@@ -87,12 +87,42 @@ as a fallback.</p>
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>
 <dd><p>Optional numeric height of the source video frame
-in pixels.</p></dd>
+in pixels. Not used for 3D files.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>an aniframe</p>
+    <p>an aniframe. <code>time</code> is DeepLabCut's frame index, with the first
+frame of the video at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="layouts-read">Layouts read<a class="anchor" aria-label="anchor" href="#layouts-read"></a></h2>
+
+
+<p>The file is read from its column header, the <code>scorer</code>, <code>individuals</code>
+(multi-animal projects only), <code>bodyparts</code> and <code>coords</code> levels, so the
+same data reads the same from a csv and an h5. An h5 is read whichever
+way pandas stored it: DeepLabCut writes the "table" format, while a file
+saved again with pandas' defaults, as movement's <code>to_dlc_file()</code> does,
+is in the "fixed" format. Predictions are read from the HDF key
+<code>df_with_missing</code>, and the stitched tracklets of a multi-animal project
+(<code>*_el.h5</code>) from the key <code>tracks</code>.</p>
+<p>Of the coords, <code>x</code>, <code>y</code>, <code>z</code> and <code>likelihood</code> are read, and <code>likelihood</code>
+becomes <code>confidence</code>. Any other coords, such as the variances the
+Ensemble Kalman Smoother adds, are not read.</p>
+<p>A multi-animal project tracks the bodyparts it does not assign to an
+animal (its <code>uniquebodyparts</code>) under the pseudo-individual <code>single</code>.
+They are kept as the keypoints of an <code>individual</code> called <code>"single"</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="-d-files">3D files<a class="anchor" aria-label="anchor" href="#-d-files"></a></h2>
+
+
+<p>DeepLabCut's triangulation writes <code>x</code>, <code>y</code> and <code>z</code> and no likelihood, so
+<code>confidence</code> is <code>NA</code>. Triangulated positions are in the units and frame
+of the stereo calibration rather than in image pixels, so they are
+returned as stored: y is not reflected and <code>video_height</code> is not used.
+The aniframe is 3D from its <code>z</code> column.</p>
     </div>
 
     <div class="section level2">
