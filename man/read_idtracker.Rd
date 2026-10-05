@@ -8,7 +8,8 @@ read_idtracker(
   path,
   path_probabilities = NULL,
   version = 6,
-  video_height = NULL
+  video_height = NULL,
+  format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 )
 }
 \arguments{
@@ -19,8 +20,14 @@ read_idtracker(
 \item{version}{idtracker.ai version. Currently only v6 output is implemented}
 
 \item{video_height}{Optional numeric height of the source video frame in
-pixels. Overrides the value read from the h5 file when both are
-available.}
+pixels. Overrides the value read from the h5 or Parquet file when both
+are available.}
+
+\item{format}{Which idtracker.ai export \code{path} is: \code{"h5"}, the CSV export
+(\code{"csv"}, \code{trajectories.csv}), the tidy CSV export (\code{"csv_tidy"},
+\code{trajectories_tidy.csv}) or \code{"parquet"}. The default, \code{"auto"}, tells
+them apart by the suffix and, for a CSV, by its header. Which one was
+read is recorded in the \code{source_format} metadata field.}
 }
 \value{
 a movement dataframe
@@ -76,6 +83,36 @@ CSV export without a time column, and \code{frames_per_second} as \code{null} in
 h5 reader counts frames, \code{unit_time} is \code{"frame"}, and \code{sampling_rate} is
 \code{NA}. Set the rate with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
 }
+\section{Tidy CSV and Parquet exports}{
+
+idtracker.ai 6.0.13 added a Parquet export, \code{trajectories.parquet}, and
+6.0.14 a tidy CSV export, \code{trajectories_tidy.csv}. Both hold one row per
+frame and individual, with the columns \code{frame}, \code{time}, \code{individual}, \code{x},
+\code{y} and \code{probability}, and are written only when asked for in
+\code{TRAJECTORIES_FORMATS} (or by \verb{idtrackerai_format --formats csv_tidy parquet}).
+\itemize{
+\item The Parquet file stores the attributes the h5 keeps (\code{version},
+\code{frames_per_second}, \code{height}, \code{width}, \code{identities_labels}, ...) as JSON
+in its own metadata, and the reader uses them as it does the h5's.
+\item The tidy CSV keeps them in \code{attributes_tidy.json} beside it, which the
+reader reads when it is there, since idtracker.ai writes the two together
+as one export.
+}
+
+\code{frame} and \code{individual} count from 0. Individuals are numbered from 1, as
+the h5 reader numbers them, and named by \code{identities_labels} where those
+are usable. \code{probability} becomes \code{confidence}. When the frame rate is
+known, \code{time} is the file's time in seconds, which is the frame over the
+frame rate, as the CSV export times its rows, with \code{unit_time} \code{"s"} and
+the frame rate as \code{sampling_rate}. When idtracker.ai could not read the
+frame rate it still writes a \code{time} column, but as the frame over 1, so
+\code{time} is then the frame counted from 1, as the other exports number it,
+with \code{unit_time} \code{"frame"} and \code{sampling_rate} \code{NA}. Without
+\code{attributes_tidy.json}, a tidy CSV whose \code{time} equals its \code{frame} in every
+row is read as one without a frame rate, and otherwise the rate is taken
+from the two columns, as for the CSV export.
+}
+
 \examples{
 path <- system.file("extdata", "idtracker.csv", package = "aniread")
 read_idtracker(path)

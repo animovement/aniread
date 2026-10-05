@@ -170,6 +170,18 @@ detection_cases <- list(
       c("time,x1,y1,x2,y2", "0.000,10.0,20.0,30.0,40.0")
     )
   ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_tidy", "trajectories_tidy.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture(
+      "idtrackerai",
+      "trajectories_tidy_no_fps",
+      "trajectories_tidy.csv"
+    )
+  ),
   list(source = "octron", path = fixture("octron", "octron_sample.csv")),
   list(
     source = "octron",
@@ -222,6 +234,22 @@ detection_cases <- list(
   list(source = "c3d", path = synthetic_c3d),
   list(source = "aniframe", path = synthetic_parquet)
 )
+# Telling idtracker.ai's Parquet export from an aniframe needs arrow.
+if (rlang::is_installed("arrow")) {
+  detection_cases <- c(
+    detection_cases,
+    list(
+      list(
+        source = "idtrackerai",
+        path = fixture("idtrackerai", "trajectories.parquet")
+      ),
+      list(
+        source = "idtrackerai",
+        path = fixture("idtrackerai", "trajectories_no_fps.parquet")
+      )
+    )
+  )
+}
 
 test_that("every fixture detects as its own source", {
   for (case in detection_cases) {
@@ -355,6 +383,18 @@ test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
   skip_if_not_installed("rhdf5")
   expect_identical(
     detect_source(fixture("idtrackerai", "trajectories.h5")),
+    "idtrackerai"
+  )
+})
+
+test_that("an aniframe Parquet file is told apart from idtracker.ai's", {
+  skip_if_not_installed("arrow")
+  path <- withr::local_tempfile(fileext = ".parquet")
+  write_aniframe(anicore::example_anipoint(), path)
+
+  expect_identical(detect_source(path), "aniframe")
+  expect_identical(
+    detect_source(fixture("idtrackerai", "trajectories.parquet")),
     "idtrackerai"
   )
 })

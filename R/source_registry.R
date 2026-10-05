@@ -101,9 +101,9 @@ source_registry <- function() {
     list(
       source = "idtrackerai",
       reader = "read_idtracker",
-      suffix = c("csv", "h5"),
+      suffix = c("csv", "h5", "parquet"),
       detector = detect_idtrackerai_file,
-      requires = c(h5 = "rhdf5")
+      requires = c(h5 = "rhdf5", parquet = "arrow")
     ),
     list(
       source = "lightningpose",
