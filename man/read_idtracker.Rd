@@ -46,9 +46,17 @@ converts it to seconds.
 \item \code{height}, the height of the video frame, is what y is reflected
 around, unless \code{video_height} is given. A \code{height} dataset is used
 when there is no such attribute.
+\item \code{width}, the width of the video frame, written by newer releases,
+becomes the x extent in the \code{axis_extents} metadata field.
+\item \code{identities_labels}, the names of the identities, which can be changed
+in idtracker.ai's validator, name the individuals. idtracker.ai writes
+\code{"1"}, \code{"2"}, ... when none were set, which are also the names used
+when the file has no usable labels (one distinct, non-empty label per
+individual).
 }
 
-Both fields stay \code{NA} when the file does not record them.
+\code{source_version} and \code{sampling_rate} stay \code{NA} when the file does not
+record them, and no x extent is recorded without a \code{width}.
 
 The CSV export keeps these in a separate \code{attributes.json} rather than in
 \code{trajectories.csv}, and the reader does not read it, so a frame read from

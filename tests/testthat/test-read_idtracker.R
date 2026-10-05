@@ -78,7 +78,12 @@ write_idtracker_h5 <- function(attributes = list()) {
   rhdf5::h5write(array(1, dim = c(1, 2, 3)), path, "id_probabilities")
   file <- rhdf5::H5Fopen(path)
   for (name in names(attributes)) {
-    rhdf5::h5writeAttribute(attributes[[name]], file, name, asScalar = TRUE)
+    rhdf5::h5writeAttribute(
+      attributes[[name]],
+      file,
+      name,
+      asScalar = length(attributes[[name]]) == 1
+    )
   }
   rhdf5::H5Fclose(file)
   path
@@ -192,4 +197,48 @@ test_that("the h5 reader reflects y around the frame height it records", {
   # video_height still takes precedence over the file.
   data <- read_idtracker(path, video_height = 50)
   expect_equal(anicore::get_metadata(data, "axis_extents"), c(y = 50))
+})
+
+test_that("the h5 reader names individuals by their identity labels", {
+  skip_if_not_installed("rhdf5")
+  # The labels are in identity order: the first names the first individual
+  # in the trajectories.
+  data <- read_idtracker(
+    write_idtracker_h5(list(identities_labels = c("queen", "worker")))
+  )
+  expect_equal(levels(data$individual), c("queen", "worker"))
+  expect_equal(data$x[data$individual == "queen"], c(10, 10, 10))
+  expect_equal(data$x[data$individual == "worker"], c(30, 30, 30))
+
+  # The fixture's labels are the defaults idtracker.ai writes.
+  fixture <- read_idtracker(test_path("data/idtrackerai/trajectories.h5"))
+  expect_equal(levels(fixture$individual), as.character(1:8))
+})
+
+test_that("labels that do not name every individual once are not used", {
+  skip_if_not_installed("rhdf5")
+  individuals <- function(labels) {
+    data <- read_idtracker(
+      write_idtracker_h5(list(identities_labels = labels))
+    )
+    levels(data$individual)
+  }
+
+  expect_equal(individuals(c("a", "a")), c("1", "2"))
+  expect_equal(individuals(c("a", "b", "c")), c("1", "2"))
+  expect_equal(individuals(c("a", "")), c("1", "2"))
+  expect_equal(
+    levels(label_idtracker_individuals(factor(1:2), NULL)),
+    c("1", "2")
+  )
+})
+
+test_that("the h5 reader records the frame width as the x extent", {
+  skip_if_not_installed("rhdf5")
+  data <- read_idtracker(write_idtracker_h5(list(height = 100L, width = 200L)))
+
+  expect_equal(
+    anicore::get_metadata(data, "axis_extents"),
+    c(x = 200, y = 100)
+  )
 })
