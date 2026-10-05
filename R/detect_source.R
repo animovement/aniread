@@ -355,8 +355,16 @@ detect_lightningpose_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_idtrackerai_file <- function(path) {
-  if (identical(tolower(get_file_ext(path)), "h5")) {
+  ext <- tolower(get_file_ext(path))
+  if (identical(ext, "h5")) {
     return("trajectories" %in% peek_h5_names(path))
+  }
+  if (identical(ext, "parquet")) {
+    return(is_idtracker_parquet(path))
+  }
+  # The tidy CSV export (idtracker.ai 6.0.14) has a fixed header.
+  if (is_idtracker_tidy_csv(path)) {
+    return(TRUE)
   }
   # The trajectories CSV is x1,y1,x2,y2..., after a time column: `seconds`,
   # `time` in newer releases, or none when idtracker.ai could not read the
@@ -420,5 +428,12 @@ detect_c3d_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_aniframe_file <- function(path) {
-  identical(rawToChar(peek_bytes(path, 4)), "PAR1")
+  # Every Parquet file opens with "PAR1", so idtracker.ai's Parquet export,
+  # recognised by its metadata, is set aside. That needs arrow; without it
+  # neither can be read, and read_aniframe() asks for it.
+  identical(rawToChar(peek_bytes(path, 4)), "PAR1") &&
+    !isTRUE(tryCatch(
+      rlang::is_installed("arrow") && is_idtracker_parquet(path),
+      error = function(e) FALSE
+    ))
 }

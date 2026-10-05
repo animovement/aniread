@@ -48,12 +48,45 @@
 #' h5 reader counts frames, `unit_time` is `"frame"`, and `sampling_rate` is
 #' `NA`. Set the rate with [anicore::set_metadata()] if you know it.
 #'
+#' @section Tidy CSV and Parquet exports:
+#' idtracker.ai 6.0.13 added a Parquet export, `trajectories.parquet`, and
+#' 6.0.14 a tidy CSV export, `trajectories_tidy.csv`. Both hold one row per
+#' frame and individual, with the columns `frame`, `time`, `individual`, `x`,
+#' `y` and `probability`, and are written only when asked for in
+#' `TRAJECTORIES_FORMATS` (or by `idtrackerai_format --formats csv_tidy
+#' parquet`).
+#'
+#' * The Parquet file stores the attributes the h5 keeps (`version`,
+#'   `frames_per_second`, `height`, `width`, `identities_labels`, ...) as JSON
+#'   in its own metadata, and the reader uses them as it does the h5's.
+#' * The tidy CSV keeps them in `attributes_tidy.json` beside it, which the
+#'   reader reads when it is there, since idtracker.ai writes the two together
+#'   as one export.
+#'
+#' `frame` and `individual` count from 0. Individuals are numbered from 1, as
+#' the h5 reader numbers them, and named by `identities_labels` where those
+#' are usable. `probability` becomes `confidence`. When the frame rate is
+#' known, `time` is the file's time in seconds, which is the frame over the
+#' frame rate, as the CSV export times its rows, with `unit_time` `"s"` and
+#' the frame rate as `sampling_rate`. When idtracker.ai could not read the
+#' frame rate it still writes a `time` column, but as the frame over 1, so
+#' `time` is then the frame counted from 1, as the other exports number it,
+#' with `unit_time` `"frame"` and `sampling_rate` `NA`. Without
+#' `attributes_tidy.json`, a tidy CSV whose `time` equals its `frame` in every
+#' row is read as one without a frame rate, and otherwise the rate is taken
+#' from the two columns, as for the CSV export.
+#'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
 #' @param version idtracker.ai version. Currently only v6 output is implemented
 #' @param video_height Optional numeric height of the source video frame in
-#'   pixels. Overrides the value read from the h5 file when both are
-#'   available.
+#'   pixels. Overrides the value read from the h5 or Parquet file when both
+#'   are available.
+#' @param format Which idtracker.ai export `path` is: `"h5"`, the CSV export
+#'   (`"csv"`, `trajectories.csv`), the tidy CSV export (`"csv_tidy"`,
+#'   `trajectories_tidy.csv`) or `"parquet"`. The default, `"auto"`, tells
+#'   them apart by the suffix and, for a CSV, by its header. Which one was
+#'   read is recorded in the `source_format` metadata field.
 #'
 #' @return a movement dataframe
 #' @examples
@@ -64,17 +97,22 @@ read_idtracker <- function(
   path,
   path_probabilities = NULL,
   version = 6,
-  video_height = NULL
+  video_height = NULL,
+  format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 ) {
-  # Needs to check the file extension
-  # If probabilites are given, extension needs to be csv
-  validate_files(path, expected_suffix = c("csv", "h5"))
-  if (!is.null(path_probabilities) && get_file_ext(path) == "h5") {
-    cli::cli_warn(
-      "You supplied a h5 file and probabilities in csv; the h5 data already contains the probabilities, so we only the h5 data."
-    )
+  format <- match.arg(format)
+  validate_files(path, expected_suffix = c("csv", "h5", "parquet"))
+  if (format == "auto") {
+    format <- detect_idtracker_format(path)
   }
-  if (get_file_ext(path) == "csv") {
+  if (!is.null(path_probabilities) && format != "csv") {
+    cli::cli_warn(c(
+      "Ignoring {.arg path_probabilities}.",
+      "i" = "The idtracker.ai {format} export already contains the
+             probabilities."
+    ))
+  }
+  if (format == "csv") {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
     recorded <- list(
       source_version = NA_character_,
@@ -89,7 +127,7 @@ read_idtracker <- function(
     } else {
       unit_time <- "frame"
     }
-  } else if (get_file_ext(path) == "h5") {
+  } else if (format == "h5") {
     data <- read_idtracker_h5(path, version = version)
     recorded <- read_idtracker_h5_attributes(path)
     data$individual <- label_idtracker_individuals(
@@ -106,6 +144,14 @@ read_idtracker <- function(
         error = function(e) NULL
       )
     }
+  } else {
+    tidy <- read_idtracker_tidy(path, format)
+    data <- tidy$data
+    recorded <- tidy$recorded
+    unit_time <- tidy$unit_time
+    if (is.null(video_height) && !is.na(recorded$height)) {
+      video_height <- recorded$height
+    }
   }
 
   # Init metadata
@@ -113,6 +159,7 @@ read_idtracker <- function(
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "idtrackerai",
+      source_format = format,
       source_version = recorded$source_version,
       filename = basename(path),
       unit_space = "px",
@@ -141,6 +188,142 @@ read_idtracker <- function(
 #' @noRd
 read_idtracker_h5_attributes <- function(path) {
   attrs <- rhdf5::h5readAttributes(path, "/")
+  list(
+    source_version = idtracker_string(attrs$version),
+    sampling_rate = idtracker_positive_number(attrs$frames_per_second),
+    height = idtracker_positive_number(attrs$height),
+    width = idtracker_positive_number(attrs$width),
+    identities_labels = attrs$identities_labels
+  )
+}
+
+#' Which idtracker.ai export a file is
+#'
+#' The suffix tells the h5 and the Parquet export apart; the two CSV exports
+#' share a suffix and are told apart by the tidy export's header.
+#'
+#' @return `"h5"`, `"parquet"`, `"csv_tidy"` or `"csv"`.
+#' @noRd
+detect_idtracker_format <- function(path) {
+  ext <- tolower(get_file_ext(path))
+  if (ext %in% c("h5", "parquet")) {
+    return(ext)
+  }
+  if (is_idtracker_tidy_csv(path)) "csv_tidy" else "csv"
+}
+
+# The columns of idtracker.ai's tidy CSV and Parquet exports, in the order
+# its writers put them.
+IDTRACKER_TIDY_COLUMNS <- c(
+  "frame",
+  "time",
+  "individual",
+  "x",
+  "y",
+  "probability"
+)
+
+#' Whether a CSV is idtracker.ai's tidy export, by its header
+#' @noRd
+is_idtracker_tidy_csv <- function(path) {
+  identical(peek_header(path), IDTRACKER_TIDY_COLUMNS)
+}
+
+#' Whether a Parquet file was written by idtracker.ai
+#'
+#' idtracker.ai stores its attributes as JSON in the file's own metadata,
+#' under `idtrackerai_attributes`, which only the footer has to be read for.
+#' @noRd
+is_idtracker_parquet <- function(path) {
+  identical(rawToChar(peek_bytes(path, 4)), "PAR1") &&
+    "idtrackerai_attributes" %in%
+      names(arrow::ParquetFileReader$create(path)$GetSchema()$metadata)
+}
+
+#' Read idtracker.ai's tidy CSV or Parquet export
+#'
+#' @param path Path to `trajectories_tidy.csv` or `trajectories.parquet`.
+#' @param format `"csv_tidy"` or `"parquet"`.
+#'
+#' @return A list of `data`, the rows as an aniframe's columns, `recorded`,
+#'   as `read_idtracker_h5_attributes()` returns it, and `unit_time`.
+#' @noRd
+read_idtracker_tidy <- function(path, format) {
+  if (format == "parquet") {
+    check_arrow()
+    table <- arrow::read_parquet(path, as_data_frame = FALSE)
+    attributes <- table$metadata$idtrackerai_attributes
+    rows <- as.data.frame(table)
+  } else {
+    rows <- vroom::vroom(
+      path,
+      delim = ",",
+      col_types = vroom::cols(frame = "i", individual = "i", .default = "d"),
+      na = c("", "NA", "nan"),
+      show_col_types = FALSE
+    )
+    # Written beside the CSV, as part of the same export.
+    json <- file.path(dirname(path), "attributes_tidy.json")
+    attributes <- if (file.exists(json)) {
+      paste(readLines(json, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+    }
+  }
+  recorded <- parse_idtracker_attributes(attributes)
+
+  # idtracker.ai writes `time` as the frame over the frame rate, or over 1
+  # when it could not read the rate, so the time is then the frame.
+  fps_known <- if (is.null(attributes)) {
+    !isTRUE(all(rows$time == rows$frame))
+  } else {
+    !is.na(recorded$sampling_rate)
+  }
+  if (fps_known) {
+    time <- rows$time
+    unit_time <- "s"
+    if (is.na(recorded$sampling_rate)) {
+      recorded$sampling_rate <- rate_from_frames(rows$frame, rows$time)
+    }
+  } else {
+    # Counted from 1, as the other exports number frames.
+    time <- rows$frame + 1
+    unit_time <- "frame"
+  }
+
+  individual <- label_idtracker_individuals(
+    factor(rows$individual + 1L),
+    recorded$identities_labels
+  )
+  data <- dplyr::tibble(
+    time = time,
+    individual = individual,
+    keypoint = factor("centroid"),
+    x = rows$x,
+    y = rows$y,
+    confidence = rows$probability
+  ) |>
+    nan_to_na() |>
+    dplyr::arrange(.data$individual, .data$time)
+
+  list(data = data, recorded = recorded, unit_time = unit_time)
+}
+
+#' What idtracker.ai's attributes JSON records about the recording
+#'
+#' The tidy CSV and Parquet exports hold the attributes the h5 keeps as
+#' attributes of its root, as one JSON object.
+#'
+#' @param json The JSON text, or `NULL` when there is none.
+#' @return As `read_idtracker_h5_attributes()`.
+#' @noRd
+parse_idtracker_attributes <- function(json) {
+  attrs <- list()
+  if (!is.null(json)) {
+    rlang::check_installed(
+      "jsonlite",
+      reason = "to read idtracker.ai's attributes."
+    )
+    attrs <- jsonlite::fromJSON(json, simplifyVector = TRUE)
+  }
   list(
     source_version = idtracker_string(attrs$version),
     sampling_rate = idtracker_positive_number(attrs$frames_per_second),
@@ -216,22 +399,23 @@ read_idtracker_csv <- function(path, path_probabilities, version = 6) {
       id_cols = c("time", "individual"),
       names_from = "coordinate",
       values_from = "val"
-    ) |>
-    dplyr::mutate(individual = factor(.data$individual))
+    )
 
   if (!is.null(path_probabilities)) {
     probs <- read_idtracker_probabilities(path_probabilities)
     data <- dplyr::left_join(data, probs, by = c("individual", "time"))
   }
 
-  # Convert NaN to NA
+  # Individuals are numbered by their columns, so levels follow the numbers
+  # ("2" before "10").
+  ids <- unique(data$individual)
   data <- data |>
-    dplyr::mutate(dplyr::across(
-      dplyr::everything(),
-      ~ ifelse(is.nan(.), NA, .)
-    )) |>
+    nan_to_na() |>
     dplyr::mutate(
-      individual = factor(.data$individual),
+      individual = factor(
+        .data$individual,
+        levels = ids[order(as.integer(ids))]
+      ),
       keypoint = factor("centroid")
     ) |>
     dplyr::relocate("keypoint", .after = "individual")
@@ -327,11 +511,7 @@ read_idtracker_h5 <- function(path, version = version) {
   }
 
   data <- data |>
-    # Convert NaN to NA
-    dplyr::mutate(dplyr::across(
-      dplyr::everything(),
-      ~ ifelse(is.nan(.), NA, .)
-    )) |>
+    nan_to_na() |>
     dplyr::relocate("keypoint", .before = "x") |>
     dplyr::relocate("individual", .before = "keypoint") |>
     dplyr::relocate("time", .before = "individual") |>
@@ -340,4 +520,15 @@ read_idtracker_h5 <- function(path, version = version) {
       keypoint = factor(.data$keypoint)
     )
   return(data)
+}
+
+#' Turn the NaN idtracker.ai writes for a lost position into NA
+#'
+#' Only the numeric columns: `ifelse()` over a factor would return its codes.
+#' @noRd
+nan_to_na <- function(data) {
+  dplyr::mutate(
+    data,
+    dplyr::across(dplyr::where(is.double), \(x) replace(x, is.nan(x), NA))
+  )
 }
