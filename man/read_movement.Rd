@@ -28,4 +28,17 @@ scores, and time. This function reads that structure and reshapes it into
 a tidy aniframe format. The underlying tracking software outputs
 image (top-left) coordinates, so the reader reflects y to
 \code{bottom_left} before returning.
+
+The file's root attributes describe the recording, and the reader keeps
+what has a place in the metadata:
+\itemize{
+\item \code{source_software} becomes \code{source}, and the name of \code{source_file}
+becomes \code{filename}.
+\item \code{time_unit} becomes \code{unit_time}. movement writes \code{"seconds"} when it was
+given the frame rate and \code{"frames"} when it was not; these become \code{"s"}
+and \code{"frame"}.
+\item \code{fps} becomes \code{sampling_rate}. movement writes it only when it was
+given one, so a file whose time is in frames leaves \code{sampling_rate}
+\code{NA}. Set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
+}
 }
