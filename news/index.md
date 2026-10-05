@@ -40,6 +40,18 @@
 
 ### Added
 
+- [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
+  writes the lineage of dividing tracks. A frame with a `parent` column,
+  as
+  [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  gives one for a file with dividing tracks
+  ([\#182](https://github.com/animovement/aniread/issues/182)), gets
+  inTRACKtive’s `parent_track_id` column: the `track_id` of the track
+  each track divided from, and `-1`, inTRACKtive’s value for no parent,
+  for the tracks that start a lineage. A parent that is not in the frame
+  is also written as `-1`, with a warning. A frame without `parent` is
+  written as before.
+
 - [`read_freemocap()`](https://animovement.dev/aniread/reference/read_freemocap.md)
   reads FreeMoCap v2’s output
   ([\#171](https://github.com/animovement/aniread/issues/171)). The tidy
@@ -315,6 +327,18 @@
   in whether reading happened to work.
 
 ### Changed
+
+- [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
+  numbers tracks by the frame’s identity keys
+  ([`anicore::get_keys()`](https://animovement.dev/anicore/reference/get_keys.html))
+  rather than by a fixed list of `session`, `trial`, `model`,
+  `individual` and `keypoint`. A frame read by
+  [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md),
+  whose tracks are told apart by `track`, was written with all its
+  tracks under one `track_id`; each track now gets its own. Since the
+  keys are read from the aniframe’s metadata, `data` must now be an
+  aniframe: a plain data frame errors, where it was written by whichever
+  of those columns it had.
 
 - The FreeMoCap v1 example files, `freemocap.csv`,
   `freemocap_by_trajectory.csv` and `freemocap_wide.csv` in
