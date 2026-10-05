@@ -18,6 +18,17 @@
 #' the rounding leaves the rate uncertain by about 0.01 s over the file's
 #' duration.
 #'
+#' AnimalTA numbers individuals from 0 within each arena, so an individual is
+#' identified by its arena and its name together. The arena is its own
+#' identity column, `arena`, holding AnimalTA's arena number (`"0"`, `"1"`,
+#' ...), and `individual` holds AnimalTA's name for the target, `Ind<i>`.
+#' Both layouts give the same values: the raw layout's columns are named
+#' `X_Arena<a>_Ind<i>`, and the detailed layout's `Arena` and `Ind` columns
+#' hold the same numbers. `arena`, `individual` and `keypoint` are the
+#' aniframe's identity keys, so functions that work per individual keep
+#' arenas apart. The `arena` column is there for every file, also when it has
+#' a single arena.
+#'
 #' @param path An AnimalTA data frame
 #' @param detailed Which export layout the file uses. `"auto"` (the
 #'   default) reads it from the header: the raw layout continues into
@@ -63,16 +74,21 @@ read_animalta <- function(path, detailed = "auto", video_height = NULL) {
   data <- data |>
     dplyr::select(-"frame") |>
     dplyr::mutate(keypoint = factor("centroid")) |>
-    dplyr::relocate("keypoint", .after = "individual") |>
+    dplyr::relocate("arena", "individual", "keypoint") |>
     dplyr::mutate(
       confidence = as.numeric(NA),
+      arena = animalta_arena(.data$arena),
       keypoint = factor(.data$keypoint),
       individual = factor(.data$individual)
     )
 
   # Init metadata
   data <- data |>
-    anicore::as_anipoint() |>
+    # AnimalTA numbers individuals within each arena, so the arena is part
+    # of an individual's identity.
+    anicore::as_anipoint(
+      variables_what = c("arena", "individual", "keypoint")
+    ) |>
     anicore::set_metadata(
       source = "animalta",
       filename = basename(path),
@@ -90,6 +106,7 @@ read_animalta_detailed <- function(path) {
   data <- vroom::vroom(
     path,
     delim = ";",
+    col_types = vroom::cols(Arena = "c", Ind = "c"),
     show_col_types = FALSE
   ) |>
     janitor::clean_names() |>
@@ -97,9 +114,10 @@ read_animalta_detailed <- function(path) {
       frame = as.numeric(.data$frame),
       time = as.numeric(.data$time)
     ) |>
-    dplyr::rename(individual = "ind") |>
-    dplyr::mutate(individual = factor(.data$individual)) |>
-    dplyr::select(-"arena")
+    # `Ind` counts from 0 within each arena; named as the raw layout's
+    # columns name it, `Ind<i>`. The arena is kept as its own column.
+    dplyr::mutate(individual = paste0("Ind", .data$ind)) |>
+    dplyr::select(-"ind")
   attributes(data)$spec <- NULL
   attributes(data)$problems <- NULL
   return(data)
@@ -118,18 +136,34 @@ read_animalta_raw <- function(path) {
   data <- data |>
     tidyr::pivot_longer(
       cols = 3:ncol(data),
-      names_to = c("coordinate", "individual", "arena"),
+      names_to = c("coordinate", "arena", "individual"),
       names_sep = "_",
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = c("frame", "time", "individual", "arena"),
+      id_cols = c("frame", "time", "arena", "individual"),
       names_from = "coordinate",
       values_from = "val"
     ) |>
-    tidyr::unite("individual", c("individual", "arena")) |>
-    dplyr::mutate(individual = factor(.data$individual))
+    # `clean_names()` gave `arena<a>` and `ind<i>`; back to AnimalTA's arena
+    # number and its name for the target, `Ind<i>`.
+    dplyr::mutate(
+      arena = sub("^arena", "", .data$arena),
+      individual = sub("^ind([0-9]+)$", "Ind\\1", .data$individual)
+    )
   return(data)
+}
+
+#' AnimalTA's arena numbers as an identity key
+#'
+#' @param arena The arena numbers, as AnimalTA writes them.
+#' @return A factor of the numbers as text, with its levels in numeric order
+#'   so that arena 10 comes after arena 9.
+#' @noRd
+animalta_arena <- function(arena) {
+  arena <- as.character(arena)
+  values <- unique(arena)
+  factor(arena, levels = values[order(as.numeric(values))])
 }
 
 
