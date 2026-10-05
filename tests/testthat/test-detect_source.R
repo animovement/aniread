@@ -305,6 +305,23 @@ test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
   )
 })
 
+test_that("the movement sample file is detected as movement (#89)", {
+  # movement is the one source without a committed fixture: its detector
+  # needs a real netCDF/HDF5 file, so it is shown the sample file that
+  # get_sample_data() downloads. detect_source() requires exactly one
+  # match, so this also shows no other HDF5 detector fires on it.
+  skip_if_no_network()
+  skip_if_not_installed("rhdf5")
+  path <- get_sample_data(
+    "movement",
+    cache_dir = test_cache_dir(),
+    quiet = TRUE
+  )
+
+  expect_true(detect_movement_file(path))
+  expect_identical(detect_source(path), "movement")
+})
+
 test_that("a detector that errors counts as a non-match", {
   expect_false(run_detector(function(path) stop("boom"), "any/path"))
   expect_false(run_detector(function(path) FALSE, "any/path"))
