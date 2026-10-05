@@ -28,10 +28,31 @@ a movement dataframe
 \description{
 idtracker.ai stores trajectories in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
-\code{bottom_left} origin. For h5 files the frame height is read directly
-from the \verb{/height} dataset. CSV exports do not include the frame
+\code{bottom_left} origin. For h5 files the frame height is read from the
+file, as described below. CSV exports do not include the frame
 height, so pass \code{video_height} explicitly to get an accurate flip
 (otherwise \code{max(y)} is used as a fallback).
+}
+\details{
+An h5 file also records, as attributes of its root, how the recording
+was tracked, and the reader keeps what has a place in the metadata:
+\itemize{
+\item \code{version}, the idtracker.ai version that tracked it, becomes the
+\code{source_version} metadata field.
+\item \code{frames_per_second}, the frame rate of the video, becomes the
+\code{sampling_rate} metadata field. \code{time} stays the frame number counted
+from 1, so \code{unit_time} is still \code{"frame"}; the frame rate is what
+converts it to seconds.
+\item \code{height}, the height of the video frame, is what y is reflected
+around, unless \code{video_height} is given. A \code{height} dataset is used
+when there is no such attribute.
+}
+
+Both fields stay \code{NA} when the file does not record them. The CSV
+export keeps these in a separate \code{attributes.json} rather than in
+\code{trajectories.csv}, so a frame read from the CSV has neither
+\code{source_version} nor \code{sampling_rate}; set them with
+\code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
 }
 \examples{
 path <- system.file("extdata", "idtracker.csv", package = "aniread")
