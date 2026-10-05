@@ -19,8 +19,16 @@
 #' * `height`, the height of the video frame, is what y is reflected
 #'   around, unless `video_height` is given. A `height` dataset is used
 #'   when there is no such attribute.
+#' * `width`, the width of the video frame, written by newer releases,
+#'   becomes the x extent in the `axis_extents` metadata field.
+#' * `identities_labels`, the names of the identities, which can be changed
+#'   in idtracker.ai's validator, name the individuals. idtracker.ai writes
+#'   `"1"`, `"2"`, ... when none were set, which are also the names used
+#'   when the file has no usable labels (one distinct, non-empty label per
+#'   individual).
 #'
-#' Both fields stay `NA` when the file does not record them.
+#' `source_version` and `sampling_rate` stay `NA` when the file does not
+#' record them, and no x extent is recorded without a `width`.
 #'
 #' The CSV export keeps these in a separate `attributes.json` rather than in
 #' `trajectories.csv`, and the reader does not read it, so a frame read from
@@ -66,12 +74,17 @@ read_idtracker <- function(
     times <- sort(unique(data$time))
     recorded <- list(
       source_version = NA_character_,
-      sampling_rate = rate_from_frames(seq_along(times) - 1, times)
+      sampling_rate = rate_from_frames(seq_along(times) - 1, times),
+      width = NA_real_
     )
     unit_time <- "s"
   } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)
     recorded <- read_idtracker_h5_attributes(path)
+    data$individual <- label_idtracker_individuals(
+      data$individual,
+      recorded$identities_labels
+    )
     unit_time <- "frame"
     if (is.null(video_height) && !is.na(recorded$height)) {
       video_height <- recorded$height
@@ -95,7 +108,10 @@ read_idtracker <- function(
       unit_time = unit_time,
       sampling_rate = recorded$sampling_rate
     ) |>
-    reflect_to_bottom_left(video_height = video_height)
+    reflect_to_bottom_left(
+      video_height = video_height,
+      video_width = if (!is.na(recorded$width)) recorded$width
+    )
 
   return(data)
 }
@@ -104,21 +120,48 @@ read_idtracker <- function(
 #'
 #' idtracker.ai writes the scalars of its output as attributes of the root
 #' group and the arrays as datasets. Of the attributes, `version`,
-#' `frames_per_second` and `height` have a place in the metadata; the rest
-#' (`video_paths`, `body_length`, `length_unit`, the accuracy estimates and
-#' `identities_labels`) have none.
+#' `frames_per_second`, `height`, `width` and `identities_labels` have a
+#' place in the frame; the rest (`video_paths`, `body_length`,
+#' `length_unit` and the accuracy estimates) have none.
 #'
-#' @return A list of `source_version` (a string), `sampling_rate` and
-#'   `height` (positive numbers), each `NA` when the file does not record a
-#'   usable value.
+#' @return A list of `source_version` (a string), `sampling_rate`, `height`
+#'   and `width` (positive numbers), each `NA` when the file does not record
+#'   a usable value, and `identities_labels` (a character vector, or `NULL`).
 #' @noRd
 read_idtracker_h5_attributes <- function(path) {
   attrs <- rhdf5::h5readAttributes(path, "/")
   list(
     source_version = idtracker_string(attrs$version),
     sampling_rate = idtracker_positive_number(attrs$frames_per_second),
-    height = idtracker_positive_number(attrs$height)
+    height = idtracker_positive_number(attrs$height),
+    width = idtracker_positive_number(attrs$width),
+    identities_labels = attrs$identities_labels
   )
+}
+
+#' Name idtracker.ai individuals by their identity labels
+#'
+#' The h5 reader numbers individuals by their position in the trajectories,
+#' `1` to `n`, which is identity `i` and so `identities_labels[i]`.
+#'
+#' @param individual The factor of positions.
+#' @param labels The `identities_labels` attribute, or `NULL`.
+#'
+#' @return `individual` relabelled, with the labels as levels in identity
+#'   order; unchanged when the labels are not one distinct, non-empty string
+#'   per individual.
+#' @noRd
+label_idtracker_individuals <- function(individual, labels) {
+  labels <- as.character(as.vector(labels))
+  n <- nlevels(individual)
+  usable <- length(labels) == n &&
+    !anyNA(labels) &&
+    all(nzchar(labels)) &&
+    !anyDuplicated(labels)
+  if (!usable) {
+    return(individual)
+  }
+  factor(labels[as.integer(as.character(individual))], levels = labels)
 }
 
 #' A single non-empty string from an h5 attribute, or `NA`
