@@ -30,6 +30,15 @@ returned aniframe is in the conventional \code{bottom_left} origin.
 AnimalTA writes the time since the start of the video in seconds, rounded
 to 0.01 s, in its \code{Time} column. The reader keeps it as \code{time}, so
 \code{unit_time} is \code{"s"}.
+
+AnimalTA does not write the frame rate, but its \code{Frame} column is the
+frame number at the rate it tracked at, and \code{Time} that number divided by
+the rate. When every row agrees on one rate, to within the 0.01 s
+rounding, it becomes \code{sampling_rate}: the frames between the first and last
+row over the seconds between them, or the whole number nearest to it when
+that fits every row as well. Otherwise it is left \code{NA}. In a short file
+the rounding leaves the rate uncertain by about 0.01 s over the file's
+duration.
 }
 \examples{
 path <- system.file("extdata", "animalta.csv", package = "aniread")

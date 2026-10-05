@@ -74,3 +74,39 @@ test_that("the variable-individuals layout keeps its time in seconds too", {
   expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
   expect_equal(result$time, round(0:18 / 30, 2))
 })
+
+# ---- Sampling rate ------------------------------------------------------
+
+test_that("the rate is read from the Frame and Time columns", {
+  raw <- read_animalta(
+    testthat::test_path("data/animalta/single_individual_multi_arena.csv")
+  )
+  variable <- read_animalta(
+    testthat::test_path("data/animalta/variable_individuals_single_arena.csv")
+  )
+
+  expect_identical(anicore::get_metadata(raw, "sampling_rate"), 30)
+  expect_identical(anicore::get_metadata(variable, "sampling_rate"), 30)
+  expect_false("frame" %in% names(raw))
+  expect_false("frame" %in% names(variable))
+})
+
+test_that("a Time column that disagrees with Frame leaves the rate NA", {
+  # As the variable-individuals fixture was before it was repaired: a
+  # spreadsheet had rewritten 0.1 as 00.01, so Time no longer followed Frame.
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "Frame;Time;Arena;Ind;X;Y",
+      "0.0;0.0;0;0;514;133",
+      "1.0;0.03;0;0;518;132",
+      "2.0;0.07;0;0;518;133",
+      "3.0;0.01;0;0;519;132",
+      "4.0;0.13;0;0;521;130"
+    ),
+    path
+  )
+
+  data <- read_animalta(path)
+  expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
+})

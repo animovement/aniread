@@ -51,6 +51,15 @@ carries the pose keypoints, a per-frame detection probability, the
 identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
 metadata, so several columns come back \code{NA}.
+
+Both exports give \code{time} in seconds, so \code{unit_time} is \code{"s"}. The \code{.npz}
+records the frame rate as \code{frame_rate}, which becomes \code{sampling_rate}. The
+CSV does not record it, but when it has both a \code{frame} and a \code{time} column,
+and every time is the frame number divided by one rate (to within the
+rounding of \code{time}), that rate becomes \code{sampling_rate}: the frames between
+the first and last row over the seconds between them, or the whole number
+nearest to it when that fits every row as well. Otherwise, as when the
+times are camera timestamps that vary from frame to frame, it is left \code{NA}.
 }
 \details{
 The function performs several processing steps:

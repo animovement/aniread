@@ -139,3 +139,30 @@ test_that("read_trex reads ANGLE from the npz export when it is there", {
   )
   expect_true(all(!is.na(with$yaw[with$keypoint == "centroid"])))
 })
+
+# Sampling rate from the CSV --------------------------------------------
+
+test_that("the CSV reader takes the rate from its frame and time columns", {
+  # The npz records `frame_rate`; the CSV states it only through frame and
+  # time. TRex writes `frame` twice, and the first is the one read.
+  data <- read_trex(test_path("data/trex/beetle.csv"))
+
+  expect_identical(anicore::get_metadata(data, "sampling_rate"), 30)
+  expect_identical(
+    anicore::get_metadata(read_trex(npz_path()), "sampling_rate"),
+    30
+  )
+  expect_false("frame" %in% names(data))
+})
+
+test_that("a CSV without a frame column leaves the rate NA", {
+  csv <- system.file("extdata", "trex.csv", package = "aniread")
+  raw <- utils::read.csv(csv, check.names = FALSE)
+  raw <- raw[, names(raw) != "frame"]
+  path <- withr::local_tempfile(fileext = ".csv")
+  utils::write.csv(raw, path, row.names = FALSE)
+
+  data <- read_trex(path)
+  expect_s3_class(data, "anipoint")
+  expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
+})

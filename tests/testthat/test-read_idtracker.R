@@ -120,13 +120,32 @@ test_that("the CSV export's time is in seconds, the h5's in frames (#148)", {
   expect_equal(as.character(anicore::get_metadata(h5, "unit_time")), "frame")
 })
 
-test_that("the CSV export records neither", {
-  # They are in attributes.json beside it, not in trajectories.csv.
+test_that("the CSV export states the frame rate but not the version", {
+  # Both are in attributes.json beside it, which the reader does not read.
+  # The frame rate is also in trajectories.csv: one row per frame, timed
+  # at the row number over the frame rate, rounded to 1 ms. The span
+  # alone gives 28.0002; attributes.json says 28.
   data <- read_idtracker(
     test_path("data/idtrackerai/trajectories_csv", "trajectories.csv")
   )
 
   expect_true(is.na(anicore::get_metadata(data, "source_version")))
+  expect_identical(anicore::get_metadata(data, "sampling_rate"), 28)
+})
+
+test_that("a CSV whose rows are not evenly timed leaves the rate NA", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "seconds,x1,y1",
+      "0.000,10.0,20.0",
+      "0.036,11.0,21.0",
+      "0.100,12.0,22.0"
+    ),
+    path
+  )
+
+  data <- read_idtracker(path)
   expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
 })
 

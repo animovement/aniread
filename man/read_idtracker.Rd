@@ -48,15 +48,19 @@ around, unless \code{video_height} is given. A \code{height} dataset is used
 when there is no such attribute.
 }
 
-Both fields stay \code{NA} when the file does not record them. The CSV
-export keeps these in a separate \code{attributes.json} rather than in
-\code{trajectories.csv}, so a frame read from the CSV has neither
-\code{source_version} nor \code{sampling_rate}; set them with
-\code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
+Both fields stay \code{NA} when the file does not record them.
 
-The CSV export's time column (\code{seconds}, or \code{time} in newer releases) is
-the time in seconds, so a frame read from it has \code{unit_time} \code{"s"}, where
-one read from the h5 has \code{"frame"}.
+The CSV export keeps these in a separate \code{attributes.json} rather than in
+\code{trajectories.csv}, and the reader does not read it, so a frame read from
+the CSV has no \code{source_version}; set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
+Its time column (\code{seconds}, or \code{time} in newer releases) is the time in
+seconds, so \code{unit_time} is \code{"s"}, where a frame read from the h5 has
+\code{"frame"}. The time column still states the frame rate: idtracker.ai
+writes one row per frame, with the time as the row number divided by the
+frame rate, rounded to 1 ms. The reader takes the rate from the rows over
+the time they span, or the whole number nearest to it when that fits every
+row as well, and sets it as \code{sampling_rate}. It is left \code{NA} when the
+times are not evenly spaced.
 }
 \examples{
 path <- system.file("extdata", "idtracker.csv", package = "aniread")

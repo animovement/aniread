@@ -20,15 +20,19 @@
 #'   around, unless `video_height` is given. A `height` dataset is used
 #'   when there is no such attribute.
 #'
-#' Both fields stay `NA` when the file does not record them. The CSV
-#' export keeps these in a separate `attributes.json` rather than in
-#' `trajectories.csv`, so a frame read from the CSV has neither
-#' `source_version` nor `sampling_rate`; set them with
-#' [anicore::set_metadata()].
+#' Both fields stay `NA` when the file does not record them.
 #'
-#' The CSV export's time column (`seconds`, or `time` in newer releases) is
-#' the time in seconds, so a frame read from it has `unit_time` `"s"`, where
-#' one read from the h5 has `"frame"`.
+#' The CSV export keeps these in a separate `attributes.json` rather than in
+#' `trajectories.csv`, and the reader does not read it, so a frame read from
+#' the CSV has no `source_version`; set it with [anicore::set_metadata()].
+#' Its time column (`seconds`, or `time` in newer releases) is the time in
+#' seconds, so `unit_time` is `"s"`, where a frame read from the h5 has
+#' `"frame"`. The time column still states the frame rate: idtracker.ai
+#' writes one row per frame, with the time as the row number divided by the
+#' frame rate, rounded to 1 ms. The reader takes the rate from the rows over
+#' the time they span, or the whole number nearest to it when that fits every
+#' row as well, and sets it as `sampling_rate`. It is left `NA` when the
+#' times are not evenly spaced.
 #'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
@@ -58,7 +62,12 @@ read_idtracker <- function(
   }
   if (get_file_ext(path) == "csv") {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
-    recorded <- list(source_version = NA_character_, sampling_rate = NA_real_)
+    # One row per frame, so the row number is the frame number.
+    times <- sort(unique(data$time))
+    recorded <- list(
+      source_version = NA_character_,
+      sampling_rate = rate_from_frames(seq_along(times) - 1, times)
+    )
     unit_time <- "s"
   } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)

@@ -9,6 +9,15 @@
 #' to 0.01 s, in its `Time` column. The reader keeps it as `time`, so
 #' `unit_time` is `"s"`.
 #'
+#' AnimalTA does not write the frame rate, but its `Frame` column is the
+#' frame number at the rate it tracked at, and `Time` that number divided by
+#' the rate. When every row agrees on one rate, to within the 0.01 s
+#' rounding, it becomes `sampling_rate`: the frames between the first and last
+#' row over the seconds between them, or the whole number nearest to it when
+#' that fits every row as well. Otherwise it is left `NA`. In a short file
+#' the rounding leaves the rate uncertain by about 0.01 s over the file's
+#' duration.
+#'
 #' @param path An AnimalTA data frame
 #' @param detailed Which export layout the file uses. `"auto"` (the
 #'   default) reads it from the header: the raw layout continues into
@@ -49,7 +58,10 @@ read_animalta <- function(path, detailed = "auto", video_height = NULL) {
     )
     data <- read_animalta_raw(path)
   }
+  sampling_rate <- rate_from_frames(data$frame, data$time)
+
   data <- data |>
+    dplyr::select(-"frame") |>
     dplyr::mutate(keypoint = factor("centroid")) |>
     dplyr::relocate("keypoint", .after = "individual") |>
     dplyr::mutate(
@@ -64,7 +76,8 @@ read_animalta <- function(path, detailed = "auto", video_height = NULL) {
     anicore::set_metadata(
       source = "animalta",
       filename = basename(path),
-      unit_time = "s"
+      unit_time = "s",
+      sampling_rate = sampling_rate
     ) |>
     reflect_to_bottom_left(video_height = video_height)
 
@@ -86,7 +99,7 @@ read_animalta_detailed <- function(path) {
     ) |>
     dplyr::rename(individual = "ind") |>
     dplyr::mutate(individual = factor(.data$individual)) |>
-    dplyr::select(-c("frame", "arena"))
+    dplyr::select(-"arena")
   attributes(data)$spec <- NULL
   attributes(data)$problems <- NULL
   return(data)
@@ -110,7 +123,7 @@ read_animalta_raw <- function(path) {
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = c("time", "individual", "arena"),
+      id_cols = c("frame", "time", "individual", "arena"),
       names_from = "coordinate",
       values_from = "val"
     ) |>

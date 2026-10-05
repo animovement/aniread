@@ -11,6 +11,15 @@
 #' carries the centroid and midline of a single individual and none of that
 #' metadata, so several columns come back `NA`.
 #'
+#' Both exports give `time` in seconds, so `unit_time` is `"s"`. The `.npz`
+#' records the frame rate as `frame_rate`, which becomes `sampling_rate`. The
+#' CSV does not record it, but when it has both a `frame` and a `time` column,
+#' and every time is the frame number divided by one rate (to within the
+#' rounding of `time`), that rate becomes `sampling_rate`: the frames between
+#' the first and last row over the seconds between them, or the whole number
+#' nearest to it when that fits every row as well. Otherwise, as when the
+#' times are camera timestamps that vary from frame to frame, it is left `NA`.
+#'
 #' @param path Character string specifying the path to a TRex CSV file.
 #'   The file should contain columns for:
 #'   - time
@@ -86,7 +95,13 @@ read_trex <- function(
       ))
     }
     data <- read_trex_csv(path)
-    sampling_rate <- NULL
+    # The CSV records no frame rate, but its `frame` and `time` columns
+    # state one when they agree.
+    sampling_rate <- NA_real_
+    if ("frame" %in% names(data)) {
+      sampling_rate <- rate_from_frames(data$frame, data$time)
+      data$frame <- NULL
+    }
     frame_height <- NULL
   } else {
     data <- read_trex_npz(path)
@@ -163,9 +178,20 @@ read_trex_csv <- function(path) {
     delim = ",",
     show_col_types = FALSE
   ) |>
-    suppressMessages() |>
+    suppressMessages()
+
+  # TRex can write `frame` twice, and vroom then suffixes both names
+  # (`frame...1`). They hold the same frame number, so the first is kept.
+  frame_cols <- grep("^frame(\\.\\.\\.[0-9]+)?$", names(data))
+  if (length(frame_cols) > 0) {
+    names(data)[[frame_cols[[1]]]] <- "frame"
+    data <- data[setdiff(seq_along(data), frame_cols[-1])]
+  }
+
+  data <- data |>
     janitor::clean_names() |>
     dplyr::select(
+      tidyselect::any_of("frame"),
       tidyselect::contains(c("x_", "y_", "time")),
       tidyselect::any_of("angle")
     ) |>
@@ -179,13 +205,13 @@ read_trex_csv <- function(path) {
       y_head = "y_cm"
     ) |>
     tidyr::pivot_longer(
-      cols = !tidyselect::any_of(c("time", "angle")),
+      cols = !tidyselect::any_of(c("frame", "time", "angle")),
       names_sep = "_",
       names_to = c("pos", "keypoint"),
       values_to = "val"
     ) |>
     tidyr::pivot_wider(
-      id_cols = tidyselect::any_of(c("time", "keypoint", "angle")),
+      id_cols = tidyselect::any_of(c("frame", "time", "keypoint", "angle")),
       names_from = "pos",
       values_from = "val"
     ) |>
