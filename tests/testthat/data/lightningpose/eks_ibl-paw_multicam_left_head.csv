@@ -1,0 +1,6 @@
+scorer,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker,ensemble-kalman_tracker
+bodyparts,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_l,paw_r,paw_r,paw_r,paw_r,paw_r,paw_r,paw_r,paw_r,paw_r
+coords,x,y,likelihood,x_ens_median,y_ens_median,x_ens_var,y_ens_var,x_posterior_var,y_posterior_var,x,y,likelihood,x_ens_median,y_ens_median,x_ens_var,y_ens_var,x_posterior_var,y_posterior_var
+0,37.449986,71.2439,0.0,36.94973,71.90368,0.20383397,0.11322956,0.3659748,0.17184816,54.070984,75.11978,0.0,54.027245,76.58963,0.029693058,0.30141133,0.056246847,0.35517687
+1,37.48904,71.20125,0.0,36.94973,71.90368,0.20383397,0.11322956,0.35582942,0.16427794,54.07768,75.13414,0.0,54.027245,76.58963,0.029693058,0.30141133,0.058610857,0.35131922
+2,37.488888,71.1903,0.0,36.94973,71.90368,0.20383397,0.11322956,0.35552847,0.16403188,54.078457,75.133965,0.0,54.027245,76.58963,0.029693058,0.30141133,0.05861157,0.35140336

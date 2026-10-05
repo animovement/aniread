@@ -2,17 +2,21 @@
 % Please edit documentation in R/read_deeplabcut.R
 \name{read_deeplabcut_h5}
 \alias{read_deeplabcut_h5}
-\title{Read DeepLabCut H5 file}
+\title{Read a DeepLabCut h5 file}
 \usage{
 read_deeplabcut_h5(path)
 }
 \arguments{
-\item{path}{Path to the DLC .h5 file}
+\item{path}{Path to a DeepLabCut \code{.h5} file.}
 }
 \value{
-An aniframe with columns: time, individual, keypoint, x, y, confidence
+A list of \code{columns}, a data frame with one row per kept column
+and one column per level; \code{values}, a frames-by-columns matrix; and
+\code{index}, the frame index.
 }
 \description{
-Read DeepLabCut H5 file
+Reads the pandas DataFrame under the key \code{df_with_missing} (predictions)
+or \code{tracks} (stitched tracklets), stored in pandas' "table" format, as
+DeepLabCut writes it, or its "fixed" format, as pandas writes by default.
 }
 \keyword{internal}
