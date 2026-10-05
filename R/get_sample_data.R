@@ -50,7 +50,7 @@
 #' vector of paths to the individual files.
 #'
 #' The predefined data sources are hosted at:
-#' - https://gin.g-node.org/neuroinformatics/movement-test-data
+#' - https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data
 #' - https://github.com/animovement/movement-data
 #'
 #' @examples
@@ -82,7 +82,7 @@ get_sample_data <- function(
   list_datasets = FALSE
 ) {
   # Base URLs for data repositories
-  gin_base <- "https://gin.g-node.org/neuroinformatics/movement-test-data/raw/master"
+  gin_base <- "https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data/raw/master"
   github_base <- "https://raw.githubusercontent.com/animovement/movement-data/main/data"
 
   # Define available sources and their corresponding URLs

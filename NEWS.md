@@ -68,6 +68,8 @@
 
 ## Fixed
 
+* `get_sample_data()` downloads the movement sample datasets from their new home, [SWC GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data). They moved from G-Node GIN, which was often unreachable and made these downloads time out (neuroinformatics-unit/movement#1080). The file paths are unchanged.
+
 * `write_aniframe()` writes `.csv` files comma-separated (#136). It passed the call to `vroom::vroom_write()`, whose default delimiter is a tab, so `.csv` and `.tsv` both came out tab-separated. The delimiter now follows the extension — a comma for `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
 
 * `detect_freemocap_format()` no longer mistakes a `by_trajectory` file for a wide one. It told them apart by a `frame` column that FreeMoCap does not write in either; they are distinguished by the timestamps, which only `by_trajectory` carries.

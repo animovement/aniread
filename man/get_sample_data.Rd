@@ -71,7 +71,7 @@ vector of paths to the individual files.
 
 The predefined data sources are hosted at:
 \itemize{
-\item https://gin.g-node.org/neuroinformatics/movement-test-data
+\item https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data
 \item https://github.com/animovement/movement-data
 }
 }
