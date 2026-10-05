@@ -100,6 +100,10 @@
 
 * `read_trackmate()` reads files in any time or space unit (#149). It recognised only `"sec"`, `"pixel"` and `"micron"`, and aborted on anything else, such as `"frame"`, `"min"`, `"msec"` or `"µm"`. TrackMate's units are now mapped onto anicore's, and one with no equivalent, such as days or inches, becomes `"unknown"` or `"none"` with a warning.
 
+* `read_movement()` keeps the `confidence` of each point (#149). It was read from the file and never joined, so every frame came back without one.
+
+* `read_movement()` reads 3D files (#149). The axes were fixed at `x` and `y`, so a dataset whose `space` coordinate holds `x`, `y` and `z` aborted; they are now read from `space`.
+
 * `read_movement()` reads files that movement saved without a frame rate (#149). movement then writes `time_unit = "frames"` and no `fps`, and the reader aborted because `"frames"` is not one of anicore's units. It now becomes `"frame"`, and `sampling_rate` stays `NA` rather than becoming an empty number.
 
 * `write_aniframe()` writes `.csv` files comma-separated (#136). It passed the call to `vroom::vroom_write()`, whose default delimiter is a tab, so `.csv` and `.tsv` both came out tab-separated. The delimiter now follows the extension — a comma for `.csv`, a tab for `.tsv` — and an explicit `delim` still wins.
