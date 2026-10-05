@@ -37,7 +37,7 @@ Reads the layouts FreeMoCap v1 and v2 write, dispatching on
 the column names rather than the file name:
 \itemize{
 \item \verb{<recording>_by_frame.csv}: the v1 tidy export. FreeMoCap added a
-\code{reprojection_error} column at v1.8.0, so this exists in an 8- and a
+\code{reprojection_error} column at v1.7.4, so this exists in an 8- and a
 9-column form; both are read.
 \item \verb{<recording>_by_trajectory.csv}: v1's one column triple per tracked
 point, with the camera timestamps alongside.
