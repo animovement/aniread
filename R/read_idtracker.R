@@ -42,6 +42,12 @@
 #' row as well, and sets it as `sampling_rate`. It is left `NA` when the
 #' times are not evenly spaced.
 #'
+#' When idtracker.ai could not read the video's frame rate, it writes the
+#' CSV export without a time column, and `frames_per_second` as `null` in
+#' `attributes.json`. `time` is then the row number, counted from 1 as the
+#' h5 reader counts frames, `unit_time` is `"frame"`, and `sampling_rate` is
+#' `NA`. Set the rate with [anicore::set_metadata()] if you know it.
+#'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
 #' @param version idtracker.ai version. Currently only v6 output is implemented
@@ -70,14 +76,19 @@ read_idtracker <- function(
   }
   if (get_file_ext(path) == "csv") {
     data <- read_idtracker_csv(path, path_probabilities, version = version)
-    # One row per frame, so the row number is the frame number.
-    times <- sort(unique(data$time))
     recorded <- list(
       source_version = NA_character_,
-      sampling_rate = rate_from_frames(seq_along(times) - 1, times),
+      sampling_rate = NA_real_,
       width = NA_real_
     )
-    unit_time <- "s"
+    if (idtracker_csv_has_time(path)) {
+      # One row per frame, so the row number is the frame number.
+      times <- sort(unique(data$time))
+      recorded$sampling_rate <- rate_from_frames(seq_along(times) - 1, times)
+      unit_time <- "s"
+    } else {
+      unit_time <- "frame"
+    }
   } else if (get_file_ext(path) == "h5") {
     data <- read_idtracker_h5(path, version = version)
     recorded <- read_idtracker_h5_attributes(path)
@@ -196,7 +207,7 @@ read_idtracker_csv <- function(path, path_probabilities, version = 6) {
 
   data <- data |>
     tidyr::pivot_longer(
-      cols = 2:ncol(data),
+      cols = !"time",
       names_to = c("coordinate", "individual"),
       names_sep = "(?<=[A-Za-z])(?=[0-9])",
       values_to = "val"
@@ -242,7 +253,7 @@ read_idtracker_probabilities <- function(path) {
 
   data <- data |>
     tidyr::pivot_longer(
-      cols = 2:ncol(data),
+      cols = !"time",
       names_to = c("placeholder", "individual"),
       names_sep = "(?<=[A-Za-z])(?=[0-9])",
       values_to = "confidence"
@@ -252,13 +263,31 @@ read_idtracker_probabilities <- function(path) {
 }
 
 # idtracker.ai renamed the leading time column from `seconds` to `time`
-# in newer releases. Accept either, normalising to `time`.
+# in newer releases. Accept either, normalising to `time`. It writes no
+# time column when it could not read the video's frame rate; the rows are
+# then numbered as the h5 reader numbers frames, from 1.
 #' @keywords internal
 rename_idtracker_time_column <- function(data) {
   if ("seconds" %in% names(data) && !"time" %in% names(data)) {
     data <- dplyr::rename(data, time = "seconds")
   }
+  if (!"time" %in% names(data)) {
+    data <- dplyr::mutate(data, time = dplyr::row_number(), .before = 1)
+  }
   data
+}
+
+#' Whether an idtracker.ai CSV export has a time column
+#'
+#' idtracker.ai writes `seconds` (`time` in newer releases) as the first
+#' column of `trajectories.csv` when it knows the video's frame rate, and
+#' no time column when it could not read one.
+#'
+#' @param path Path to `trajectories.csv`.
+#' @return `TRUE` or `FALSE`.
+#' @noRd
+idtracker_csv_has_time <- function(path) {
+  any(c("seconds", "time") %in% peek_header(path))
 }
 
 #' @inheritParams read_idtracker

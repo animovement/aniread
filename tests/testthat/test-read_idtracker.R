@@ -65,6 +65,57 @@ test_that("read_idtracker reads CSV with renamed `time` column", {
   expect_setequal(as.character(unique(result$individual)), c("1", "2"))
 })
 
+# A CSV export without a time column -----------------------------------
+
+# idtracker.ai writes no time column when it could not read the video's
+# frame rate (frames_per_second is None). These were written by its own
+# _save_array_to_csv() with fps = None.
+no_fps <- function(file) {
+  test_path("data/idtrackerai/trajectories_csv_no_fps", file)
+}
+
+test_that("a CSV export without a time column is timed by frame", {
+  data <- read_idtracker(
+    no_fps("trajectories.csv"),
+    path_probabilities = no_fps("id_probabilities.csv")
+  )
+  raw <- utils::read.csv(no_fps("trajectories.csv"))
+
+  expect_s3_class(data, "anipoint")
+  expect_equal(sort(unique(data$time)), seq_len(nrow(raw)))
+  expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
+  expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
+  expect_setequal(levels(data$individual), c("1", "2"))
+
+  first <- data[data$individual == "1", ]
+  expect_equal(first$x, raw$x1)
+  expect_equal(first$confidence, c(1, 1, 0.999, 1))
+  second <- data[data$individual == "2", ]
+  expect_true(is.na(second$x[[3]]))
+  # idtracker.ai writes an identity probability of 0 where it lost one.
+  expect_equal(second$confidence[[3]], 0)
+})
+
+test_that("frames are numbered from 1, as the h5 reader numbers them", {
+  # aniread#150 proposes numbering every reader's frames from 0; until then
+  # the two idtracker.ai exports of one recording agree with each other.
+  skip_if_not_installed("rhdf5")
+  csv <- read_idtracker(no_fps("trajectories.csv"))
+  h5 <- read_idtracker(test_path("data/idtrackerai/trajectories.h5"))
+
+  expect_equal(min(csv$time), min(h5$time))
+  expect_equal(min(csv$time), 1)
+})
+
+test_that("read_dataset() detects and reads a CSV without a time column", {
+  path <- no_fps("trajectories.csv")
+  expect_equal(detect_source(path), "idtrackerai")
+  expect_equal(
+    as.data.frame(read_dataset(path)),
+    as.data.frame(read_idtracker(path))
+  )
+})
+
 # What the h5 records besides the tracks (#146) ------------------------
 
 # A minimal idtracker.ai h5: two individuals over three frames, with the

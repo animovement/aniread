@@ -114,6 +114,17 @@ detection_cases <- list(
     source = "idtrackerai",
     path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")
   ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_csv_no_fps", "trajectories.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = synthetic_fixture(
+      "csv",
+      c("time,x1,y1,x2,y2", "0.000,10.0,20.0,30.0,40.0")
+    )
+  ),
   list(source = "octron", path = fixture("octron", "octron_sample.csv")),
   list(
     source = "octron",
@@ -218,6 +229,14 @@ test_that("files that are not datasets detect as nothing", {
     detect_source(fixture(
       "idtrackerai",
       "trajectories_csv",
+      "id_probabilities.csv"
+    )),
+    "Cannot detect the source software"
+  )
+  expect_error(
+    detect_source(fixture(
+      "idtrackerai",
+      "trajectories_csv_no_fps",
       "id_probabilities.csv"
     )),
     "Cannot detect the source software"

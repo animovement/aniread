@@ -357,11 +357,17 @@ detect_idtrackerai_file <- function(path) {
   if (identical(tolower(get_file_ext(path)), "h5")) {
     return("trajectories" %in% peek_h5_names(path))
   }
-  # The trajectories CSV pairs `seconds` with x1/y1... columns. The companion
-  # probabilities CSV shares `seconds` but not the coordinates, and is passed
-  # to read_idtracker() separately rather than read on its own.
+  # The trajectories CSV is x1,y1,x2,y2..., after a time column: `seconds`,
+  # `time` in newer releases, or none when idtracker.ai could not read the
+  # frame rate. The companion probabilities CSV shares the time column but
+  # not the coordinates, and is passed to read_idtracker() separately rather
+  # than read on its own.
   header <- peek_header(path)
-  all(c("seconds", "x1", "y1") %in% header)
+  if (length(header) > 0 && header[[1]] %in% c("seconds", "time")) {
+    header <- header[-1]
+  }
+  n <- length(header) %/% 2
+  n >= 1 && identical(header, paste0(c("x", "y"), rep(seq_len(n), each = 2)))
 }
 
 
