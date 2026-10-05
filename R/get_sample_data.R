@@ -10,7 +10,12 @@
 #'   - "bonsai": Tracking data from Bonsai
 #'   - "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
 #'   - "fictrac": Fictrac sample data
-#'   - "freemocap": FreeMoCap motion capture test data
+#'   - "freemocap": FreeMoCap motion capture of a person doing star jumps
+#'     (4 datasets), from movement's sample data, written by FreeMoCap's own
+#'     saver. The default, "star-jump", is the 9-column `by_frame.csv` of
+#'     v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
+#'     versions; "star-jump_by_trajectory" and "star-jump_wide" are the
+#'     recording's `by_trajectory.csv` and `mediapipe_body_3d_xyz.csv`
 #'   - "idtracker": Trajectories from idtracker.ai
 #'   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
 #'   - "movement": netCDF files saved by the movement Python package
@@ -141,12 +146,37 @@ get_sample_data <- function(
       )
     ),
     freemocap = list(
-      "test-data" = list(
+      # movement's star-jump recording (CC BY 4.0, Max Staras), written by
+      # FreeMoCap v1.8.2's own saver: the 9-column by_frame layout.
+      "star-jump" = list(
         url = paste0(
           github_base,
-          "/freemocap/freemocap_test_data_by_frame.csv"
+          "/freemocap/freemocap_star-jump_by_frame.csv"
         ),
-        filename = "freemocap_test_data_by_frame.csv"
+        filename = "freemocap_star-jump_by_frame.csv"
+      ),
+      # The same recording as FreeMoCap v1.7.3 writes it: 8 columns, no
+      # reprojection_error.
+      "star-jump_v1.7" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_by_frame_v1.7.csv"
+        ),
+        filename = "freemocap_star-jump_by_frame_v1.7.csv"
+      ),
+      "star-jump_by_trajectory" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_by_trajectory.csv"
+        ),
+        filename = "freemocap_star-jump_by_trajectory.csv"
+      ),
+      "star-jump_wide" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_mediapipe_body_3d_xyz.csv"
+        ),
+        filename = "freemocap_star-jump_mediapipe_body_3d_xyz.csv"
       )
     ),
     idtracker = list(

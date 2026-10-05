@@ -21,7 +21,12 @@ Currently supported software names:
 \item "bonsai": Tracking data from Bonsai
 \item "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
 \item "fictrac": Fictrac sample data
-\item "freemocap": FreeMoCap motion capture test data
+\item "freemocap": FreeMoCap motion capture of a person doing star jumps
+(4 datasets), from movement's sample data, written by FreeMoCap's own
+saver. The default, "star-jump", is the 9-column \code{by_frame.csv} of
+v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
+versions; "star-jump_by_trajectory" and "star-jump_wide" are the
+recording's \code{by_trajectory.csv} and \code{mediapipe_body_3d_xyz.csv}
 \item "idtracker": Trajectories from idtracker.ai
 \item "lightningpose": Mouse tracking from LightningPose (2 datasets)
 \item "movement": netCDF files saved by the movement Python package
