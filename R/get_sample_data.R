@@ -13,7 +13,10 @@
 #'   - "freemocap": FreeMoCap motion capture test data
 #'   - "idtracker": Trajectories from idtracker.ai
 #'   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
-#'   - "movement": Movement package native format (2 datasets)
+#'   - "movement": netCDF files saved by the movement Python package
+#'     (2 datasets). The default, "two-mice_octagon", has the dimension names
+#'     movement uses since 0.17.0; "legacy-plural" is the same recording
+#'     with the plural names of earlier versions
 #'   - "sleap": Animal tracking from SLEAP (3 datasets)
 #'   - "trex": Multi-animal tracking from TRex (2 datasets). The default,
 #'     "five-locusts", unpacks to one `.npz` per individual and returns a
@@ -163,12 +166,19 @@ get_sample_data <- function(
       )
     ),
     movement = list(
+      # Saved by movement 0.17.0 or later, with singular dimension names
       "two-mice_octagon" = list(
+        url = paste0(gin_base, "/poses/MOVE_two-mice_octagon.analysis.nc"),
+        filename = "movement_two-mice_octagon.nc"
+      ),
+      # The same recording saved before 0.17.0, with the plural `individuals`
+      # and `keypoints` dimensions
+      "legacy-plural" = list(
         url = paste0(
           github_base,
           "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc"
         ),
-        filename = "sleap_two-mice_octagon.nc"
+        filename = "movement_two-mice_octagon_legacy-plural.nc"
       )
     ),
     sleap = list(

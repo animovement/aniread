@@ -306,10 +306,9 @@ test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
 })
 
 test_that("the movement sample file is detected as movement (#89)", {
-  # movement is the one source without a committed fixture: its detector
-  # needs a real netCDF/HDF5 file, so it is shown the sample file that
-  # get_sample_data() downloads. detect_source() requires exactly one
-  # match, so this also shows no other HDF5 detector fires on it.
+  # The sample file that get_sample_data() downloads, saved by movement 0.17.0
+  # or later. detect_source() requires exactly one match, so this also shows
+  # no other HDF5 detector fires on it.
   skip_if_no_network()
   skip_if_not_installed("rhdf5")
   path <- get_sample_data(
@@ -320,6 +319,22 @@ test_that("the movement sample file is detected as movement (#89)", {
 
   expect_true(detect_movement_file(path))
   expect_identical(detect_source(path), "movement")
+})
+
+test_that("movement files are detected with either dimension names (#167)", {
+  # Fixtures in data/movement/, described in test-read_movement.R
+  skip_if_not_installed("rhdf5")
+  for (file in c(
+    "two-mice_seconds_singular.nc",
+    "two-mice_frames_singular.nc",
+    "two-mice_seconds_plural.nc",
+    "two-mice_seconds.nc",
+    "synthetic_3d_singular.nc",
+    "individual-confidence_singular.nc"
+  )) {
+    expect_identical(detect_source(fixture("movement", file)), "movement")
+  }
+  expect_false(detect_movement_file(fixture("movement", "bboxes_singular.nc")))
 })
 
 test_that("a detector that errors counts as a non-match", {
