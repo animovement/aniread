@@ -1,0 +1,8 @@
+Observation id	Observation date	Description	Observation duration	Observation type	Source	Time offset (s)	Media duration (s)	FPS	a	b	c	Subject	Behavior	Behavioral category	Modifier #1	Behavior type	Time	Media file name	Image index	Image file path	Comment
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		q		m1	POINT	8.475	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		q		m2	POINT	12.350	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		q		m3	POINT	15.650	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		r		m1	START	19.175	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		r		m1	STOP	27.950	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		r		None	START	30.425	video_test_25fps_180s.mp4	NA	NA	
+modifiers	2018-02-28 15:25:10		32.350	Media file(s)	player #1:video_test_25fps_180s.mp4	0.0	179.960	25.000			111		r		None	STOP	40.825	video_test_25fps_180s.mp4	NA	NA	

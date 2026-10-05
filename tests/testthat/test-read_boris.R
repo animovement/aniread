@@ -199,6 +199,12 @@ test_that("multi-column Modifier #N is gathered into a list-column", {
   expect_identical(ae$modifiers[[4]], "short")
 })
 
+test_that("a populated Comment start is kept and an empty Comment stop dropped", {
+  ae <- read_boris(agg_synth_path("modifiers_multicol_with_image_index.tsv"))
+  expect_identical(ae$comment_start, c("slipped once", NA, NA, NA))
+  expect_false("comment_stop" %in% names(ae))
+})
+
 test_that("legacy single-column Modifiers (pipe-separated) parses + filters None", {
   ae <- read_boris(agg_synth_path("modifiers_pipe_separated.tsv"))
   expect_identical(ae$modifiers[[1]], "left")
@@ -342,6 +348,120 @@ test_that("flat tabular CSV does not warn on state-vs-point overlap", {
   expect_no_warning(
     read_boris(tab_path("flat_dslr_subject.csv"))
   )
+})
+
+
+# BORIS 9 layouts --------------------------------------------------------
+#
+# Exported with BORIS 9.15.0 from BORIS's tests/files/test.boris (GPL-3.0);
+# see data/boris/README.md. The older-layout fixtures above export the same
+# observations, so each pair must read the same.
+
+boris9_agg_path <- function(file) {
+  test_path("data", "boris", "aggregated", "boris9", file)
+}
+boris9_tab_path <- function(file) {
+  test_path("data", "boris", "tabular", "boris9", file)
+}
+
+# The events of an anievent, as a plain data frame in a fixed order.
+boris_bouts <- function(ae) {
+  x <- as.data.frame(ae)[c("subject", "label", "type", "start", "stop")]
+  x[] <- lapply(x, function(v) if (is.factor(v)) as.character(v) else v)
+  x <- x[do.call(order, x), , drop = FALSE]
+  rownames(x) <- NULL
+  x
+}
+
+test_that("BORIS 9 aggregated TSV reads as the older layout does", {
+  ae <- read_boris(boris9_agg_path("boris9_aggregated_observation2.tsv"))
+  old <- read_boris(agg_path("test_export_aggregated_events_test_full_1.tsv"))
+
+  expect_s3_class(ae, "anievent")
+  expect_equal(nrow(ae), 18)
+  expect_equal(boris_bouts(ae), boris_bouts(old))
+  expect_setequal(
+    unique(as.character(ae$observation)),
+    "observation #2"
+  )
+})
+
+test_that("BORIS 9 aggregated export maps 'Not defined' category to behavior", {
+  ae <- read_boris(boris9_agg_path("boris9_aggregated_observation2.tsv"))
+  expect_setequal(unique(ae$channel), "behavior")
+})
+
+test_that("BORIS 9 aggregated export takes the FPS shared by its media files", {
+  # Two media files: `FPS (frame/s)` reads "25.000;25.000".
+  ae <- read_boris(boris9_agg_path("boris9_aggregated_observation2.tsv"))
+  expect_equal(anicore::get_metadata(ae, "sampling_rate"), 25)
+})
+
+test_that("BORIS 9 aggregated export drops its administrative columns", {
+  ae <- read_boris(boris9_agg_path("boris9_aggregated_observation2.tsv"))
+  for (col in c(
+    "fps",
+    "coding_duration",
+    "media_duration",
+    "source_media",
+    "observation_type",
+    "time_offset",
+    "duration_s",
+    "image_index_start",
+    "image_index_stop",
+    "image_file_path_start",
+    "image_file_path_stop",
+    "comment_start",
+    "comment_stop"
+  )) {
+    expect_false(col %in% names(ae), info = paste("column kept:", col))
+  }
+  # Independent variables stay.
+  expect_true(all(c("a", "b", "c") %in% names(ae)))
+})
+
+test_that("BORIS 9 aggregated CSV reads as the TSV does", {
+  tsv <- read_boris(boris9_agg_path("boris9_aggregated_observation2.tsv"))
+  csv <- read_boris(boris9_agg_path("boris9_aggregated_observation2.csv"))
+  expect_equal(boris_bouts(csv), boris_bouts(tsv))
+  expect_equal(
+    anicore::get_metadata(csv, "sampling_rate"),
+    anicore::get_metadata(tsv, "sampling_rate")
+  )
+})
+
+test_that("BORIS 9 aggregated export keeps its modifiers", {
+  ae <- read_boris(boris9_agg_path("boris9_aggregated_modifiers.tsv"))
+  expect_equal(nrow(ae), 5)
+  expect_identical(
+    ae$modifiers,
+    list("m1", "m2", "m3", "m1", character())
+  )
+  expect_equal(anicore::get_metadata(ae, "sampling_rate"), 25)
+})
+
+test_that("BORIS 9 tabular TSV reads as the older layout does", {
+  ae <- read_boris(boris9_tab_path("boris9_tabular_observation1.tsv"))
+  old <- read_boris(tab_path("test_export_events_tabular.tsv"))
+
+  expect_s3_class(ae, "anievent")
+  expect_equal(nrow(ae), 4)
+  expect_equal(boris_bouts(ae), boris_bouts(old))
+  expect_equal(anicore::get_metadata(ae, "sampling_rate"), 25)
+})
+
+test_that("BORIS 9 tabular CSV reads as the TSV does", {
+  tsv <- read_boris(boris9_tab_path("boris9_tabular_observation1.tsv"))
+  csv <- read_boris(boris9_tab_path("boris9_tabular_observation1.csv"))
+  expect_equal(boris_bouts(csv), boris_bouts(tsv))
+})
+
+test_that("BORIS 9 tabular and aggregated exports of one observation agree", {
+  tab <- read_boris(boris9_tab_path("boris9_tabular_modifiers.tsv"))
+  agg <- read_boris(boris9_agg_path("boris9_aggregated_modifiers.tsv"))
+  cols <- c("label", "type", "start", "stop")
+  expect_equal(boris_bouts(tab)[cols], boris_bouts(agg)[cols])
+  expect_identical(tab$modifiers, agg$modifiers)
 })
 
 
