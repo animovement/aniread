@@ -98,7 +98,7 @@ to the individual files.
 
 The predefined data sources are hosted at:
 
-- https://gin.g-node.org/neuroinformatics/movement-test-data
+- https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data
 
 - https://github.com/animovement/movement-data
 

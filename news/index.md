@@ -270,6 +270,13 @@
 
 ### Fixed
 
+- [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
+  downloads the movement sample datasets from their new home, [SWC
+  GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data).
+  They moved from G-Node GIN, which was often unreachable and made these
+  downloads time out (neuroinformatics-unit/movement#1080). The file
+  paths are unchanged.
+
 - [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
   writes `.csv` files comma-separated
   ([\#136](https://github.com/animovement/aniread/issues/136)). It
