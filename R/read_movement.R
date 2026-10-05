@@ -19,6 +19,18 @@
 #' image (top-left) coordinates, so the reader reflects y to
 #' `bottom_left` before returning.
 #'
+#' The file's root attributes describe the recording, and the reader keeps
+#' what has a place in the metadata:
+#'
+#' * `source_software` becomes `source`, and the name of `source_file`
+#'   becomes `filename`.
+#' * `time_unit` becomes `unit_time`. movement writes `"seconds"` when it was
+#'   given the frame rate and `"frames"` when it was not; these become `"s"`
+#'   and `"frame"`.
+#' * `fps` becomes `sampling_rate`. movement writes it only when it was
+#'   given one, so a file whose time is in frames leaves `sampling_rate`
+#'   `NA`. Set it with [anicore::set_metadata()] if you know it.
+#'
 #' @export
 read_movement <- function(path, video_height = NULL) {
   # Check for rhdf5
@@ -30,10 +42,8 @@ read_movement <- function(path, video_height = NULL) {
   # h5ls(path)
   metadata <- rhdf5::h5readAttributes(path, "/")
 
-  # Temporary unit workaround until https://github.com/animovement/anicore/issues/45 is solved
-  if (metadata$time_unit == "seconds") {
-    metadata$time_unit <- "s"
-  }
+  unit_time <- movement_unit_time(metadata$time_unit)
+  sampling_rate <- movement_sampling_rate(metadata$fps)
 
   #
   individuals <- rhdf5::h5read(path, "individuals")
@@ -60,11 +70,50 @@ read_movement <- function(path, video_height = NULL) {
     anicore::set_metadata(
       source = metadata$source_software,
       filename = basename(metadata$source_file),
-      unit_time = metadata$time_unit,
-      unit_space = "px",
-      sampling_rate = as.numeric(metadata$fps)
-    ) |>
-    reflect_to_bottom_left(video_height = video_height)
+      unit_time = unit_time,
+      unit_space = "px"
+    )
 
-  data
+  if (!is.na(sampling_rate)) {
+    data <- anicore::set_metadata(data, sampling_rate = sampling_rate)
+  }
+
+  reflect_to_bottom_left(data, video_height = video_height)
+}
+
+#' Map movement's time unit onto anicore's
+#'
+#' @param time_unit The `time_unit` root attribute, or `NULL` when absent.
+#'
+#' @return One of anicore's `unit_time` levels: `"s"` for movement's
+#'   `"seconds"`, `"frame"` for its `"frames"`, otherwise `"unknown"`.
+#' @noRd
+movement_unit_time <- function(time_unit) {
+  time_unit <- as.vector(time_unit)
+  if (length(time_unit) != 1 || is.na(time_unit)) {
+    return("unknown")
+  }
+  units <- c(seconds = "s", frames = "frame")
+  if (time_unit %in% names(units)) {
+    return(units[[time_unit]])
+  }
+  cli::cli_warn(c(
+    "movement time unit {.val {time_unit}} has no equivalent in anicore.",
+    "i" = "Setting {.field unit_time} to {.val unknown}."
+  ))
+  "unknown"
+}
+
+#' Sampling rate from movement's fps
+#'
+#' @param fps The `fps` root attribute, or `NULL` when absent.
+#'
+#' @return The rate in Hz, or `NA` when the file records no positive rate.
+#' @noRd
+movement_sampling_rate <- function(fps) {
+  fps <- suppressWarnings(as.numeric(fps))
+  if (length(fps) != 1 || !is.finite(fps) || fps <= 0) {
+    return(NA_real_)
+  }
+  fps
 }
