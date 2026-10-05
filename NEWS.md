@@ -100,6 +100,10 @@
 
 * `read_fictrac()` keeps `time` running forward when a recording crosses midnight (#149, #172). The time since midnight that it reads starts again from zero at midnight, so `time` jumped back by a day there. A drop of more than twelve hours between two rows now adds a day from that row on.
 
+* `read_boris()` sets `sampling_rate` for an observation of several media files (#173). BORIS lists one FPS per file in a single cell, such as `25.000;25.000`, which did not parse as a number, so the rate was left out. It is now set when the files agree.
+
+* `read_boris()` puts a behaviour without a category in the `"behavior"` channel when reading an aggregated export from current BORIS (#173). That export writes `"Not defined"` in the `Behavioral category` column where older exports and the tabular export leave it empty, so such behaviours landed in a channel called `"Not defined"`.
+
 * `read_idtracker()` reads an idtracker.ai CSV export that has no time column (#149). idtracker.ai writes none when it could not read the video's frame rate, and the reader aborted with "Column `time` doesn't exist". `time` is now the row number, counted from 1 as the `.h5` reader counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
 
 * `detect_source()`, and so `read_dataset()`, recognises idtracker.ai's `trajectories.csv` whatever its time column: `seconds`, the `time` that newer releases write, or none. It recognised only `seconds`, although `read_idtracker()` has read `time` since #60.

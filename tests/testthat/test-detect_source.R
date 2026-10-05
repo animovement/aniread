@@ -107,6 +107,42 @@ detection_cases <- list(
     )
   ),
   list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "boris9",
+      "boris9_aggregated_observation2.tsv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "boris9",
+      "boris9_aggregated_observation2.csv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "tabular",
+      "boris9",
+      "boris9_tabular_observation1.tsv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "tabular",
+      "boris9",
+      "boris9_tabular_observation1.csv"
+    )
+  ),
+  list(
     source = "freemocap",
     path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
   ),
