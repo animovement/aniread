@@ -69,6 +69,12 @@ frame rate, rounded to 1 ms. The reader takes the rate from the rows over
 the time they span, or the whole number nearest to it when that fits every
 row as well, and sets it as \code{sampling_rate}. It is left \code{NA} when the
 times are not evenly spaced.
+
+When idtracker.ai could not read the video's frame rate, it writes the
+CSV export without a time column, and \code{frames_per_second} as \code{null} in
+\code{attributes.json}. \code{time} is then the row number, counted from 1 as the
+h5 reader counts frames, \code{unit_time} is \code{"frame"}, and \code{sampling_rate} is
+\code{NA}. Set the rate with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
 }
 \examples{
 path <- system.file("extdata", "idtracker.csv", package = "aniread")

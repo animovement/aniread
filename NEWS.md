@@ -80,6 +80,10 @@
 
 * `get_sample_data()` downloads the movement sample datasets from their new home, [SWC GIN](https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data). They moved from G-Node GIN, which was often unreachable and made these downloads time out (neuroinformatics-unit/movement#1080). The file paths are unchanged.
 
+* `read_idtracker()` reads an idtracker.ai CSV export that has no time column (#149). idtracker.ai writes none when it could not read the video's frame rate, and the reader aborted with "Column `time` doesn't exist". `time` is now the row number, counted from 1 as the `.h5` reader counts frames, with `unit_time` `"frame"` and `sampling_rate` `NA`.
+
+* `detect_source()`, and so `read_dataset()`, recognises idtracker.ai's `trajectories.csv` whatever its time column: `seconds`, the `time` that newer releases write, or none. It recognised only `seconds`, although `read_idtracker()` has read `time` since #60.
+
 * `read_idtracker()` (CSV export), `read_animalta()` and `read_bonsai()` declare `unit_time` as `"s"` (#148, #149). Their `time` is in seconds, but the metadata said frames, so anything that reads the unit misread it: `anicore::convert_unit_time()` divided the seconds by the frame rate, and speeds came out per frame rather than per second. The `time` values are unchanged, but results that depend on the unit will differ. `read_idtracker()` keeps `"frame"` for the `.h5`, whose `time` is the frame number.
 
 * `read_bonsai()` reflects y around the frame height the file records (#149). A workflow that writes the image alongside the centroid writes its `Size.Width` and `Size.Height` on every row, but the reader reflected y around the largest tracked y, so every y was off by the difference: 254 px on the 1080 px frame of the test file. When every image in the file has the same size, that size is now used, and recorded as the `axis_extents` of x and y. `video_height` still takes precedence.
