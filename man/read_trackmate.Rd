@@ -25,3 +25,31 @@ coordinates; the reader reflects y so the returned aniframe is in the
 conventional \code{bottom_left} origin. The frame height is read from
 \verb{Settings/ImageData/@height} in the XML by default.
 }
+\details{
+The XML also records how the image was calibrated, and the reader keeps
+what has a place in the metadata:
+\itemize{
+\item \code{timeunits} and \code{spatialunits}, from the \code{Model} element, become
+\code{unit_time} and \code{unit_space}. TrackMate takes them from the image's
+calibration in ImageJ, where they are free text, so the usual spellings
+are recognised: \code{"sec"}, \code{"msec"}, \code{"min"}, \code{"frame"} and so on for time,
+\code{"pixel"}, \code{"micron"}, \code{"um"} (with or without the micro sign), \code{"mm"}
+and so on for space. A unit with no equivalent in anicore (days or
+inches, say) becomes \code{"unknown"} or \code{"none"}, with a warning, rather
+than stopping the read.
+\item \code{timeinterval}, from \code{Settings/ImageData}, is the time between frames in
+\code{timeunits}. Its reciprocal, converted to Hz, becomes \code{sampling_rate}.
+It stays \code{NA} when the interval is missing or not positive, or when the
+time unit is frames or not recognised.
+\item \code{version}, from the root element, is the TrackMate version that wrote
+the file and becomes \code{source_version}.
+}
+
+TrackMate cannot tell an uncalibrated image from one calibrated at one
+second per frame. An image with no time calibration has a frame interval
+of 0, which TrackMate replaces with 1, and ImageJ's default time unit is
+\code{"sec"}. A file with \code{timeunits = "sec"} and \code{timeinterval = 1} may
+therefore really count frames, in which case \code{time} is the frame number
+and the 1 Hz \code{sampling_rate} is not the camera's. If you know the real
+rate, set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
+}
