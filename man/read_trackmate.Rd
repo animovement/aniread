@@ -66,15 +66,17 @@ not, needs no splitting.
 \code{parent} is not an identity key: the keys are \code{track} and \code{keypoint}. It
 is a factor with the same levels as \code{track}, so its values match the
 ids in \code{track}. One row per track gives the lineage, as the Cell Tracking
-Challenge's \verb{L B E P} table (label, first and last time, parent):
+Challenge's \verb{L B E P} table (label, first and last time, parent). The
+frame is grouped by its keys, so drop to a plain tibble first:
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{dplyr::summarise(
-  data,
-  start = min(time),
-  end = max(time),
-  parent = dplyr::first(parent),
-  .by = track
-)
+\if{html}{\out{<div class="sourceCode">}}\preformatted{data |>
+  dplyr::as_tibble() |>
+  dplyr::summarise(
+    start = min(time),
+    end = max(time),
+    parent = dplyr::first(parent),
+    .by = track
+  )
 }\if{html}{\out{</div>}}
 
 The XML also records how the image was calibrated, and the reader keeps
@@ -108,4 +110,22 @@ of 0, which TrackMate replaces with 1, and ImageJ's default time unit is
 therefore really count frames, in which case \code{time} is the frame number
 and the 1 Hz \code{sampling_rate} is not the camera's. If you know the real
 rate, set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}}.
+}
+\examples{
+\dontshow{if (rlang::is_installed("xml2")) withAutoprint(\{ # examplesIf}
+# A cell that divides into tracks 1 and 2, whose parent is track 0
+path <- system.file("extdata", "trackmate.xml", package = "aniread")
+data <- read_trackmate(path)
+data
+
+# The lineage: one row per track, with the track it divided from
+data |>
+  dplyr::as_tibble() |>
+  dplyr::summarise(
+    start = min(time),
+    end = max(time),
+    parent = dplyr::first(parent),
+    .by = track
+  )
+\dontshow{\}) # examplesIf}
 }

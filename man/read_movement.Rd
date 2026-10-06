@@ -60,3 +60,10 @@ given one, so a file whose time is in frames leaves \code{sampling_rate}
 \code{NA}. Set it with \code{\link[anicore:set_metadata]{anicore::set_metadata()}} if you know it.
 }
 }
+\examples{
+\dontshow{if (rlang::is_installed("rhdf5")) withAutoprint(\{ # examplesIf}
+# Two mice tracked with SLEAP, saved by movement with an fps of 50
+path <- system.file("extdata", "movement.nc", package = "aniread")
+read_movement(path)
+\dontshow{\}) # examplesIf}
+}

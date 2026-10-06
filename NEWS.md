@@ -64,6 +64,8 @@
 
 * The layout a file was read as is recorded in the `source_format` metadata field, as `"by_frame_8col"` or `"by_frame_9col"`, so drift between FreeMoCap releases is visible on the aniframe rather than only in whether reading happened to work.
 
+* `read_c3d()`, `read_movement()`, `read_sleap()` and `read_trackmate()` have examples that run (#103). They read new files in `inst/extdata`, each a few frames of a public recording: `c3d.c3d`, a Vicon Nexus static trial from pyCGM (MIT); `movement.nc`, movement's two-mice sample (CC BY 4.0); `sleap.analysis.csv` and `sleap.analysis.h5`, two flies written by sleap-io from its own test data (BSD-3-Clause); and `trackmate.xml`, a dividing cell from TrackMate's C. elegans example (CC BY 4.0), which shows the `parent` column. `inst/extdata/README.md` records where each came from, how it was cut, and the licence notices.
+
 ## Changed
 
 * `write_intracktive()` numbers tracks by the frame's identity keys (`anicore::get_keys()`) rather than by a fixed list of `session`, `trial`, `model`, `individual` and `keypoint`. A frame read by `read_trackmate()`, whose tracks are told apart by `track`, was written with all its tracks under one `track_id`; each track now gets its own. Since the keys are read from the aniframe's metadata, `data` must now be an aniframe: a plain data frame errors, where it was written by whichever of those columns it had.

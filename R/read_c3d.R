@@ -3,8 +3,7 @@
 #' Reads a C3D file and returns the data as an aniframe with associated
 #' metadata including source software, units, and sampling rate.
 #'
-#' @param path Path to a `.c3d` file.
-#'
+#' @details
 #' C3D numbers frames from 1, and a file's header records the frame of the
 #' recording its first frame is, which is not frame 1 when the recording was
 #' trimmed. `time` is in seconds from the first frame of the recording, so
@@ -13,12 +12,19 @@
 #' longer than 65535 frames records its first frame in the `TRIAL` group's
 #' `ACTUAL_START_FIELD` parameter instead, which is used when it is there.
 #'
+#' @param path Path to a `.c3d` file.
+#'
 #' @return An aniframe with columns `time`, `keypoint`, `x`, `y`, and `z`.
 #'   Metadata includes source software, filename, time/space units, and
 #'   sampling rate. `time` is in seconds, with the first frame of the
 #'   recording at 0; see "Time" in [read_dataset()].
 #'
 #' @seealso [c3dr::c3d_read()] for lower-level C3D access.
+#'
+#' @examplesIf rlang::is_installed("c3dr")
+#' # Five frames of a static trial from Vicon Nexus, at 100 Hz
+#' path <- system.file("extdata", "c3d.c3d", package = "aniread")
+#' read_c3d(path)
 #'
 #' @export
 read_c3d <- function(path) {

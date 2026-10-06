@@ -63,3 +63,18 @@ The CSV carries neither, so a frame read from it has no structure and no
 \code{source_version}. Attach one with \code{\link[=read_structure]{read_structure()}} and
 \code{\link[anicore:set_structure]{anicore::set_structure()}}.
 }
+\examples{
+# Two flies tracked with SLEAP, in the analysis CSV
+path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")
+read_sleap(path)
+
+\dontshow{if (rlang::is_installed(c("rhdf5", "jsonlite"))) withAutoprint(\{ # examplesIf}
+# The same predictions in the analysis .h5, whose frames run to the end of
+# the video, and which also carries the skeleton and the SLEAP version
+path <- system.file("extdata", "sleap.analysis.h5", package = "aniread")
+flies <- read_sleap(path)
+flies
+anicore::get_structure(flies)
+anicore::get_metadata(flies, "source_version")
+\dontshow{\}) # examplesIf}
+}
