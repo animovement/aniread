@@ -45,16 +45,18 @@
 #' `parent` is not an identity key: the keys are `track` and `keypoint`. It
 #' is a factor with the same levels as `track`, so its values match the
 #' ids in `track`. One row per track gives the lineage, as the Cell Tracking
-#' Challenge's `L B E P` table (label, first and last time, parent):
+#' Challenge's `L B E P` table (label, first and last time, parent). The
+#' frame is grouped by its keys, so drop to a plain tibble first:
 #'
 #' ```
-#' dplyr::summarise(
-#'   data,
-#'   start = min(time),
-#'   end = max(time),
-#'   parent = dplyr::first(parent),
-#'   .by = track
-#' )
+#' data |>
+#'   dplyr::as_tibble() |>
+#'   dplyr::summarise(
+#'     start = min(time),
+#'     end = max(time),
+#'     parent = dplyr::first(parent),
+#'     .by = track
+#'   )
 #' ```
 #'
 #' The XML also records how the image was calibrated, and the reader keeps
@@ -96,6 +98,23 @@
 #'
 #' @return An aniframe with columns including `time`, `track`, `keypoint`,
 #'   `parent`, `x`, `y`, `z` and `frame`.
+#'
+#' @examplesIf rlang::is_installed("xml2")
+#' # A cell that divides into tracks 1 and 2, whose parent is track 0
+#' path <- system.file("extdata", "trackmate.xml", package = "aniread")
+#' data <- read_trackmate(path)
+#' data
+#'
+#' # The lineage: one row per track, with the track it divided from
+#' data |>
+#'   dplyr::as_tibble() |>
+#'   dplyr::summarise(
+#'     start = min(time),
+#'     end = max(time),
+#'     parent = dplyr::first(parent),
+#'     .by = track
+#'   )
+#'
 #' @export
 read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   # Check the file

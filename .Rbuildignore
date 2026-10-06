@@ -13,3 +13,4 @@
 ^.vscode$
 ^_snaps$
 ^AGENTS\.md$
+^data-raw$

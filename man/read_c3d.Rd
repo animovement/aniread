@@ -7,15 +7,7 @@
 read_c3d(path)
 }
 \arguments{
-\item{path}{Path to a \code{.c3d} file.
-
-C3D numbers frames from 1, and a file's header records the frame of the
-recording its first frame is, which is not frame 1 when the recording was
-trimmed. \code{time} is in seconds from the first frame of the recording, so
-a file that starts at frame 1 starts at \code{time = 0}, and one trimmed to
-start at frame 705 of a 200 Hz recording starts at 3.52 s. A recording
-longer than 65535 frames records its first frame in the \code{TRIAL} group's
-\code{ACTUAL_START_FIELD} parameter instead, which is used when it is there.}
+\item{path}{Path to a \code{.c3d} file.}
 }
 \value{
 An aniframe with columns \code{time}, \code{keypoint}, \code{x}, \code{y}, and \code{z}.
@@ -26,6 +18,22 @@ recording at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 \description{
 Reads a C3D file and returns the data as an aniframe with associated
 metadata including source software, units, and sampling rate.
+}
+\details{
+C3D numbers frames from 1, and a file's header records the frame of the
+recording its first frame is, which is not frame 1 when the recording was
+trimmed. \code{time} is in seconds from the first frame of the recording, so
+a file that starts at frame 1 starts at \code{time = 0}, and one trimmed to
+start at frame 705 of a 200 Hz recording starts at 3.52 s. A recording
+longer than 65535 frames records its first frame in the \code{TRIAL} group's
+\code{ACTUAL_START_FIELD} parameter instead, which is used when it is there.
+}
+\examples{
+\dontshow{if (rlang::is_installed("c3dr")) withAutoprint(\{ # examplesIf}
+# Five frames of a static trial from Vicon Nexus, at 100 Hz
+path <- system.file("extdata", "c3d.c3d", package = "aniread")
+read_c3d(path)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[c3dr:c3d_read]{c3dr::c3d_read()}} for lower-level C3D access.

@@ -49,6 +49,11 @@
 #'   given one, so a file whose time is in frames leaves `sampling_rate`
 #'   `NA`. Set it with [anicore::set_metadata()] if you know it.
 #'
+#' @examplesIf rlang::is_installed("rhdf5")
+#' # Two mice tracked with SLEAP, saved by movement with an fps of 50
+#' path <- system.file("extdata", "movement.nc", package = "aniread")
+#' read_movement(path)
+#'
 #' @export
 read_movement <- function(path, video_height = NULL) {
   # Check for rhdf5

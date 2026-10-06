@@ -50,6 +50,21 @@
 #'
 #' @return a movement dataframe. `time` is SLEAP's frame index, so the first
 #'   frame of the video is at `time = 0`; see "Time" in [read_dataset()].
+#'
+#' @examples
+#' # Two flies tracked with SLEAP, in the analysis CSV
+#' path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")
+#' read_sleap(path)
+#'
+#' @examplesIf rlang::is_installed(c("rhdf5", "jsonlite"))
+#' # The same predictions in the analysis .h5, whose frames run to the end of
+#' # the video, and which also carries the skeleton and the SLEAP version
+#' path <- system.file("extdata", "sleap.analysis.h5", package = "aniread")
+#' flies <- read_sleap(path)
+#' flies
+#' anicore::get_structure(flies)
+#' anicore::get_metadata(flies, "source_version")
+#'
 #' @export
 read_sleap <- function(path, video_height = NULL) {
   validate_files(path, expected_suffix = c("h5", "csv"))
