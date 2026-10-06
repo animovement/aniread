@@ -326,6 +326,22 @@
   between FreeMoCap releases is visible on the aniframe rather than only
   in whether reading happened to work.
 
+- [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md),
+  [`read_movement()`](https://animovement.dev/aniread/reference/read_movement.md),
+  [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
+  and
+  [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
+  have examples that run
+  ([\#103](https://github.com/animovement/aniread/issues/103)). They
+  read new files in `inst/extdata`, each a few frames of a public
+  recording: `c3d.c3d`, a Vicon Nexus static trial from pyCGM (MIT);
+  `movement.nc`, movement’s two-mice sample (CC BY 4.0);
+  `sleap.analysis.csv` and `sleap.analysis.h5`, two flies written by
+  sleap-io from its own test data (BSD-3-Clause); and `trackmate.xml`, a
+  dividing cell from TrackMate’s C. elegans example (CC BY 4.0), which
+  shows the `parent` column. `inst/extdata/README.md` records where each
+  came from, how it was cut, and the licence notices.
+
 ### Changed
 
 - [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)

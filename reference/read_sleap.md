@@ -72,3 +72,61 @@ The CSV carries neither, so a frame read from it has no structure and no
 [`read_structure()`](https://animovement.dev/aniread/reference/read_structure.md)
 and
 [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html).
+
+## Examples
+
+``` r
+# Two flies tracked with SLEAP, in the analysis CSV
+path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")
+read_sleap(path)
+#> # Individuals: track_0, track_1
+#> # Keypoints:   abdomen, eyeL, eyeR, forelegL4, forelegR4, head, hindlegL4,
+#> #   hindlegR4, midlegL4, midlegR4, thorax, wingL, wingR
+#>    individual keypoint  time     x     y confidence
+#>    <fct>      <fct>    <dbl> <dbl> <dbl>      <dbl>
+#>  1 track_0    abdomen      0  240. 432.       0.489
+#>  2 track_0    abdomen      1  403. 224.       0.955
+#>  3 track_0    abdomen      2  584.  92.4      0.580
+#>  4 track_0    abdomen      3  380.  99.8      0.741
+#>  5 track_0    abdomen      4  265. 333.       0.636
+#>  6 track_0    abdomen      5  268. 336.       0.736
+#>  7 track_0    eyeL         0  213. 372.       0.851
+#>  8 track_0    eyeL         1  440. 180.       1.07 
+#>  9 track_0    eyeL         2  600.  28.4      1.00 
+#> 10 track_0    eyeL         3  328. 128.       0.781
+#> # ℹ 146 more rows
+
+# The same predictions in the analysis .h5, whose frames run to the end of
+# the video, and which also carries the skeleton and the SLEAP version
+path <- system.file("extdata", "sleap.analysis.h5", package = "aniread")
+flies <- read_sleap(path)
+flies
+#> # Individuals: track_0, track_1
+#> # Keypoints:   abdomen, eyeL, eyeR, forelegL4, forelegR4, head, hindlegL4,
+#> #   hindlegR4, midlegL4, midlegR4, thorax, wingL, wingR
+#>    individual keypoint  time     x     y confidence
+#>    <fct>      <fct>    <dbl> <dbl> <dbl>      <dbl>
+#>  1 track_0    abdomen      0  240. 432.       0.489
+#>  2 track_0    abdomen      1  403. 224.       0.955
+#>  3 track_0    abdomen      2  584.  92.4      0.580
+#>  4 track_0    abdomen      3  380.  99.8      0.741
+#>  5 track_0    abdomen      4  265. 333.       0.636
+#>  6 track_0    abdomen      5  268. 336.       0.736
+#>  7 track_0    abdomen      6   NA   NA       NA    
+#>  8 track_0    abdomen      7   NA   NA       NA    
+#>  9 track_0    abdomen      8   NA   NA       NA    
+#> 10 track_0    eyeL         0  213. 372.       0.851
+#> # ℹ 224 more rows
+anicore::get_structure(flies)
+#> $keypoint
+#> <anistructure> 13 points, 12 segments, 0 joints
+#> variable: keypoint
+#> Points: head, thorax, abdomen, wingL, wingR, forelegL4, forelegR4, midlegL4,
+#>   midlegR4, hindlegL4, hindlegR4, eyeL, eyeR
+#> Segments: head - eyeL, head - eyeR, thorax - head, thorax - abdomen,
+#>   thorax - wingL, thorax - wingR, thorax - forelegL4, thorax - forelegR4,
+#>   thorax - midlegL4, thorax - midlegR4, thorax - hindlegL4, thorax - hindlegR4
+#> 
+anicore::get_metadata(flies, "source_version")
+#> [1] "1.2.7"
+```

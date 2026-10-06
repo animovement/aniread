@@ -68,3 +68,28 @@ what has a place in the metadata:
   `NA`. Set it with
   [`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html)
   if you know it.
+
+## Examples
+
+``` r
+# Two mice tracked with SLEAP, saved by movement with an fps of 50
+path <- system.file("extdata", "movement.nc", package = "aniread")
+read_movement(path)
+#> # Individuals:   1, 2
+#> # Keypoints:     Nose, EarLeft, EarRight, Neck, BodyUpper, BodyLower, TailBase
+#> # Sampling rate: 50 Hz
+#> # Time:          00:00:00.000 to 00:00:00.060
+#>    individual keypoint  time     x     y confidence
+#>    <fct>      <fct>    <dbl> <dbl> <dbl>      <dbl>
+#>  1 1          Nose      0     796.  169.      0.929
+#>  2 1          Nose      0.02  785.  173.      0.872
+#>  3 1          Nose      0.04  776.  176.      0.830
+#>  4 1          Nose      0.06  765.  178.      0.882
+#>  5 1          EarLeft   0     813.  160.      0.918
+#>  6 1          EarLeft   0.02  804.  161.      0.918
+#>  7 1          EarLeft   0.04  796.  164.      0.861
+#>  8 1          EarLeft   0.06  781.  165.      0.904
+#>  9 1          EarRight  0     817.  176.      0.942
+#> 10 1          EarRight  0.02  809.  177.      0.900
+#> # ℹ 46 more rows
+```

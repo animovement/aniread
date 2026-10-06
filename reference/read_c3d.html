@@ -67,14 +67,7 @@ metadata including source software, units, and sampling rate.</p>
 
 
 <dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
-<dd><p>Path to a <code>.c3d</code> file.</p>
-<p>C3D numbers frames from 1, and a file's header records the frame of the
-recording its first frame is, which is not frame 1 when the recording was
-trimmed. <code>time</code> is in seconds from the first frame of the recording, so
-a file that starts at frame 1 starts at <code>time = 0</code>, and one trimmed to
-start at frame 705 of a 200 Hz recording starts at 3.52 s. A recording
-longer than 65535 frames records its first frame in the <code>TRIAL</code> group's
-<code>ACTUAL_START_FIELD</code> parameter instead, which is used when it is there.</p></dd>
+<dd><p>Path to a <code>.c3d</code> file.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -85,10 +78,57 @@ sampling rate. <code>time</code> is in seconds, with the first frame of the
 recording at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>C3D numbers frames from 1, and a file's header records the frame of the
+recording its first frame is, which is not frame 1 when the recording was
+trimmed. <code>time</code> is in seconds from the first frame of the recording, so
+a file that starts at frame 1 starts at <code>time = 0</code>, and one trimmed to
+start at frame 705 of a 200 Hz recording starts at 3.52 s. A recording
+longer than 65535 frames records its first frame in the <code>TRIAL</code> group's
+<code>ACTUAL_START_FIELD</code> parameter instead, which is used when it is there.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="https://docs.ropensci.org/c3dr/reference/c3d_read.html" class="external-link">c3dr::c3d_read()</a></code> for lower-level C3D access.</p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Five frames of a static trial from Vicon Nexus, at 100 Hz</span></span></span>
+<span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"c3d.c3d"</span>, package <span class="op">=</span> <span class="st">"aniread"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">read_c3d</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:     *111, *112, *113, *114, C7, CLAV, HEDA, HEDL, HEDO, HEDP,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LANK, LASI, LAbsAnkleAngle, LAnkleAngles, LBHD, LCLA, LCLL, LCLO, LCLP,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LELB, LElbowAngles, LFEA, LFEL, LFEO, LFEP, LFHD, LFIN, LFOA, LFOL, LFOO,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LFOP, LFootProgressAngles, LHEE, LHNA, LHNL, LHNO, LHNP, LHUA, LHUL, LHUO,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LHUP, LHeadAngles, LHipAngles, LKNE, LKneeAngles, LNeckAngles, LPSI,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LPelvisAngles, LRAA, LRAL, LRAO, LRAP, LSHO, LShoulderAngles, LSpineAngles,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LTHI, LTIA, LTIB, LTIL, LTIO, LTIP, LTOA, LTOE, LTOL, LTOO, LTOP,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   LThoraxAngles, LWRA, LWRB, LWristAngles, PELA, PELL, PELO, PELP, RANK,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RASI, RAbsAnkleAngle, RAnkleAngles, RBAK, RBHD, RCLA, RCLL, RCLO, RCLP,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RELB, RElbowAngles, RFEA, RFEL, RFEO, RFEP, RFHD, RFIN, RFOA, RFOL, RFOO,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RFOP, RFootProgressAngles, RHEE, RHNA, RHNL, RHNO, RHNP, RHUA, RHUL, RHUO,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RHUP, RHeadAngles, RHipAngles, RKNE, RKneeAngles, RNeckAngles, RPSI,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RPelvisAngles, RRAA, RRAL, RRAO, RRAP, RSHO, RShoulderAngles, RSpineAngles,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RTHI, RTIA, RTIB, RTIL, RTIO, RTIP, RTOA, RTOE, RTOL, RTOO, RTOP,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   RThoraxAngles, RWRA, RWRB, RWristAngles, STRN, T10, TRXA, TRXL, TRXO, TRXP</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Sampling rate: 100 Hz</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Time:          00:00:00.000 to 00:00:00.040</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    keypoint  time     x     y     z</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> *111      0     693.  424. <span style="text-decoration: underline;">1</span>240.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> *111      0.01  693.  424. <span style="text-decoration: underline;">1</span>240.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> *111      0.02  693.  424. <span style="text-decoration: underline;">1</span>240.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> *111      0.03  693.  424. <span style="text-decoration: underline;">1</span>240.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> *111      0.04  693.  424. <span style="text-decoration: underline;">1</span>240.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> *112      0    -<span style="color: #BB0000;">226.</span>  406. <span style="text-decoration: underline;">1</span>214.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> *112      0.01 -<span style="color: #BB0000;">226.</span>  405. <span style="text-decoration: underline;">1</span>214.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> *112      0.02 -<span style="color: #BB0000;">226.</span>  405. <span style="text-decoration: underline;">1</span>214.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> *112      0.03 -<span style="color: #BB0000;">226.</span>  405. <span style="text-decoration: underline;">1</span>214.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> *112      0.04 -<span style="color: #BB0000;">226.</span>  405. <span style="text-decoration: underline;">1</span>214.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 695 more rows</span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

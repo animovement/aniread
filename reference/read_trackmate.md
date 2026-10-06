@@ -76,15 +76,17 @@ beside another that does not, needs no splitting.
 `parent` is not an identity key: the keys are `track` and `keypoint`. It
 is a factor with the same levels as `track`, so its values match the ids
 in `track`. One row per track gives the lineage, as the Cell Tracking
-Challenge's `L B E P` table (label, first and last time, parent):
+Challenge's `L B E P` table (label, first and last time, parent). The
+frame is grouped by its keys, so drop to a plain tibble first:
 
-    dplyr::summarise(
-      data,
-      start = min(time),
-      end = max(time),
-      parent = dplyr::first(parent),
-      .by = track
-    )
+    data |>
+      dplyr::as_tibble() |>
+      dplyr::summarise(
+        start = min(time),
+        end = max(time),
+        parent = dplyr::first(parent),
+        .by = track
+      )
 
 The XML also records how the image was calibrated, and the reader keeps
 what has a place in the metadata:
@@ -119,3 +121,42 @@ therefore really count frames, in which case `time` is the frame number
 and the 1 Hz `sampling_rate` is not the camera's. If you know the real
 rate, set it with
 [`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html).
+
+## Examples
+
+``` r
+# A cell that divides into tracks 1 and 2, whose parent is track 0
+path <- system.file("extdata", "trackmate.xml", package = "aniread")
+data <- read_trackmate(path)
+#> ✔ Loaded 7 spots from 3 tracks.
+data
+#> # Tracks:        0, 1, 2
+#> # Keypoints:     centroid
+#> # Sampling rate: 0.00833333333333333 Hz
+#> # Time:          00:12:00 to 00:20:00
+#>   track keypoint  time     x     y parent
+#>   <fct> <fct>    <dbl> <dbl> <dbl> <fct> 
+#> 1 0     centroid    12  30.0  15.4 NA    
+#> 2 0     centroid    14  29.7  16.0 NA    
+#> 3 0     centroid    16  23.1  16.3 NA    
+#> 4 1     centroid    18  22.6  19.5 0     
+#> 5 1     centroid    20  21.8  21.3 0     
+#> 6 2     centroid    18  24.6  13.9 0     
+#> 7 2     centroid    20  25.3  13.0 0     
+
+# The lineage: one row per track, with the track it divided from
+data |>
+  dplyr::as_tibble() |>
+  dplyr::summarise(
+    start = min(time),
+    end = max(time),
+    parent = dplyr::first(parent),
+    .by = track
+  )
+#> # A tibble: 3 × 4
+#>   track start   end parent
+#>   <fct> <dbl> <dbl> <fct> 
+#> 1 0        12    16 NA    
+#> 2 1        18    20 0     
+#> 3 2        18    20 0     
+```
