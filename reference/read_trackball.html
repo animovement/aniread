@@ -125,7 +125,9 @@ the count of malformed rows dropped from each file.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a movement dataframe. <code>time</code> is in seconds from the first sample
-both sensors share; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>.</p>
+both sensors share; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>. <code>sampling_rate</code> is
+the <code>sampling_rate</code> given, the rate of the integration windows, and
+<code>source_sampling_rate</code> is <code>NaN</code>, since the sensor has no fixed rate.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -147,6 +149,12 @@ recordings - readings from before the second sensor started, or after the
 first stopped, are discarded rather than zero-filled. <code>time = 0</code> is the first
 shared sample, and the <code>start_datetime</code> metadata is the wall-clock instant of
 that sample.</p>
+<p>The sensor has no fixed rate of its own: it reports motion as it happens,
+and nothing while the ball is still. The frame's <code>sampling_rate</code> is
+therefore the rate of the integration windows, and its
+<code>source_sampling_rate</code> is <code>NaN</code>, anicore's marker for a device with no
+fixed rate (see <code><a href="https://animovement.dev/anicore/reference/set_metadata.html" class="external-link">anicore::set_metadata()</a></code>), rather than <code>NA</code>, which would
+mean the rate has not been declared.</p>
     </div>
 
     <div class="section level2">
@@ -164,7 +172,7 @@ that sample.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> For a Bonsai capture, use the PC datetime column (`col_time = 4`) rather than</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   the device counter (`col_time = 3`).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Keypoints:     centroid</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Sampling rate: 60 Hz</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Sampling rate: 60 Hz (recorded with no fixed rate)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Time:          00:00:00.000 to 00:00:00.133</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   keypoint   time     x     y</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>

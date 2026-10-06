@@ -124,7 +124,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="fixed-development-version">Fixed<a class="anchor" aria-label="anchor" href="#fixed-development-version"></a></h3>
-<ul><li>
+<ul><li><p><code><a href="../reference/read_trackball.html">read_trackball()</a></code> records that a trackball sensor has no fixed rate (<a href="https://github.com/animovement/aniread/issues/195" class="external-link">#195</a>). The sensor reports motion only as it happens, so the <code>sampling_rate</code> a frame is given is the rate of the windows its readings are integrated into, and anicore (from 0.8.0.9008) took that first declared rate for the device’s own as <code>source_sampling_rate</code>. <code>source_sampling_rate</code> is now <code>NaN</code>, anicore’s marker for a device with no fixed rate, and <code>sampling_rate</code> is still the window rate.</p></li>
+<li>
 <p><code><a href="../reference/read_sleap.html">read_sleap()</a></code> reads the analysis exports that sleap-io writes, as SLEAP does from 1.6.3 on (<a href="https://github.com/animovement/aniread/issues/170" class="external-link">#170</a>).</p>
 <ul><li>An <code>.h5</code> written with sleap-io’s <code>"standard"</code> preset or custom axes failed or came back scrambled, since the reader assumed SLEAP’s original axis order. The order is now read from each dataset’s <code>dims</code> attribute, and SLEAP’s layout is assumed only where there is none, so files SLEAP wrote itself read as before.</li>
 <li>A very old <code>.h5</code> without <code>point_scores</code> failed; it now reads with <code>NA</code> confidence.</li>

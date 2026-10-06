@@ -132,7 +132,7 @@ data <- read_trackmate(path)
 data
 #> # Tracks:        0, 1, 2
 #> # Keypoints:     centroid
-#> # Sampling rate: 0.00833333333333333 Hz
+#> # Sampling rate: 0.008333333 Hz
 #> # Time:          00:12:00 to 00:20:00
 #>   track keypoint  time     x     y parent
 #>   <fct> <fct>    <dbl> <dbl> <dbl> <fct> 

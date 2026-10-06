@@ -84,6 +84,9 @@ read_trackball(
 a movement dataframe. `time` is in seconds from the first sample both
 sensors share; see "Time" in
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
+`sampling_rate` is the `sampling_rate` given, the rate of the
+integration windows, and `source_sampling_rate` is `NaN`, since the
+sensor has no fixed rate.
 
 ## Details
 
@@ -108,6 +111,14 @@ the first stopped, are discarded rather than zero-filled. `time = 0` is
 the first shared sample, and the `start_datetime` metadata is the
 wall-clock instant of that sample.
 
+The sensor has no fixed rate of its own: it reports motion as it
+happens, and nothing while the ball is still. The frame's
+`sampling_rate` is therefore the rate of the integration windows, and
+its `source_sampling_rate` is `NaN`, anicore's marker for a device with
+no fixed rate (see
+[`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html)),
+rather than `NA`, which would mean the rate has not been declared.
+
 ## Examples
 
 ``` r
@@ -124,7 +135,7 @@ read_trackball(paths, setup = "of_free", sampling_rate = 60, col_time = "t")
 #> ℹ For a Bonsai capture, use the PC datetime column (`col_time = 4`) rather than
 #>   the device counter (`col_time = 3`).
 #> # Keypoints:     centroid
-#> # Sampling rate: 60 Hz
+#> # Sampling rate: 60 Hz (recorded with no fixed rate)
 #> # Time:          00:00:00.000 to 00:00:00.133
 #>   keypoint   time     x     y
 #>   <fct>     <dbl> <dbl> <dbl>
