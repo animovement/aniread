@@ -15,9 +15,9 @@ write_intracktive(data, filename, quiet = FALSE)
 
 - data:
 
-  An aniframe containing tracking data with required columns `time`,
-  `x`, and `y`. Optional columns are `z` for 3D data and `parent` for
-  lineage (see Details).
+  An aniframe containing tracking data with its index (usually `time`)
+  and `x` and `y`. Optional columns are `z` for 3D data, `parent` for
+  lineage and `frame` for recorded frame numbers (see Details).
 
 - filename:
 
@@ -45,7 +45,7 @@ The output format includes:
 
 - `track_id`: Integer identifier for each unique track
 
-- `t`: Time values (renamed from `time`)
+- `t`: The frame number of each row, counted from 0 (see below)
 
 - `x`, `y`: Spatial coordinates
 
@@ -61,9 +61,28 @@ The output format includes:
   `parent` column the column is left out, which inTRACKtive reads as no
   divisions.
 
-inTRACKtive reads `t` as whole frames counted from 0. `time` is written
-as it is, so a frame whose time is in seconds or minutes should be
-converted to frames first.
+inTRACKtive reads `t` as whole frames counted from 0, so the index is
+written in frames, as
+[`anicore::convert_unit_time()`](https://animovement.dev/anicore/reference/convert_unit_time.html)
+gives them with `"frame"`:
+
+- A frame whose `unit_time` is `"frame"` is written as it is. Its times
+  must be whole numbers.
+
+- A frame whose time is in another unit, such as seconds or minutes, is
+  converted to frames with its `sampling_rate`, so that the frame at
+  time 0 is `t = 0`: at 30 Hz, times of 0, 1/30 and 2/30 seconds are
+  written as 0, 1 and 2. A frame with a column named `frame` holding the
+  recorded frame numbers, as
+  [`anicore::set_index()`](https://animovement.dev/anicore/reference/set_index.html)
+  keeps them, is written with those.
+
+The writer stops rather than write frame numbers it would have to
+invent: when the time is not in frames and no `sampling_rate` is
+declared, or when the times are not regularly spaced at that rate.
+Declare the rate with `anicore::set_metadata(data, sampling_rate = )`,
+or keep the recorded frame numbers in a column named `frame`. `data`
+itself is not changed.
 
 The resulting CSV can be converted to inTRACKtive's Zarr format using
 their command-line tools or Python package.

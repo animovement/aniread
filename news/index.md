@@ -520,6 +520,24 @@
   now `NaN`, anicore’s marker for a device with no fixed rate, and
   `sampling_rate` is still the window rate.
 
+- [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
+  writes inTRACKtive’s `t` as frame numbers counted from 0, as
+  inTRACKtive reads it
+  ([\#191](https://github.com/animovement/aniread/issues/191)). It wrote
+  `time` unchanged, and inTRACKtive casts `t` to a whole number, so
+  times in seconds collapsed several rows onto one `t` and times in
+  minutes left empty frames between them. A frame whose time is already
+  in frames is written as before, and the writer now stops if any of
+  those times is not whole. A frame in another unit is converted with
+  `anicore::convert_unit_time(data, "frame")`: by its recorded frame
+  numbers when it has a `frame` column, and otherwise by its
+  `sampling_rate`, so at 30 Hz times of 0, 1/30 and 2/30 seconds become
+  0, 1 and 2, and TrackMate’s C. elegans sample, imaged every 2 minutes,
+  becomes 0, 1, 2, …. Rather than invent frame numbers, the writer
+  stops, saying how to declare the rate, when no `sampling_rate` is
+  declared or the times are not regularly spaced at it. aniread now
+  requires anicore 0.8.0.9008.
+
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   reads the analysis exports that sleap-io writes, as SLEAP does from
   1.6.3 on ([\#170](https://github.com/animovement/aniread/issues/170)).

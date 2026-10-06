@@ -73,9 +73,9 @@ aniframe's identity keys, and writes the lineage of dividing tracks.</p>
 
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>An aniframe containing tracking data with required columns
-<code>time</code>, <code>x</code>, and <code>y</code>. Optional columns are <code>z</code> for 3D data and <code>parent</code>
-for lineage (see Details).</p></dd>
+<dd><p>An aniframe containing tracking data with its index (usually
+<code>time</code>) and <code>x</code> and <code>y</code>. Optional columns are <code>z</code> for 3D data, <code>parent</code>
+for lineage and <code>frame</code> for recorded frame numbers (see Details).</p></dd>
 
 
 <dt id="arg-filename">filename<a class="anchor" aria-label="anchor" href="#arg-filename"></a></dt>
@@ -98,7 +98,7 @@ combination of the aniframe's identity keys (<code><a href="https://animovement.
 as <code>individual</code> and <code>keypoint</code>, or <code>track</code> and <code>keypoint</code> for a frame read
 by <code><a href="read_trackmate.html">read_trackmate()</a></code>.</p>
 <p>The output format includes:</p><ul><li><p><code>track_id</code>: Integer identifier for each unique track</p></li>
-<li><p><code>t</code>: Time values (renamed from <code>time</code>)</p></li>
+<li><p><code>t</code>: The frame number of each row, counted from 0 (see below)</p></li>
 <li><p><code>x</code>, <code>y</code>: Spatial coordinates</p></li>
 <li><p><code>z</code>: Optional third dimension if present</p></li>
 <li><p><code>parent_track_id</code>: Only when <code>data</code> has a <code>parent</code> column, as
@@ -109,9 +109,20 @@ the lineage. A track with no parent gets <code>-1</code>, inTRACKtive's value fo
 one, as does a track whose parent is not in <code>data</code> (with a warning).
 Without a <code>parent</code> column the column is left out, which inTRACKtive
 reads as no divisions.</p></li>
-</ul><p>inTRACKtive reads <code>t</code> as whole frames counted from 0. <code>time</code> is written as
-it is, so a frame whose time is in seconds or minutes should be converted
-to frames first.</p>
+</ul><p>inTRACKtive reads <code>t</code> as whole frames counted from 0, so the index is
+written in frames, as <code><a href="https://animovement.dev/anicore/reference/convert_unit_time.html" class="external-link">anicore::convert_unit_time()</a></code> gives them with
+<code>"frame"</code>:</p><ul><li><p>A frame whose <code>unit_time</code> is <code>"frame"</code> is written as it is. Its times must
+be whole numbers.</p></li>
+<li><p>A frame whose time is in another unit, such as seconds or minutes, is
+converted to frames with its <code>sampling_rate</code>, so that the frame at time 0
+is <code>t = 0</code>: at 30 Hz, times of 0, 1/30 and 2/30 seconds are written as 0,
+1 and 2. A frame with a column named <code>frame</code> holding the recorded frame
+numbers, as <code><a href="https://animovement.dev/anicore/reference/set_index.html" class="external-link">anicore::set_index()</a></code> keeps them, is written with those.</p></li>
+</ul><p>The writer stops rather than write frame numbers it would have to invent:
+when the time is not in frames and no <code>sampling_rate</code> is declared, or when
+the times are not regularly spaced at that rate. Declare the rate with
+<code>anicore::set_metadata(data, sampling_rate = )</code>, or keep the recorded frame
+numbers in a column named <code>frame</code>. <code>data</code> itself is not changed.</p>
 <p>The resulting CSV can be converted to inTRACKtive's Zarr format using their
 command-line tools or Python package.</p>
     </div>
