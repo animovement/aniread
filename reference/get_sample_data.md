@@ -20,8 +20,9 @@ get_sample_data(
 
 - source:
 
-  Character string specifying either a tracking software name or a URL.
-  Currently supported software names:
+  Character string specifying either a source name, as
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  names it, or a URL. Currently supported source names:
 
   - "animalta": Data from AnimalTA
 
@@ -29,7 +30,12 @@ get_sample_data(
 
   - "bonsai": Tracking data from Bonsai
 
-  - "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
+  - "c3d": Motion capture in C3D (2 datasets): "example", a walking
+    trial, and "sample-static", a static calibration trial
+
+  - "deeplabcut": Mouse/animal tracking from DeepLabCut (4 datasets)
+
+  - "fasttrack": Tracking from FastTrack
 
   - "fictrac": Fictrac sample data
 
@@ -40,22 +46,39 @@ get_sample_data(
     versions; "star-jump_by_trajectory" and "star-jump_wide" are the
     recording's `by_trajectory.csv` and `mediapipe_body_3d_xyz.csv`
 
-  - "idtracker": Trajectories from idtracker.ai
+  - "idtrackerai": Trajectories from idtracker.ai (2 datasets): the
+    `.h5` export, and "trajectories_csv", the CSV export
 
-  - "lightningpose": Mouse tracking from LightningPose (2 datasets)
+  - "lightningpose": Mouse tracking from LightningPose (3 datasets). The
+    default, "IBL-paw_EKS-left", is the Ensemble Kalman Smoother's
+    output for one camera
 
   - "movement": netCDF files saved by the movement Python package (2
     datasets). The default, "two-mice_octagon", has the dimension names
     movement uses since 0.17.0; "legacy-plural" is the same recording
     with the plural names of earlier versions
 
-  - "sleap": Animal tracking from SLEAP (3 datasets)
+  - "octron": Segmentation tracking from OCTRON
+
+  - "sleap": Animal tracking from SLEAP (4 datasets)
+
+  - "trackball_bonsai": Two optical-flow sensors under a trackball,
+    logged with Bonsai. Unpacks to one file per sensor and returns both
+    paths, which
+    [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
+    reads as one recording
+
+  - "trackmate": Cell tracking from TrackMate (3 datasets)
 
   - "trex": Multi-animal tracking from TRex (2 datasets). The default,
     "five-locusts", unpacks to one `.npz` per individual and returns a
     vector of paths, which
     [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
     reads as one recording
+
+  `"idtracker"` and `"trackball"`, the names before these matched
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
+  still work but are deprecated.
 
   Alternatively, provide a URL string (starting with "http://" or
   "https://") to download a file from a custom location.
@@ -86,9 +109,10 @@ get_sample_data(
 ## Value
 
 Character string (or vector) with the path(s) to the downloaded file(s).
-For TRex datasets, returns a character vector of paths to the individual
-tracking files. For all other sources, returns a single file path.
-Returns NULL invisibly if `list_datasets = TRUE`.
+For a dataset distributed as a zip file (the TRex "five-locusts" and
+trackball datasets), returns a character vector of paths to the files it
+unpacks to. For all others, returns a single file path. Returns NULL
+invisibly if `list_datasets = TRUE`.
 
 ## Details
 

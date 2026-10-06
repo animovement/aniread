@@ -344,6 +344,21 @@
 
 ### Changed
 
+- [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
+  names sources as
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  does, and serves a sample for every source that has a public one
+  ([\#169](https://github.com/animovement/aniread/issues/169)).
+  `"idtracker"` is now `"idtrackerai"` and `"trackball"` is now
+  `"trackball_bonsai"`; the old names still work but are deprecated. New
+  datasets: `"octron"`, `"trackmate"` (three recordings), `"fasttrack"`,
+  idtracker.ai’s CSV export (`"trajectories_csv"`), a second C3D file
+  (`"sample-static"`), DeepLabCut’s wasp as CSV (`"single-wasp_csv"`),
+  and SLEAP’s three Aeon mice, with named tracks (`"three-mice_Aeon"`).
+  `get_sample_data("lightningpose")` now downloads the 172 kB
+  `"IBL-paw_EKS-left"` by default rather than the 24 MB `"mouse-face"`,
+  which is still available by name.
+
 - [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
   numbers tracks by the frame’s identity keys
   ([`anicore::get_keys()`](https://animovement.dev/anicore/reference/get_keys.html))
@@ -509,6 +524,12 @@
   now recognised well enough to say so.
 
 ### Fixed
+
+- [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
+  downloads every file in binary mode. It chose text mode for any suffix
+  not on a list, which left out `.c3d`, `.xml` and `.npz`; on Windows,
+  text mode rewrites line endings, which corrupts a binary file such as
+  a C3D.
 
 - [`read_trackball()`](https://animovement.dev/aniread/reference/read_trackball.md)
   records that a trackball sensor has no fixed rate
