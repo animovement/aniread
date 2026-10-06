@@ -167,7 +167,7 @@ test_that("get_sample_data returns correct file paths for sources", {
     list(source = "bonsai", pattern = "bonsai"),
     list(source = "deeplabcut", pattern = "deeplabcut"),
     list(source = "fictrac", pattern = "fictrac"),
-    list(source = "idtracker", pattern = "idtracker"),
+    list(source = "idtrackerai", pattern = "idtracker"),
     list(source = "lightningpose", pattern = "lightningpose"),
     list(source = "sleap", pattern = "sleap")
   )
@@ -541,5 +541,79 @@ test_that("get_sample_data('freemocap') serves the star-jump recording", {
     # mass in every layout but the per-model body file
     n_points <- if (dataset == "star-jump_wide") 33 else 90
     expect_equal(nrow(data), 216 * n_points)
+  }
+})
+
+test_that("sample sources are named as the registry names them", {
+  readable <- registry_sources("read")
+  served <- names(sample_data_sources())
+
+  expect_true(all(served %in% readable))
+  # Every readable source has a sample, except those no public sample exists for
+  expect_setequal(setdiff(readable, served), c("aniframe", "boris"))
+})
+
+test_that("every sample dataset has a URL and a distinct file name", {
+  datasets <- unlist(sample_data_sources(), recursive = FALSE)
+
+  for (d in datasets) {
+    expect_match(d$url, "^https://")
+    expect_type(d$filename, "character")
+  }
+  filenames <- vapply(datasets, `[[`, character(1), "filename")
+  expect_false(any(duplicated(filenames)))
+})
+
+test_that("the old source names still work, with a deprecation", {
+  lifecycle::expect_deprecated(
+    expect_identical(resolve_sample_source("idtracker"), "idtrackerai")
+  )
+  lifecycle::expect_deprecated(
+    expect_identical(resolve_sample_source("trackball"), "trackball_bonsai")
+  )
+  expect_identical(resolve_sample_source("sleap"), "sleap")
+  expect_identical(
+    resolve_sample_source("https://example.com/idtracker"),
+    "https://example.com/idtracker"
+  )
+})
+
+test_that("an old source name lists the datasets of its new one", {
+  withr::local_options(lifecycle_verbosity = "quiet")
+  expect_no_error(
+    get_sample_data("idtracker", list_datasets = TRUE) |>
+      suppressMessages()
+  )
+})
+
+test_that("every default dataset is read by its source's reader", {
+  skip_if_no_network()
+  skip_on_ci()
+  skip_if_not_installed("rhdf5")
+  skip_if_not_installed("xml2")
+  skip_if_not_installed("c3dr")
+  skip_on_os("windows")
+
+  # The trackball sensors log no rate and the columns are not named for it
+  args <- list(
+    trackball_bonsai = list(
+      setup = "of_free",
+      sampling_rate = 60,
+      col_time = 4,
+      col_dx = 1,
+      col_dy = 2
+    )
+  )
+
+  for (source in names(sample_data_sources())) {
+    path <- get_sample_data(source, cache_dir = test_cache_dir(), quiet = TRUE)
+    data <- do.call(
+      read_dataset,
+      c(list(path, source = source), args[[source]])
+    ) |>
+      suppressMessages() |>
+      suppressWarnings()
+    expect_true(anicore::is_aniframe(data), info = source)
+    expect_gt(nrow(data), 0)
   }
 })

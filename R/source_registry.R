@@ -144,9 +144,6 @@ source_registry <- function() {
       detector = detect_octron_file,
       requires = NULL
     ),
-    # SLEAP CSV exports are advertised by neither the registry nor the reader:
-    # `read_sleap()` aborts on them (see #87). Restore "csv" here when the
-    # reader gains support.
     list(
       source = "sleap",
       reader = "read_sleap",
