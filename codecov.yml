@@ -10,3 +10,6 @@ coverage:
         target: auto
         threshold: 1%
         informational: true
+
+comment:
+  require_changes: true
