@@ -9,6 +9,16 @@
   [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
   no longer sets spatial metadata on its `anievent`.
 
+### Breaking changes
+
+- [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
+  lists what can be written as well as read
+  ([\#135](https://github.com/animovement/aniread/issues/135)). It now
+  returns one row per source and direction, with the columns `source`,
+  `direction` (`"read"` or `"write"`), `fun` and `suffix`; the `reader`
+  column is now `fun`. To list readers as before, filter on
+  `direction == "read"`.
+
 ### Removed
 
 - The unused output validators, `ensure_output_header_names()`,
@@ -39,6 +49,30 @@
   declares rather than against a fixed column list.
 
 ### Added
+
+- [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+  writes to any supported format, inferring it from the file suffix, as
+  the counterpart of
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  ([\#135](https://github.com/animovement/aniread/issues/135)). A `.csv`
+  is written as a plain table; inTRACKtive’s CSV needs
+  `format = "intracktive"`.
+
+- A Parquet file keeps the class it was written with
+  ([\#135](https://github.com/animovement/aniread/issues/135)).
+  [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)
+  gave back an `anisegment` or `anijoint` as an `anipoint`, because
+  arrow strips the class from a grouped frame and the reader could only
+  tell an `anipoint` from an `anievent`.
+  [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
+  now records the class in the file’s metadata, as JSON under the key
+  `animovement` (`{"class":["anijoint"]}`), which any language can read,
+  so
+  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
+  after
+  [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+  returns the same class, grouping and metadata. Files written before
+  this are read as they were.
 
 - [`write_intracktive()`](https://animovement.dev/aniread/reference/write_intracktive.md)
   writes the lineage of dividing tracks. A frame with a `parent` column,

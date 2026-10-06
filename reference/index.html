@@ -72,6 +72,22 @@
         </dt>
         <dd>Detect which source software wrote a file</dd>
       </dl></div><div class="section level2">
+      <h2 id="writing-any-file">Writing any file<a class="anchor" aria-label="anchor" href="#writing-any-file"></a></h2>
+
+      <div class="section-desc"><p>One entry point for every format <code>aniread</code> writes, inferred from the file suffix.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="write_dataset.html">write_dataset()</a></code>
+
+        </dt>
+        <dd>Write a movement or event dataset to any supported format</dd>
+      </dl></div><div class="section level2">
       <h2 id="reader-functions">Reader functions<a class="anchor" aria-label="anchor" href="#reader-functions"></a></h2>
 
       <div class="section-desc"><p>The format-specific readers <code><a href="../reference/read_dataset.html">read_dataset()</a></code> dispatches to. Call them directly when you already know the source, or for their format-specific arguments.</p></div>
@@ -241,7 +257,7 @@
       </dl></div><div class="section level2">
       <h2 id="writer-functions">Writer functions<a class="anchor" aria-label="anchor" href="#writer-functions"></a></h2>
 
-      <div class="section-desc"><p>These functions are allow you to save your data.</p></div>
+      <div class="section-desc"><p>The format-specific writers <code><a href="../reference/write_dataset.html">write_dataset()</a></code> dispatches to.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -276,7 +292,7 @@
           <code><a href="get_supported_sources.html">get_supported_sources()</a></code>
 
         </dt>
-        <dd>List the source software formats aniread can read</dd>
+        <dd>List the formats aniread can read and write</dd>
 
         <dt>
 

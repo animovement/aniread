@@ -18,8 +18,9 @@ read_aniframe(path)
 
 ## Value
 
-An anipoint, or an anievent if that is what was written. `time` is as it
-was written; see "Time" in
+The aniframe that was written, with its class: an anipoint, an anievent,
+or another frame built on them, such as an anijoint. `time` is as it was
+written; see "Time" in
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
 ## Examples

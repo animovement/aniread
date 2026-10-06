@@ -6,6 +6,7 @@
 <url><loc>https://animovement.dev/aniread/authors.html</loc></url>
 <url><loc>https://animovement.dev/aniread/index.html</loc></url>
 <url><loc>https://animovement.dev/aniread/news/index.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/aniframe_subclass.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/aniread-package.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/backcalculate_boris_frames.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/block_matrix.html</loc></url>
@@ -50,6 +51,7 @@
 <url><loc>https://animovement.dev/aniread/reference/peek_lines.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/read_aniframe.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/read_animalta.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/read_animovement_key.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/read_anipose.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/read_bonsai.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/read_boris.html</loc></url>
@@ -82,6 +84,7 @@
 <url><loc>https://animovement.dev/aniread/reference/reflect_to_bottom_left.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/registry_entry.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/registry_requires.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/registry_sources.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_animalta_layout.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_area_sum.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_column.html</loc></url>
@@ -97,6 +100,9 @@
 <url><loc>https://animovement.dev/aniread/reference/validate_files.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/validate_trackball.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/write_aniframe.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/write_dataset.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/write_intracktive.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/writer_for_format.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/writer_for_suffix.html</loc></url>
 </urlset>
 

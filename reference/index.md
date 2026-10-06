@@ -12,6 +12,14 @@ need to know which reader it needs beforehand.
 - [`detect_source()`](https://animovement.dev/aniread/reference/detect_source.md)
   : Detect which source software wrote a file
 
+## Writing any file
+
+One entry point for every format `aniread` writes, inferred from the
+file suffix.
+
+- [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+  : Write a movement or event dataset to any supported format
+
 ## Reader functions
 
 The format-specific readers
@@ -78,7 +86,9 @@ to attach with
 
 ## Writer functions
 
-These functions are allow you to save your data.
+The format-specific writers
+[`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+dispatches to.
 
 - [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
   :
@@ -91,7 +101,7 @@ These functions are allow you to save your data.
 ## Miscellaneous
 
 - [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
-  : List the source software formats aniread can read
+  : List the formats aniread can read and write
 - [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
   : Download sample tracking data
 - [`calibrate_trackball()`](https://animovement.dev/aniread/reference/calibrate_trackball.md)
