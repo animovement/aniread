@@ -16,7 +16,7 @@
 
 * `write_dataset()` writes to any supported format, inferring it from the file suffix, as the counterpart of `read_dataset()` (#135). A `.csv` is written as a plain table; inTRACKtive's CSV needs `format = "intracktive"`.
 
-* A Parquet file keeps the class it was written with (#135). `read_aniframe()` gave back an `anisegment` or `anijoint` as an `anipoint`, because arrow strips the class from a grouped frame and the reader could only tell an `anipoint` from an `anievent`. `write_aniframe()` now records the class in the file's metadata, so `read_dataset()` after `write_dataset()` returns the same class, grouping and metadata. Files written before this are read as they were.
+* A Parquet file keeps the class it was written with (#135). `read_aniframe()` gave back an `anisegment` or `anijoint` as an `anipoint`, because arrow strips the class from a grouped frame and the reader could only tell an `anipoint` from an `anievent`. `write_aniframe()` now records the class in the file's metadata, as JSON under the key `animovement` (`{"class":["anijoint"]}`), which any language can read, so `read_dataset()` after `write_dataset()` returns the same class, grouping and metadata. Files written before this are read as they were.
 
 * `write_intracktive()` writes the lineage of dividing tracks. A frame with a `parent` column, as `read_trackmate()` gives one for a file with dividing tracks (#182), gets inTRACKtive's `parent_track_id` column: the `track_id` of the track each track divided from, and `-1`, inTRACKtive's value for no parent, for the tracks that start a lineage. A parent that is not in the frame is also written as `-1`, with a warning. A frame without `parent` is written as before.
 

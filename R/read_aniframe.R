@@ -35,7 +35,7 @@ read_aniframe <- function(path) {
 
   # Read file
   table <- arrow::read_parquet(path, as_data_frame = FALSE)
-  stored_class <- table$metadata[[CLASS_KEY]]
+  stored_class <- read_animovement_key(table$metadata[[ANIMOVEMENT_KEY]])$class
   data <- dplyr::collect(table)
 
   # Arrow strips the class but keeps the attribute, so presence is all there is to test.
@@ -53,7 +53,7 @@ read_aniframe <- function(path) {
   if (!anicore::is_aniframe(data)) {
     class(data) <- c("aniframe", class(data))
     subclass <- if (!is.null(stored_class)) {
-      strsplit(stored_class, ",", fixed = TRUE)[[1]]
+      stored_class
     } else {
       # Written before the class was recorded: tell the two apart by metadata
       interval <- anicore::get_metadata(data, "variables")$when$interval
@@ -63,4 +63,19 @@ read_aniframe <- function(path) {
   }
 
   data
+}
+
+#' Parse animovement's Parquet metadata key
+#' @param json The key's value, or `NULL` when the file has none.
+#' @return A list, empty when there is no key.
+#' @keywords internal
+read_animovement_key <- function(json) {
+  if (is.null(json)) {
+    return(list())
+  }
+  rlang::check_installed(
+    "jsonlite",
+    reason = "to read the aniframe class from a Parquet file."
+  )
+  jsonlite::fromJSON(json, simplifyVector = TRUE)
 }
