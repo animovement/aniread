@@ -440,3 +440,91 @@ test_that("fill_missing_time_groups errors when no finite times are present", {
     "Could not determine the time range"
   )
 })
+
+# ---- The sensor has no fixed rate (#195) -------------------------------------
+
+# The capture emits a row only while the ball moves, so `sampling_rate` is the
+# integration window rate and the sensor's own rate is recorded as `NaN`.
+expect_no_fixed_rate <- function(result, window_rate) {
+  rates <- anicore::get_metadata(
+    result,
+    c("sampling_rate", "source_sampling_rate")
+  )
+  expect_equal(rates$sampling_rate, window_rate)
+  expect_true(is.nan(rates$source_sampling_rate))
+}
+
+test_that("a two-sensor Bonsai capture records no fixed rate", {
+  s1 <- make_sensor(withr::local_tempfile(fileext = ".csv"), junk = TRUE)
+  s2 <- make_sensor(
+    withr::local_tempfile(fileext = ".csv"),
+    t0 = 1e9 + 1,
+    badrow = 5,
+    gap_after = 100,
+    gap = 2
+  )
+
+  result <- read_bonsai_trackball(
+    c(s1, s2),
+    setup = "of_free",
+    sampling_rate = 60
+  )
+
+  expect_no_fixed_rate(result, 60)
+})
+
+test_that("a one-sensor Bonsai capture records no fixed rate", {
+  s1 <- make_sensor(
+    withr::local_tempfile(fileext = ".csv"),
+    gap_after = 60,
+    gap = 2
+  )
+
+  result <- read_bonsai_trackball(
+    s1,
+    setup = "of_fixed",
+    sampling_rate = 50,
+    counts_per_rotation = 1000
+  )
+
+  expect_no_fixed_rate(result, 50)
+})
+
+test_that("a Bonsai capture timed by the device clock records no fixed rate", {
+  # The microsecond device counter, column 3, is a usable clock for one sensor.
+  s1 <- make_sensor(withr::local_tempfile(fileext = ".csv"), dup = 2)
+
+  result <- read_trackball(
+    s1,
+    setup = "of_fixed",
+    sampling_rate = 60,
+    col_time = 3,
+    col_dx = 1,
+    col_dy = 2,
+    counts_per_rotation = 1000
+  )
+
+  expect_no_fixed_rate(result, 60)
+})
+
+test_that("a capture with non-ISO timestamps records no fixed rate", {
+  path <- withr::local_tempfile(fileext = ".csv")
+  writeLines(
+    c(
+      "time,x,y",
+      "2023/09/14 14:37:55,0,4",
+      "2023/09/14 14:37:56,0,5",
+      "2023/09/14 14:37:57,0,6"
+    ),
+    path
+  )
+
+  result <- read_trackball(
+    path,
+    setup = "of_fixed",
+    sampling_rate = 10,
+    counts_per_rotation = 1000
+  )
+
+  expect_no_fixed_rate(result, 10)
+})

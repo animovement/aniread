@@ -100,6 +100,8 @@
 
 ## Fixed
 
+* `read_trackball()` records that a trackball sensor has no fixed rate (#195). The sensor reports motion only as it happens, so the `sampling_rate` a frame is given is the rate of the windows its readings are integrated into, and anicore (from 0.8.0.9008) took that first declared rate for the device's own as `source_sampling_rate`. `source_sampling_rate` is now `NaN`, anicore's marker for a device with no fixed rate, and `sampling_rate` is still the window rate.
+
 * `read_sleap()` reads the analysis exports that sleap-io writes, as SLEAP does from 1.6.3 on (#170).
   * An `.h5` written with sleap-io's `"standard"` preset or custom axes failed or came back scrambled, since the reader assumed SLEAP's original axis order. The order is now read from each dataset's `dims` attribute, and SLEAP's layout is assumed only where there is none, so files SLEAP wrote itself read as before.
   * A very old `.h5` without `point_scores` failed; it now reads with `NA` confidence.
