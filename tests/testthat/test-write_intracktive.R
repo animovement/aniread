@@ -15,6 +15,12 @@
 # - Leaves parent_track_id out when there is no `parent` column
 # - Warns and writes -1 for a parent that is not in the data
 # - Errors on a `parent` column without a `track` key
+# - Writes time in frames as it is, and returns `data` unchanged
+# - Errors on times in frames that are not whole
+# - Converts seconds to frames with the sampling rate
+# - Converts TrackMate's minutes, and seconds, to frames with its rate
+# - Writes the recorded `frame` column over frames computed from the rate
+# - Errors, saying inTRACKtive needs frames, on irregular times or no rate
 
 test_that("creates track_id from all grouping columns", {
   data <- anicore::anipoint(
@@ -305,4 +311,151 @@ test_that("errors on a parent column without a track key", {
     write_intracktive(data, temp_file, quiet = TRUE),
     "no .*track.* key"
   )
+})
+
+# inTRACKtive's `t` is the frame number (#191)
+
+# Write `data` to a fresh temporary CSV and read it back
+write_read <- function(data) {
+  path <- withr::local_tempfile(fileext = ".csv", .local_envir = parent.frame())
+  write_intracktive(data, path, quiet = TRUE)
+  vroom::vroom(path, show_col_types = FALSE)
+}
+
+test_that("writes time in frames as it is", {
+  data <- anicore::anipoint(
+    individual = c(1, 1, 1),
+    time = c(5, 6, 8),
+    x = c(10, 11, 12),
+    y = c(5, 6, 7)
+  )
+  expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
+
+  path <- withr::local_tempfile(fileext = ".csv")
+  expect_identical(write_intracktive(data, path, quiet = TRUE), data)
+  result <- vroom::vroom(path, show_col_types = FALSE)
+  expect_equal(result$t, c(5, 6, 8))
+
+  # A TrackMate file with its time in frames
+  written <- write_read_trackmate("trpL_150310-11_trimmed.xml")
+  expect_equal(
+    as.character(anicore::get_metadata(written$data, "unit_time")),
+    "frame"
+  )
+  expect_equal(written$result$t, written$data$time)
+})
+
+test_that("errors on times in frames that are not whole", {
+  data <- anicore::anipoint(
+    individual = c(1, 1, 1),
+    time = c(0, 0.5, 1),
+    x = c(10, 11, 12),
+    y = c(5, 6, 7)
+  )
+  path <- withr::local_tempfile(fileext = ".csv")
+  expect_error(
+    write_intracktive(data, path, quiet = TRUE),
+    "not\\s+whole"
+  )
+  expect_false(file.exists(path))
+})
+
+test_that("converts seconds to frames with the sampling rate", {
+  data <- anicore::anipoint(
+    individual = rep(c(1, 2), each = 4),
+    time = rep((0:3) / 30, times = 2),
+    x = 1:8,
+    y = 1:8
+  ) |>
+    anicore::set_metadata(unit_time = "s", sampling_rate = 30)
+
+  path <- withr::local_tempfile(fileext = ".csv")
+  expect_identical(write_intracktive(data, path, quiet = TRUE), data)
+  result <- vroom::vroom(path, show_col_types = FALSE)
+  expect_equal(result$t, rep(0:3, times = 2))
+  expect_equal(result$track_id, rep(1:2, each = 4))
+
+  # A first time other than 0 keeps its place in the recording
+  later <- dplyr::filter(data, .data$time > 0)
+  expect_equal(write_read(later)$t, rep(1:3, times = 2))
+})
+
+test_that("converts TrackMate's minutes and seconds to frames with its rate", {
+  # C. elegans: a frame every 2 minutes, so a rate of 1/120 Hz
+  written <- write_read_trackmate("CelegansEarly_MIP_trimmed.xml")
+  expect_equal(
+    as.character(anicore::get_metadata(written$data, "unit_time")),
+    "m"
+  )
+  expect_equal(anicore::get_metadata(written$data, "sampling_rate"), 1 / 120)
+  expect_equal(written$result$t, written$data$time / 2)
+  expect_equal(
+    sort(unique(written$result$t)),
+    0:(length(unique(written$data$time)) - 1)
+  )
+
+  # A frame every 300.014 seconds
+  written <- write_read_trackmate("crop_1_60_ManualCuration_trimmed.xml")
+  expect_equal(
+    as.character(anicore::get_metadata(written$data, "unit_time")),
+    "s"
+  )
+  expect_equal(written$result$t, round(written$data$time / 300.014))
+  expect_true(all(written$result$t == round(written$result$t)))
+})
+
+test_that("writes the recorded frame column over frames from the rate", {
+  # Logged timestamps, irregular at 30 Hz, beside the recorded frames
+  data <- anicore::anipoint(
+    individual = c(1, 1, 1),
+    frame = c(100, 101, 102),
+    time = c(0, 0.034, 0.07),
+    x = c(10, 11, 12),
+    y = c(5, 6, 7)
+  ) |>
+    anicore::set_metadata(unit_time = "s", sampling_rate = 30)
+  expect_equal(anicore::get_index(data), "time")
+
+  result <- write_read(data)
+  expect_equal(result$t, c(100, 101, 102))
+  expect_equal(names(result), c("track_id", "t", "x", "y"))
+})
+
+test_that("errors on irregular times, saying inTRACKtive needs frames", {
+  data <- anicore::anipoint(
+    individual = c(1, 1, 1),
+    time = c(0, 0.05, 0.1),
+    x = c(10, 11, 12),
+    y = c(5, 6, 7)
+  ) |>
+    anicore::set_metadata(unit_time = "s", sampling_rate = 30)
+
+  path <- withr::local_tempfile(fileext = ".csv")
+  err <- expect_error(
+    write_intracktive(data, path, quiet = TRUE),
+    "inTRACKtive's frame numbers"
+  )
+  expect_match(conditionMessage(err), "sampling_rate", fixed = TRUE)
+  expect_match(conditionMessage(err$parent), "irregular")
+  expect_false(file.exists(path))
+})
+
+test_that("errors without a sampling rate, saying inTRACKtive needs frames", {
+  data <- anicore::anipoint(
+    individual = c(1, 1, 1),
+    time = c(0, 0.5, 1),
+    x = c(10, 11, 12),
+    y = c(5, 6, 7)
+  ) |>
+    anicore::set_metadata(unit_time = "s")
+  expect_true(is.na(anicore::get_metadata(data, "sampling_rate")))
+
+  path <- withr::local_tempfile(fileext = ".csv")
+  err <- expect_error(
+    write_intracktive(data, path, quiet = TRUE),
+    "inTRACKtive's frame numbers"
+  )
+  expect_match(conditionMessage(err), "sampling_rate", fixed = TRUE)
+  expect_match(conditionMessage(err$parent), "Declare the frame rate")
+  expect_false(file.exists(path))
 })
