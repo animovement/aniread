@@ -5,9 +5,9 @@
 #' creates unique integer track identifiers from combinations of the
 #' aniframe's identity keys, and writes the lineage of dividing tracks.
 #'
-#' @param data An aniframe containing tracking data with required columns
-#'   `time`, `x`, and `y`. Optional columns are `z` for 3D data and `parent`
-#'   for lineage (see Details).
+#' @param data An aniframe containing tracking data with its index (usually
+#'   `time`) and `x` and `y`. Optional columns are `z` for 3D data, `parent`
+#'   for lineage and `frame` for recorded frame numbers (see Details).
 #' @param filename File path to write the CSV.
 #' @param quiet Suppress messages. TRUE/FALSE. Defaults to FALSE.
 #'
@@ -20,7 +20,7 @@
 #'
 #' The output format includes:
 #' - `track_id`: Integer identifier for each unique track
-#' - `t`: Time values (renamed from `time`)
+#' - `t`: The frame number of each row, counted from 0 (see below)
 #' - `x`, `y`: Spatial coordinates
 #' - `z`: Optional third dimension if present
 #' - `parent_track_id`: Only when `data` has a `parent` column, as
@@ -32,9 +32,22 @@
 #'   Without a `parent` column the column is left out, which inTRACKtive
 #'   reads as no divisions.
 #'
-#' inTRACKtive reads `t` as whole frames counted from 0. `time` is written as
-#' it is, so a frame whose time is in seconds or minutes should be converted
-#' to frames first.
+#' inTRACKtive reads `t` as whole frames counted from 0, so the index is
+#' written in frames, as [anicore::convert_unit_time()] gives them with
+#' `"frame"`:
+#' - A frame whose `unit_time` is `"frame"` is written as it is. Its times must
+#'   be whole numbers.
+#' - A frame whose time is in another unit, such as seconds or minutes, is
+#'   converted to frames with its `sampling_rate`, so that the frame at time 0
+#'   is `t = 0`: at 30 Hz, times of 0, 1/30 and 2/30 seconds are written as 0,
+#'   1 and 2. A frame with a column named `frame` holding the recorded frame
+#'   numbers, as [anicore::set_index()] keeps them, is written with those.
+#'
+#' The writer stops rather than write frame numbers it would have to invent:
+#' when the time is not in frames and no `sampling_rate` is declared, or when
+#' the times are not regularly spaced at that rate. Declare the rate with
+#' `anicore::set_metadata(data, sampling_rate = )`, or keep the recorded frame
+#' numbers in a column named `frame`. `data` itself is not changed.
 #'
 #' The resulting CSV can be converted to inTRACKtive's Zarr format using their
 #' command-line tools or Python package.
@@ -68,8 +81,12 @@ write_intracktive <- function(data, filename, quiet = FALSE) {
     ))
   }
 
+  # inTRACKtive's `t` is the frame number
+  frames <- intracktive_frames(data)
+  index <- anicore::get_index(frames)
+
   # Create track_id from the combination of keys
-  intracktive_data <- as.data.frame(data) |>
+  intracktive_data <- as.data.frame(frames) |>
     dplyr::group_by(dplyr::across(dplyr::all_of(keys))) |>
     dplyr::mutate(track_id = dplyr::cur_group_id()) |>
     dplyr::ungroup()
@@ -80,7 +97,7 @@ write_intracktive <- function(data, filename, quiet = FALSE) {
   }
 
   intracktive_data <- intracktive_data |>
-    dplyr::rename(t = "time") |>
+    dplyr::rename(t = dplyr::all_of(index)) |>
     dplyr::select(
       "track_id",
       "t",
@@ -96,6 +113,60 @@ write_intracktive <- function(data, filename, quiet = FALSE) {
   }
 
   invisible(data)
+}
+
+#' The frame indexed by frame numbers, as inTRACKtive's `t` needs
+#'
+#' A frame in frames is checked for whole numbers; any other is converted
+#' with [anicore::convert_unit_time()], whose errors explain an irregular
+#' sampling or a missing rate.
+#'
+#' @param data An aniframe.
+#' @param call The caller's environment, for the error.
+#'
+#' @return `data`, with its index in whole frames.
+#' @noRd
+intracktive_frames <- function(data, call = rlang::caller_env()) {
+  unit <- as.character(anicore::get_metadata(data, "unit_time"))
+
+  if (!identical(unit, "frame")) {
+    return(rlang::try_fetch(
+      anicore::convert_unit_time(data, "frame"),
+      error = function(cnd) {
+        cli::cli_abort(
+          c(
+            "Cannot write the time, in {.val {unit}}, as inTRACKtive's frame numbers.",
+            "i" = "inTRACKtive reads {.field t} as whole frames counted from 0.",
+            "i" = "Declare the frame rate with
+                   {.code anicore::set_metadata(data, sampling_rate = )}, or
+                   keep the recorded frame numbers in a column named
+                   {.field frame}."
+          ),
+          parent = cnd,
+          call = call
+        )
+      }
+    ))
+  }
+
+  index <- anicore::get_index(data)
+  time <- data[[index]]
+  partial <- !is.na(time) & time != round(time)
+  if (any(partial)) {
+    cli::cli_abort(
+      c(
+        "Cannot write {.field {index}} as inTRACKtive's frame numbers.",
+        "x" = "{.field {index}} is in frames but has values that are not
+               whole, such as {.val {unique(time[partial])[1]}}.",
+        "i" = "inTRACKtive reads {.field t} as whole frames counted from 0.
+               Declare the unit {.field {index}} is in with
+               {.code anicore::set_metadata(data, unit_time = )}, and its
+               {.field sampling_rate}, to convert it to frames."
+      ),
+      call = call
+    )
+  }
+  data
 }
 
 #' Map each track's parent to the parent's inTRACKtive track id

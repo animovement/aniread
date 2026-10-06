@@ -7,9 +7,9 @@
 write_intracktive(data, filename, quiet = FALSE)
 }
 \arguments{
-\item{data}{An aniframe containing tracking data with required columns
-\code{time}, \code{x}, and \code{y}. Optional columns are \code{z} for 3D data and \code{parent}
-for lineage (see Details).}
+\item{data}{An aniframe containing tracking data with its index (usually
+\code{time}) and \code{x} and \code{y}. Optional columns are \code{z} for 3D data, \code{parent}
+for lineage and \code{frame} for recorded frame numbers (see Details).}
 
 \item{filename}{File path to write the CSV.}
 
@@ -34,7 +34,7 @@ by \code{\link[=read_trackmate]{read_trackmate()}}.
 The output format includes:
 \itemize{
 \item \code{track_id}: Integer identifier for each unique track
-\item \code{t}: Time values (renamed from \code{time})
+\item \code{t}: The frame number of each row, counted from 0 (see below)
 \item \code{x}, \code{y}: Spatial coordinates
 \item \code{z}: Optional third dimension if present
 \item \code{parent_track_id}: Only when \code{data} has a \code{parent} column, as
@@ -47,9 +47,24 @@ Without a \code{parent} column the column is left out, which inTRACKtive
 reads as no divisions.
 }
 
-inTRACKtive reads \code{t} as whole frames counted from 0. \code{time} is written as
-it is, so a frame whose time is in seconds or minutes should be converted
-to frames first.
+inTRACKtive reads \code{t} as whole frames counted from 0, so the index is
+written in frames, as \code{\link[anicore:convert_unit_time]{anicore::convert_unit_time()}} gives them with
+\code{"frame"}:
+\itemize{
+\item A frame whose \code{unit_time} is \code{"frame"} is written as it is. Its times must
+be whole numbers.
+\item A frame whose time is in another unit, such as seconds or minutes, is
+converted to frames with its \code{sampling_rate}, so that the frame at time 0
+is \code{t = 0}: at 30 Hz, times of 0, 1/30 and 2/30 seconds are written as 0,
+1 and 2. A frame with a column named \code{frame} holding the recorded frame
+numbers, as \code{\link[anicore:set_index]{anicore::set_index()}} keeps them, is written with those.
+}
+
+The writer stops rather than write frame numbers it would have to invent:
+when the time is not in frames and no \code{sampling_rate} is declared, or when
+the times are not regularly spaced at that rate. Declare the rate with
+\code{anicore::set_metadata(data, sampling_rate = )}, or keep the recorded frame
+numbers in a column named \code{frame}. \code{data} itself is not changed.
 
 The resulting CSV can be converted to inTRACKtive's Zarr format using their
 command-line tools or Python package.
