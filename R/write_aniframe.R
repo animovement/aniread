@@ -83,7 +83,33 @@ write_aniframe_parquet <- function(data, filename, ...) {
   # Validate filename
   ensure_file_has_expected_suffix(filename, "parquet")
 
-  # Write data
-  arrow::write_parquet(data, filename, ...) |>
+  rlang::check_installed(
+    "jsonlite",
+    reason = "to record the aniframe class in a Parquet file."
+  )
+
+  # arrow strips the class from a grouped frame, so record it for read_aniframe()
+  table <- arrow::arrow_table(data) |>
     suppressWarnings()
+  table$metadata[[ANIMOVEMENT_KEY]] <- as.character(jsonlite::toJSON(
+    list(class = aniframe_subclass(data))
+  ))
+
+  # Write data
+  arrow::write_parquet(table, filename, ...) |>
+    suppressWarnings()
+}
+
+# Parquet key-value metadata holding animovement's own record of the frame,
+# as JSON readable from any language: for now {"class": ["anijoint"]}. The
+# metadata is to move here too, replacing arrow's R-only "r" key (#203).
+ANIMOVEMENT_KEY <- "animovement"
+
+#' The classes an aniframe has in front of `aniframe`
+#' @param data An aniframe.
+#' @return A character vector, e.g. `"anipoint"`.
+#' @keywords internal
+aniframe_subclass <- function(data) {
+  cls <- class(data)
+  cls[seq_len(match("aniframe", cls) - 1L)]
 }

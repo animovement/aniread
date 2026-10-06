@@ -6,7 +6,8 @@
 #'
 #' @param path Path to a Parquet file.
 #'
-#' @return An anipoint, or an anievent if that is what was written. `time` is
+#' @return The aniframe that was written, with its class: an anipoint, an
+#'   anievent, or another frame built on them, such as an anijoint. `time` is
 #'   as it was written; see "Time" in [read_dataset()].
 #' @export
 #'
@@ -33,7 +34,9 @@ read_aniframe <- function(path) {
   }
 
   # Read file
-  data <- arrow::read_parquet(path)
+  table <- arrow::read_parquet(path, as_data_frame = FALSE)
+  stored_class <- read_animovement_key(table$metadata[[ANIMOVEMENT_KEY]])$class
+  data <- dplyr::collect(table)
 
   # Arrow strips the class but keeps the attribute, so presence is all there is to test.
   stored <- attr(data, "metadata") # anicore: allow-metadata
@@ -49,12 +52,30 @@ read_aniframe <- function(path) {
   # arrow keeps the class of an ungrouped frame but strips it from a grouped one
   if (!anicore::is_aniframe(data)) {
     class(data) <- c("aniframe", class(data))
-    interval <- anicore::get_metadata(data, "variables")$when$interval
-    class(data) <- c(
-      if (is.null(interval)) "anipoint" else "anievent",
-      class(data)
-    )
+    subclass <- if (!is.null(stored_class)) {
+      stored_class
+    } else {
+      # Written before the class was recorded: tell the two apart by metadata
+      interval <- anicore::get_metadata(data, "variables")$when$interval
+      if (is.null(interval)) "anipoint" else "anievent"
+    }
+    class(data) <- c(subclass, class(data))
   }
 
   data
+}
+
+#' Parse animovement's Parquet metadata key
+#' @param json The key's value, or `NULL` when the file has none.
+#' @return A list, empty when there is no key.
+#' @keywords internal
+read_animovement_key <- function(json) {
+  if (is.null(json)) {
+    return(list())
+  }
+  rlang::check_installed(
+    "jsonlite",
+    reason = "to read the aniframe class from a Parquet file."
+  )
+  jsonlite::fromJSON(json, simplifyVector = TRUE)
 }

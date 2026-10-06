@@ -545,7 +545,7 @@ test_that("get_sample_data('freemocap') serves the star-jump recording", {
 })
 
 test_that("sample sources are named as the registry names them", {
-  readable <- vapply(source_registry(), `[[`, character(1), "source")
+  readable <- registry_sources("read")
   served <- names(sample_data_sources())
 
   expect_true(all(served %in% readable))

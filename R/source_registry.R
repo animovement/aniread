@@ -4,24 +4,33 @@
 #' The single place where a supported source software is declared. Each entry
 #' pairs a source name with the reader that opens it, the file suffix(es) it
 #' accepts, the detector that recognises it from the file itself, and any
-#' optional package that detector needs.
+#' optional package that detector needs; and, where `aniread` can write the
+#' format, the writer and the suffix(es) it writes.
 #'
 #' [get_supported_sources()] is a public view over this registry, and
-#' [detect_source()] and [read_dataset()] drive off it, so a new format is
-#' added here once rather than in three places.
+#' [detect_source()], [read_dataset()] and [write_dataset()] drive off it, so a
+#' new format is added here once rather than in several places.
 #'
 #' @section Entry fields:
 #' \describe{
 #'   \item{`source`}{Source software name, as accepted by the `source`
-#'     argument of [read_dataset()].}
-#'   \item{`reader`}{Name of the `aniread` function that reads it.}
-#'   \item{`suffix`}{File suffix(es) accepted, without a leading dot.}
+#'     argument of [read_dataset()] and the `format` argument of
+#'     [write_dataset()].}
+#'   \item{`reader`}{Name of the `aniread` function that reads it. Absent for
+#'     a format that is only written.}
+#'   \item{`suffix`}{File suffix(es) the reader accepts, without a leading
+#'     dot.}
 #'   \item{`detector`}{Function of a single path returning `TRUE` when the
 #'     file is of this source. See [detect_source()] for the contract.}
 #'   \item{`requires`}{Named character vector mapping a suffix to the
 #'     optional package its detector needs, or `NULL` when the detector needs
 #'     nothing beyond base R. Suffixes absent from the vector have no
 #'     requirement.}
+#'   \item{`writer`}{Name of the `aniread` function that writes it. Absent
+#'     for a format that is only read.}
+#'   \item{`write_suffix`}{File suffix(es) the writer writes. When several
+#'     formats write the same suffix, [write_dataset()] infers the first one
+#'     listed here.}
 #' }
 #'
 #' @return A list of registry entries.
@@ -33,7 +42,9 @@ source_registry <- function() {
       reader = "read_aniframe",
       suffix = "parquet",
       detector = detect_aniframe_file,
-      requires = NULL
+      requires = NULL,
+      writer = "write_aniframe",
+      write_suffix = c("parquet", "csv", "tsv")
     ),
     list(
       source = "animalta",
@@ -105,6 +116,13 @@ source_registry <- function() {
       detector = detect_idtrackerai_file,
       requires = c(h5 = "rhdf5", parquet = "arrow")
     ),
+    # Written only. Listed after "aniframe", so an inferred .csv is a plain
+    # table and inTRACKtive has to be named.
+    list(
+      source = "intracktive",
+      writer = "write_intracktive",
+      write_suffix = "csv"
+    ),
     list(
       source = "lightningpose",
       reader = "read_lightningpose",
@@ -169,6 +187,16 @@ registry_entry <- function(source) {
     return(NULL)
   }
   registry[[which(match)[1]]]
+}
+
+#' Names of the sources that can be read or written
+#' @param direction `"read"` or `"write"`.
+#' @return A character vector of source names, in registry order.
+#' @keywords internal
+registry_sources <- function(direction) {
+  field <- if (identical(direction, "read")) "reader" else "writer"
+  registry <- Filter(\(e) !is.null(e[[field]]), source_registry())
+  vapply(registry, `[[`, character(1), "source")
 }
 
 #' Optional package a source's detector needs for a given suffix

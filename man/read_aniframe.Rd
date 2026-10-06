@@ -10,7 +10,8 @@ read_aniframe(path)
 \item{path}{Path to a Parquet file.}
 }
 \value{
-An anipoint, or an anievent if that is what was written. \code{time} is
+The aniframe that was written, with its class: an anipoint, an
+anievent, or another frame built on them, such as an anijoint. \code{time} is
 as it was written; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
