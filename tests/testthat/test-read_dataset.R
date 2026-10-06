@@ -110,6 +110,13 @@ test_that("read_dataset errors on an unsupported source", {
   )
 })
 
+test_that("read_dataset errors on a format that is only written", {
+  expect_error(
+    read_dataset(fixture("trex", "beetle.csv"), source = "intracktive"),
+    "Unsupported"
+  )
+})
+
 test_that("read_dataset requires source to be a single string", {
   path <- fixture("trex", "beetle.csv")
 
@@ -128,12 +135,30 @@ test_that("read_dataset surfaces the detection error for an unknown file", {
 })
 
 test_that("every reader in the registry exists and is exported", {
-  for (entry in source_registry()) {
+  readers <- Filter(\(e) !is.null(e$reader), source_registry())
+  for (entry in readers) {
     expect_true(
       entry$reader %in% getNamespaceExports("aniread"),
       info = entry$reader
     )
     expect_true(is.function(entry$detector), info = entry$source)
+    expect_gt(length(entry$suffix), 0)
+  }
+})
+
+test_that("every registry entry reads, writes, or both", {
+  for (entry in source_registry()) {
+    expect_true(
+      !is.null(entry$reader) || !is.null(entry$writer),
+      info = entry$source
+    )
+    if (!is.null(entry$writer)) {
+      expect_true(
+        entry$writer %in% getNamespaceExports("aniread"),
+        info = entry$writer
+      )
+      expect_gt(length(entry$write_suffix), 0)
+    }
   }
 })
 

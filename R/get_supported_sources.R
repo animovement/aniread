@@ -1,10 +1,10 @@
-#' List the source software formats aniread can read
+#' List the formats aniread can read and write
 #'
-#' Returns the tracking / event software that `aniread` supports, paired
-#' with the reader function for each and the file suffix(es) it accepts.
-#' This lets downstream packages discover the supported formats
-#' programmatically instead of hard-coding the list - mirroring
-#' `movement`'s `get_supported_source_software()`.
+#' Returns the tracking / event software and file formats that `aniread`
+#' supports, with the function that reads or writes each and the file
+#' suffix(es) it handles. This lets downstream packages discover the
+#' supported formats programmatically instead of hard-coding the list -
+#' mirroring `movement`'s `get_supported_source_software()`.
 #'
 #' Suffixes are returned without a leading dot (e.g. `"csv"`, `"h5"`),
 #' matching the convention used throughout `aniread` (see the
@@ -12,36 +12,54 @@
 #' generic [read_custom()] reader is intentionally omitted because it has
 #' no fixed source software or file suffix.
 #'
-#' The `source` names listed here are exactly those accepted by the
-#' `source` argument of [read_dataset()], and returned by
-#' [detect_source()].
+#' The `source` names of the `"read"` rows are exactly those accepted by the
+#' `source` argument of [read_dataset()], and returned by [detect_source()].
+#' Those of the `"write"` rows are accepted by the `format` argument of
+#' [write_dataset()].
 #'
 #' @return A [tibble][dplyr::tibble] with one row per supported source and
-#'   the columns:
+#'   direction, and the columns:
 #'   \describe{
 #'     \item{`source`}{Character. The source software / format name.}
-#'     \item{`reader`}{Character. The `aniread` function that reads it.}
+#'     \item{`direction`}{Character. `"read"` or `"write"`.}
+#'     \item{`fun`}{Character. The `aniread` function that reads or writes
+#'       it.}
 #'     \item{`suffix`}{List column of character vectors - the file
-#'       suffix(es) the reader accepts.}
+#'       suffix(es) the function reads or writes.}
 #'   }
 #'
 #' @examples
 #' get_supported_sources()
 #'
-#' # All source names:
-#' get_supported_sources()$source
+#' # The formats aniread can write:
+#' supported <- get_supported_sources()
+#' supported[supported$direction == "write", ]
 #'
 #' # Which sources read HDF5 (`.h5`) files?
-#' supported <- get_supported_sources()
-#' supported$source[vapply(supported$suffix, \(s) "h5" %in% s, logical(1))]
+#' readers <- supported[supported$direction == "read", ]
+#' readers$source[vapply(readers$suffix, \(s) "h5" %in% s, logical(1))]
 #'
 #' @export
 get_supported_sources <- function() {
-  registry <- source_registry()
+  rows <- lapply(source_registry(), function(entry) {
+    read <- if (!is.null(entry$reader)) {
+      dplyr::tibble(
+        source = entry$source,
+        direction = "read",
+        fun = entry$reader,
+        suffix = list(entry$suffix)
+      )
+    }
+    write <- if (!is.null(entry$writer)) {
+      dplyr::tibble(
+        source = entry$source,
+        direction = "write",
+        fun = entry$writer,
+        suffix = list(entry$write_suffix)
+      )
+    }
+    dplyr::bind_rows(read, write)
+  })
 
-  dplyr::tibble(
-    source = vapply(registry, `[[`, character(1), "source"),
-    reader = vapply(registry, `[[`, character(1), "reader"),
-    suffix = lapply(registry, `[[`, "suffix")
-  )
+  dplyr::bind_rows(rows)
 }

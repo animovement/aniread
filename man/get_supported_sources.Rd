@@ -2,26 +2,28 @@
 % Please edit documentation in R/get_supported_sources.R
 \name{get_supported_sources}
 \alias{get_supported_sources}
-\title{List the source software formats aniread can read}
+\title{List the formats aniread can read and write}
 \usage{
 get_supported_sources()
 }
 \value{
 A \link[dplyr:tibble]{tibble} with one row per supported source and
-the columns:
+direction, and the columns:
 \describe{
 \item{\code{source}}{Character. The source software / format name.}
-\item{\code{reader}}{Character. The \code{aniread} function that reads it.}
+\item{\code{direction}}{Character. \code{"read"} or \code{"write"}.}
+\item{\code{fun}}{Character. The \code{aniread} function that reads or writes
+it.}
 \item{\code{suffix}}{List column of character vectors - the file
-suffix(es) the reader accepts.}
+suffix(es) the function reads or writes.}
 }
 }
 \description{
-Returns the tracking / event software that \code{aniread} supports, paired
-with the reader function for each and the file suffix(es) it accepts.
-This lets downstream packages discover the supported formats
-programmatically instead of hard-coding the list - mirroring
-\code{movement}'s \code{get_supported_source_software()}.
+Returns the tracking / event software and file formats that \code{aniread}
+supports, with the function that reads or writes each and the file
+suffix(es) it handles. This lets downstream packages discover the
+supported formats programmatically instead of hard-coding the list -
+mirroring \code{movement}'s \code{get_supported_source_software()}.
 }
 \details{
 Suffixes are returned without a leading dot (e.g. \code{"csv"}, \code{"h5"}),
@@ -30,18 +32,20 @@ matching the convention used throughout \code{aniread} (see the
 generic \code{\link[=read_custom]{read_custom()}} reader is intentionally omitted because it has
 no fixed source software or file suffix.
 
-The \code{source} names listed here are exactly those accepted by the
-\code{source} argument of \code{\link[=read_dataset]{read_dataset()}}, and returned by
-\code{\link[=detect_source]{detect_source()}}.
+The \code{source} names of the \code{"read"} rows are exactly those accepted by the
+\code{source} argument of \code{\link[=read_dataset]{read_dataset()}}, and returned by \code{\link[=detect_source]{detect_source()}}.
+Those of the \code{"write"} rows are accepted by the \code{format} argument of
+\code{\link[=write_dataset]{write_dataset()}}.
 }
 \examples{
 get_supported_sources()
 
-# All source names:
-get_supported_sources()$source
+# The formats aniread can write:
+supported <- get_supported_sources()
+supported[supported$direction == "write", ]
 
 # Which sources read HDF5 (`.h5`) files?
-supported <- get_supported_sources()
-supported$source[vapply(supported$suffix, \(s) "h5" \%in\% s, logical(1))]
+readers <- supported[supported$direction == "read", ]
+readers$source[vapply(readers$suffix, \(s) "h5" \%in\% s, logical(1))]
 
 }

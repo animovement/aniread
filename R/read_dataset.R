@@ -70,8 +70,8 @@ read_dataset <- function(paths, source = "auto", ...) {
   lookup <- if (ambiguous) "deeplabcut" else source
 
   entry <- registry_entry(lookup)
-  if (is.null(entry)) {
-    supported <- get_supported_sources()$source
+  if (is.null(entry$reader)) {
+    supported <- registry_sources("read")
     cli::cli_abort(c(
       "Unsupported {.arg source}: {.val {source}}.",
       "i" = "Supported sources are {.val {supported}}, or {.val auto} to

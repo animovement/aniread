@@ -67,6 +67,31 @@ test_that("read_aniframe errors for parquet without aniframe metadata", {
   )
 })
 
+test_that("read_aniframe restores the subclass recorded in the file", {
+  path <- withr::local_tempfile(fileext = ".parquet")
+  data <- anicore::example_anipoint(n_obs = 3, n_individuals = 1) |>
+    anicore::set_structure(anicore::example_structure()) |>
+    anicore::as_anijoint()
+  write_aniframe(data, path)
+
+  stored <- arrow::read_parquet(path, as_data_frame = FALSE)$metadata
+  expect_identical(stored$animovement_class, "anijoint")
+  expect_identical(class(read_aniframe(path)), class(data))
+})
+
+test_that("read_aniframe infers the class of a file that records none", {
+  # Files written before the class was recorded carry only the metadata
+  path <- withr::local_tempfile(fileext = ".parquet")
+  data <- anicore::example_anipoint()
+  arrow::write_parquet(data, path) |>
+    suppressWarnings()
+
+  expect_null(
+    arrow::read_parquet(path, as_data_frame = FALSE)$metadata$animovement_class
+  )
+  expect_s3_class(read_aniframe(path), c("anipoint", "aniframe"))
+})
+
 test_that("read_aniframe errors when file does not exist", {
   expect_error(read_aniframe("nonexistent.parquet"))
 })

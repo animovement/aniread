@@ -13,25 +13,34 @@ A list of registry entries.
 The single place where a supported source software is declared. Each entry
 pairs a source name with the reader that opens it, the file suffix(es) it
 accepts, the detector that recognises it from the file itself, and any
-optional package that detector needs.
+optional package that detector needs; and, where \code{aniread} can write the
+format, the writer and the suffix(es) it writes.
 
 \code{\link[=get_supported_sources]{get_supported_sources()}} is a public view over this registry, and
-\code{\link[=detect_source]{detect_source()}} and \code{\link[=read_dataset]{read_dataset()}} drive off it, so a new format is
-added here once rather than in three places.
+\code{\link[=detect_source]{detect_source()}}, \code{\link[=read_dataset]{read_dataset()}} and \code{\link[=write_dataset]{write_dataset()}} drive off it, so a
+new format is added here once rather than in several places.
 }
 \section{Entry fields}{
 
 \describe{
 \item{\code{source}}{Source software name, as accepted by the \code{source}
-argument of \code{\link[=read_dataset]{read_dataset()}}.}
-\item{\code{reader}}{Name of the \code{aniread} function that reads it.}
-\item{\code{suffix}}{File suffix(es) accepted, without a leading dot.}
+argument of \code{\link[=read_dataset]{read_dataset()}} and the \code{format} argument of
+\code{\link[=write_dataset]{write_dataset()}}.}
+\item{\code{reader}}{Name of the \code{aniread} function that reads it. Absent for
+a format that is only written.}
+\item{\code{suffix}}{File suffix(es) the reader accepts, without a leading
+dot.}
 \item{\code{detector}}{Function of a single path returning \code{TRUE} when the
 file is of this source. See \code{\link[=detect_source]{detect_source()}} for the contract.}
 \item{\code{requires}}{Named character vector mapping a suffix to the
 optional package its detector needs, or \code{NULL} when the detector needs
 nothing beyond base R. Suffixes absent from the vector have no
 requirement.}
+\item{\code{writer}}{Name of the \code{aniread} function that writes it. Absent
+for a format that is only read.}
+\item{\code{write_suffix}}{File suffix(es) the writer writes. When several
+formats write the same suffix, \code{\link[=write_dataset]{write_dataset()}} infers the first one
+listed here.}
 }
 }
 

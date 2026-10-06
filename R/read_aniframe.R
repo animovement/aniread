@@ -6,7 +6,8 @@
 #'
 #' @param path Path to a Parquet file.
 #'
-#' @return An anipoint, or an anievent if that is what was written.
+#' @return The aniframe that was written, with its class: an anipoint, an
+#'   anievent, or another frame built on them, such as an anijoint.
 #' @export
 #'
 #' @examples
@@ -32,7 +33,9 @@ read_aniframe <- function(path) {
   }
 
   # Read file
-  data <- arrow::read_parquet(path)
+  table <- arrow::read_parquet(path, as_data_frame = FALSE)
+  stored_class <- table$metadata[[CLASS_KEY]]
+  data <- dplyr::collect(table)
 
   # Arrow strips the class but keeps the attribute, so presence is all there is to test.
   stored <- attr(data, "metadata") # anicore: allow-metadata
@@ -48,11 +51,14 @@ read_aniframe <- function(path) {
   # arrow keeps the class of an ungrouped frame but strips it from a grouped one
   if (!anicore::is_aniframe(data)) {
     class(data) <- c("aniframe", class(data))
-    interval <- anicore::get_metadata(data, "variables")$when$interval
-    class(data) <- c(
-      if (is.null(interval)) "anipoint" else "anievent",
-      class(data)
-    )
+    subclass <- if (!is.null(stored_class)) {
+      strsplit(stored_class, ",", fixed = TRUE)[[1]]
+    } else {
+      # Written before the class was recorded: tell the two apart by metadata
+      interval <- anicore::get_metadata(data, "variables")$when$interval
+      if (is.null(interval)) "anipoint" else "anievent"
+    }
+    class(data) <- c(subclass, class(data))
   }
 
   data

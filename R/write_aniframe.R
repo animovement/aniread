@@ -81,7 +81,24 @@ write_aniframe_parquet <- function(data, filename, ...) {
   # Validate filename
   ensure_file_has_expected_suffix(filename, "parquet")
 
-  # Write data
-  arrow::write_parquet(data, filename, ...) |>
+  # arrow strips the class from a grouped frame, so record it for read_aniframe()
+  table <- arrow::arrow_table(data) |>
     suppressWarnings()
+  table$metadata[[CLASS_KEY]] <- paste(aniframe_subclass(data), collapse = ",")
+
+  # Write data
+  arrow::write_parquet(table, filename, ...) |>
+    suppressWarnings()
+}
+
+# Parquet key-value metadata holding the aniframe subclass, e.g. "anijoint".
+CLASS_KEY <- "animovement_class"
+
+#' The classes an aniframe has in front of `aniframe`
+#' @param data An aniframe.
+#' @return A character vector, e.g. `"anipoint"`.
+#' @keywords internal
+aniframe_subclass <- function(data) {
+  cls <- class(data)
+  cls[seq_len(match("aniframe", cls) - 1L)]
 }

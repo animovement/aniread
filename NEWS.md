@@ -2,6 +2,10 @@
 
 * Works with anicore's `anipoint` class and rebuilt accessor API (animovement/anicore#154). Readers return an `anipoint`, `read_aniframe()` restores an `anievent` as well as an `anipoint`, and `read_boris()` no longer sets spatial metadata on its `anievent`.
 
+## Breaking changes
+
+* `get_supported_sources()` lists what can be written as well as read (#135). It now returns one row per source and direction, with the columns `source`, `direction` (`"read"` or `"write"`), `fun` and `suffix`; the `reader` column is now `fun`. To list readers as before, filter on `direction == "read"`.
+
 ## Removed
 
 * The unused output validators, `ensure_output_header_names()`, `ensure_output_header_class()` and `ensure_output_no_nan()` (#123). No reader called them — their only callers were their own tests — so nothing they promised was ever enforced, and the tests passing gave the impression that it was.
@@ -9,6 +13,10 @@
   They could not be wired in as they stood: they require exactly `time`, `individual`, `keypoint`, `x`, `y` and `confidence`, which is a narrower contract than the aniframe has had for some time. Five of the seven sample sources fail it — `read_deeplabcut()` returns no `individual`, `read_anipose()` and `read_c3d()` return `z`, `read_freemocap()` returns `model`, and `read_fictrac()` and `read_c3d()` return no `confidence`. `anicore::validate_aniframe()` is the metadata-aware successor: it checks the frame against what it declares rather than against a fixed column list.
 
 ## Added
+
+* `write_dataset()` writes to any supported format, inferring it from the file suffix, as the counterpart of `read_dataset()` (#135). A `.csv` is written as a plain table; inTRACKtive's CSV needs `format = "intracktive"`.
+
+* A Parquet file keeps the class it was written with (#135). `read_aniframe()` gave back an `anisegment` or `anijoint` as an `anipoint`, because arrow strips the class from a grouped frame and the reader could only tell an `anipoint` from an `anievent`. `write_aniframe()` now records the class in the file's metadata, so `read_dataset()` after `write_dataset()` returns the same class, grouping and metadata. Files written before this are read as they were.
 
 * Readers keep orientation where the source records it rather than deriving it from positions (animovement/anicore#46):
   * `read_fictrac()` keeps FicTrac's "integrated animal heading" as `yaw` and declares it as the frame's orientation. Its movement direction, which follows from the path, is still not kept.
