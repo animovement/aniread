@@ -92,6 +92,19 @@ test_that("read_aniframe infers the class of a file that records none", {
   expect_s3_class(read_aniframe(path), c("anipoint", "aniframe"))
 })
 
+test_that("read_aniframe tells an anievent by its metadata when no class is recorded", {
+  path <- withr::local_tempfile(fileext = ".parquet")
+  events <- read_boris(test_path(
+    "data/boris/tabular/test_export_events_tabular.csv"
+  ))
+  # As arrow leaves a grouped frame: the metadata kept, the classes gone
+  class(events) <- c("tbl_df", "tbl", "data.frame")
+  arrow::write_parquet(events, path)
+
+  expect_false(anicore::is_aniframe(arrow::read_parquet(path)))
+  expect_s3_class(read_aniframe(path), c("anievent", "aniframe"))
+})
+
 test_that("read_aniframe errors when file does not exist", {
   expect_error(read_aniframe("nonexistent.parquet"))
 })
