@@ -43,8 +43,17 @@
 #' shared sample, and the `start_datetime` metadata is the wall-clock instant of
 #' that sample.
 #'
+#' The sensor has no fixed rate of its own: it reports motion as it happens,
+#' and nothing while the ball is still. The frame's `sampling_rate` is
+#' therefore the rate of the integration windows, and its
+#' `source_sampling_rate` is `NaN`, anicore's marker for a device with no
+#' fixed rate (see [anicore::set_metadata()]), rather than `NA`, which would
+#' mean the rate has not been declared.
+#'
 #' @return a movement dataframe. `time` is in seconds from the first sample
-#'   both sensors share; see "Time" in [read_dataset()].
+#'   both sensors share; see "Time" in [read_dataset()]. `sampling_rate` is
+#'   the `sampling_rate` given, the rate of the integration windows, and
+#'   `source_sampling_rate` is `NaN`, since the sensor has no fixed rate.
 #' @examples
 #' # A free-floating ball is tracked by two optical flow sensors,
 #' # so both files are supplied together
@@ -160,13 +169,18 @@ read_trackball <- function(
       "y"
     )
 
-  # Init metadata
+  # Init metadata. The sensor emits a reading only when the ball moves, so it
+  # has no rate of its own: `sampling_rate` is the rate of the windows the
+  # readings were integrated into. `source_sampling_rate = NaN` records that,
+  # and has to be in the same call, or anicore takes the window rate for the
+  # sensor's.
   data <- data |>
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "trackball_bonsai",
       filename = paths,
       sampling_rate = sampling_rate,
+      source_sampling_rate = NaN,
       unit_space = "none",
       unit_time = "s",
       start_datetime = start_datetime

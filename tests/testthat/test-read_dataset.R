@@ -165,3 +165,21 @@ test_that("the registry advertises both SLEAP suffixes", {
 
   expect_setequal(sleap$suffix[[1]], c("h5", "csv"))
 })
+
+test_that("read_dataset keeps the trackball's no-fixed-rate marker", {
+  paths <- fixture(
+    "multi",
+    c("GB_COM6_2021-08-05T15_37_55.csv", "GB_COM7_2021-08-05T15_37_55.csv")
+  )
+
+  result <- read_dataset(
+    paths,
+    sampling_rate = 60,
+    col_time = 4,
+    col_dx = 1,
+    col_dy = 2
+  )
+
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 60)
+  expect_true(is.nan(anicore::get_metadata(result, "source_sampling_rate")))
+})
