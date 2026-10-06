@@ -75,7 +75,7 @@ test_that("read_aniframe restores the subclass recorded in the file", {
   write_aniframe(data, path)
 
   stored <- arrow::read_parquet(path, as_data_frame = FALSE)$metadata
-  expect_identical(stored$animovement_class, "anijoint")
+  expect_identical(stored$animovement, '{"class":["anijoint"]}')
   expect_identical(class(read_aniframe(path)), class(data))
 })
 
@@ -87,7 +87,7 @@ test_that("read_aniframe infers the class of a file that records none", {
     suppressWarnings()
 
   expect_null(
-    arrow::read_parquet(path, as_data_frame = FALSE)$metadata$animovement_class
+    arrow::read_parquet(path, as_data_frame = FALSE)$metadata$animovement
   )
   expect_s3_class(read_aniframe(path), c("anipoint", "aniframe"))
 })
