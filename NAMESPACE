@@ -31,6 +31,7 @@ export(validate_trackball)
 export(write_aniframe)
 export(write_dataset)
 export(write_intracktive)
+importFrom(lifecycle,deprecated)
 importFrom(rlang,
   "%||%",
   ":=",

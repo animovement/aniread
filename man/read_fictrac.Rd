@@ -19,7 +19,8 @@ When supplied the \code{x} and \code{y} coordinates are multiplied by this value
 An anipoint with columns \code{time}, \code{x}, \code{y} and \code{yaw}. Metadata
 includes the source (\code{"fictrac"}), original filename, sampling rate,
 time unit (\code{"s"}), space unit (either \code{"none"} or the value of
-\code{unit_ball_radius}), and a Cartesian 2‑D coordinate system.
+\code{unit_ball_radius}), and a Cartesian 2‑D coordinate system. \code{time} is in
+seconds from the first row; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 This helper loads a FicTrac \verb{*.dat} file, keeps the timestamp, the 2‑D
@@ -30,6 +31,28 @@ the frame's orientation, in radians from \code{x} toward \code{y}. FicTrac's mov
 direction is the direction of travel, derivable from the path, and is not
 kept. If the physical ball radius is supplied, the positions are scaled
 accordingly and the spatial unit metadata is set.
+}
+\details{
+FicTrac 2 has written three layouts, told apart by their number of columns.
+Columns 1 to 21 are the same in all of them; the rest hold timestamps:
+\itemize{
+\item \strong{23 columns} (FicTrac 2.0 to 2.02): 22 is the timestamp, 23 the
+sequence counter. \code{time} is taken from the timestamp, which is the
+position in the video file (ms) or the frame capture time (ms).
+\item \strong{24 columns} (untagged versions from July 2019, before 2.03): 22 is
+the frame capture time in ms since midnight, 23 the sequence counter, 24
+the time since the last frame (ms). \code{time} is taken from column 22.
+\item \strong{25 columns} (FicTrac 2.03 onward): 22 is the timestamp, 23 the
+sequence counter, 24 the time since the last frame, 25 the "alt.
+timestamp", the frame capture time in ms since midnight. \code{time} is taken
+from column 25.
+}
+
+\code{time} counts in seconds from the first row. A time in ms since midnight
+starts again from zero at midnight, so where it drops by more than twelve
+hours from one row to the next, the reader takes it as having passed
+midnight and adds a day from there on. A recording that crosses midnight
+therefore keeps running forward rather than jumping back.
 }
 \examples{
 \dontrun{

@@ -13,7 +13,8 @@ read_fasttrack(path, video_height = NULL)
 in pixels.}
 }
 \value{
-An aniframe
+An aniframe. \code{time} is FastTrack's \code{imageNumber}, with the first
+frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads a FastTrack tracking result file (.txt format) and returns an

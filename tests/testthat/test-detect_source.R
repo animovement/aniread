@@ -65,6 +65,26 @@ detection_cases <- list(
     source = "animalta",
     path = fixture("animalta", "variable_individuals_single_arena.csv")
   ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "head_tail_two_arenas.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "head_tail_two_arenas_corrected.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video1", "Arena_0Ind0.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video3", "Arena_0Ind0_part0.csv")
+  ),
+  list(
+    source = "animalta",
+    path = fixture("animalta", "detailed", "video2", "Arena_1Ind2.csv")
+  ),
   list(source = "bonsai", path = fixture("bonsai", "LI850.csv")),
   list(
     source = "boris",
@@ -87,12 +107,80 @@ detection_cases <- list(
     )
   ),
   list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "boris9",
+      "boris9_aggregated_observation2.tsv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "aggregated",
+      "boris9",
+      "boris9_aggregated_observation2.csv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "tabular",
+      "boris9",
+      "boris9_tabular_observation1.tsv"
+    )
+  ),
+  list(
+    source = "boris",
+    path = fixture(
+      "boris",
+      "tabular",
+      "boris9",
+      "boris9_tabular_observation1.csv"
+    )
+  ),
+  list(
     source = "freemocap",
-    path = fixture("freemocap", "freemocap_test_data_by_frame.csv")
+    path = fixture("freemocap", "v1.7", "recording_by_frame.csv")
+  ),
+  list(
+    source = "freemocap",
+    path = fixture("freemocap", "v1.8", "recording_by_frame.csv")
+  ),
+  # FreeMoCap v2's tidy export, written by skellyforge.
+  list(
+    source = "freemocap",
+    path = system.file("extdata", "freemocap_v2.csv", package = "aniread")
   ),
   list(
     source = "idtrackerai",
     path = fixture("idtrackerai", "trajectories_csv", "trajectories.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_csv_no_fps", "trajectories.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = synthetic_fixture(
+      "csv",
+      c("time,x1,y1,x2,y2", "0.000,10.0,20.0,30.0,40.0")
+    )
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture("idtrackerai", "trajectories_tidy", "trajectories_tidy.csv")
+  ),
+  list(
+    source = "idtrackerai",
+    path = fixture(
+      "idtrackerai",
+      "trajectories_tidy_no_fps",
+      "trajectories_tidy.csv"
+    )
   ),
   list(source = "octron", path = fixture("octron", "octron_sample.csv")),
   list(
@@ -134,7 +222,31 @@ detection_cases <- list(
   ),
   list(
     source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_multi_unique.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("deeplabcut", "dlc3_3d.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
     path = fixture("lightningpose", "mouse_single.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_singlecam.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_multicam_3d_results.csv")
+  ),
+  list(
+    source = "deeplabcut/lightningpose",
+    path = fixture("lightningpose", "eks_ibl-paw_multicam_left_head.csv")
   ),
   list(
     source = "deeplabcut/lightningpose",
@@ -143,9 +255,57 @@ detection_cases <- list(
   list(source = "anipose", path = synthetic_anipose),
   list(source = "fictrac", path = synthetic_fictrac),
   list(source = "trackmate", path = synthetic_trackmate),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "crop_1_60_ManualCuration_trimmed.xml")
+  ),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "CelegansEarly_MIP_trimmed.xml")
+  ),
+  list(
+    source = "trackmate",
+    path = fixture("trackmate", "trpL_150310-11_trimmed.xml")
+  ),
   list(source = "c3d", path = synthetic_c3d),
   list(source = "aniframe", path = synthetic_parquet)
 )
+# Telling idtracker.ai's Parquet export from an aniframe needs arrow.
+if (rlang::is_installed("arrow")) {
+  detection_cases <- c(
+    detection_cases,
+    list(
+      list(
+        source = "idtrackerai",
+        path = fixture("idtrackerai", "trajectories.parquet")
+      ),
+      list(
+        source = "idtrackerai",
+        path = fixture("idtrackerai", "trajectories_no_fps.parquet")
+      )
+    )
+  )
+}
+
+# DeepLabCut h5 files: pandas "table" and "fixed" formats, under the keys
+# `df_with_missing` and `tracks`. Detecting them needs rhdf5.
+if (rlang::is_installed("rhdf5")) {
+  detection_cases <- c(
+    detection_cases,
+    lapply(
+      c(
+        "dlc3_single.h5",
+        "dlc3_multi_unique.h5",
+        "dlc3_tracks_el.h5",
+        "dlc3_tracks_fixed_el.h5",
+        "dlc3_3d.h5",
+        "movement_multi.h5",
+        "movement_3d.h5"
+      ),
+      \(f) list(source = "deeplabcut", path = fixture("deeplabcut", f))
+    )
+  )
+}
 
 test_that("every fixture detects as its own source", {
   for (case in detection_cases) {
@@ -190,6 +350,28 @@ test_that("no detector fires on another source's file", {
   }
 })
 
+test_that("FreeMoCap v2's per-trajectory files are left to read_freemocap()", {
+  # `frame, keypoint, x, y, z` is too generic a header to claim for one
+  # source, so detection does not; read_freemocap() reads it when asked.
+  expect_error(
+    detect_source(fixture("freemocap", "v2", "rtmpose_body_3d_xyz.csv")),
+    "Cannot detect the source software"
+  )
+})
+
+test_that("a SLEAP analysis h5 is not taken for DeepLabCut tracklets", {
+  # Both have `tracks`: a dataset in SLEAP's file, a group in DeepLabCut's.
+  skip_if_not_installed("rhdf5")
+  path <- withr::local_tempfile(fileext = ".h5")
+  rhdf5::h5createFile(path)
+  rhdf5::h5write(array(0, dim = c(1, 2, 1, 1)), path, "tracks")
+  rhdf5::h5write("nose", path, "node_names")
+  rhdf5::h5closeAll()
+
+  expect_false(detect_deeplabcut_file(path))
+  expect_true(detect_sleap_file(path))
+})
+
 test_that("files that are not datasets detect as nothing", {
   # The idtracker.ai probabilities CSV is read via read_idtracker()'s
   # `path_probabilities`, never on its own, and shares its `seconds` column
@@ -198,6 +380,14 @@ test_that("files that are not datasets detect as nothing", {
     detect_source(fixture(
       "idtrackerai",
       "trajectories_csv",
+      "id_probabilities.csv"
+    )),
+    "Cannot detect the source software"
+  )
+  expect_error(
+    detect_source(fixture(
+      "idtrackerai",
+      "trajectories_csv_no_fps",
       "id_probabilities.csv"
     )),
     "Cannot detect the source software"
@@ -264,6 +454,50 @@ test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
     detect_source(fixture("idtrackerai", "trajectories.h5")),
     "idtrackerai"
   )
+})
+
+test_that("an aniframe Parquet file is told apart from idtracker.ai's", {
+  skip_if_not_installed("arrow")
+  path <- withr::local_tempfile(fileext = ".parquet")
+  write_aniframe(anicore::example_anipoint(), path)
+
+  expect_identical(detect_source(path), "aniframe")
+  expect_identical(
+    detect_source(fixture("idtrackerai", "trajectories.parquet")),
+    "idtrackerai"
+  )
+})
+
+test_that("the movement sample file is detected as movement (#89)", {
+  # The sample file that get_sample_data() downloads, saved by movement 0.17.0
+  # or later. detect_source() requires exactly one match, so this also shows
+  # no other HDF5 detector fires on it.
+  skip_if_no_network()
+  skip_if_not_installed("rhdf5")
+  path <- get_sample_data(
+    "movement",
+    cache_dir = test_cache_dir(),
+    quiet = TRUE
+  )
+
+  expect_true(detect_movement_file(path))
+  expect_identical(detect_source(path), "movement")
+})
+
+test_that("movement files are detected with either dimension names (#167)", {
+  # Fixtures in data/movement/, described in test-read_movement.R
+  skip_if_not_installed("rhdf5")
+  for (file in c(
+    "two-mice_seconds_singular.nc",
+    "two-mice_frames_singular.nc",
+    "two-mice_seconds_plural.nc",
+    "two-mice_seconds.nc",
+    "synthetic_3d_singular.nc",
+    "individual-confidence_singular.nc"
+  )) {
+    expect_identical(detect_source(fixture("movement", file)), "movement")
+  }
+  expect_false(detect_movement_file(fixture("movement", "bboxes_singular.nc")))
 })
 
 test_that("a detector that errors counts as a non-match", {
@@ -425,7 +659,7 @@ test_that("detect_source() recognises both FreeMoCap tidy layouts", {
   path_9col <- system.file("extdata", "freemocap.csv", package = "aniread")
   expect_equal(detect_source(path_9col), "freemocap")
 
-  # The 8-column form, which is what FreeMoCap wrote before v1.8.0.
+  # The 8-column form, which is what FreeMoCap wrote before v1.7.4.
   path_8col <- withr::local_tempfile(fileext = ".csv")
   vroom::vroom_write(
     data.frame(

@@ -10,7 +10,10 @@
 #'   Time units come from the columns BORIS provides. The default
 #'   `unit_time = "s"` uses `Start (s)` / `Stop (s)` and works on any
 #'   BORIS export. With `unit_time = "frame"` the reader uses the
-#'   `Image index start` / `Image index stop` columns instead; frames
+#'   `Image index start` / `Image index stop` columns instead, with the
+#'   first frame of the video at 0 (BORIS counts a video's frames from 0,
+#'   and the images of an observation of images from 1, which are shifted
+#'   so the first image is 0); frames
 #'   stay aligned with rows of a host [anicore::anipoint()], which
 #'   keeps event timing robust against effective-FPS drift when the
 #'   export is paired with movement data. If `"frame"` is
@@ -22,7 +25,9 @@
 #'
 #'   Channels: each row's `channel` is the value of BORIS's
 #'   `Behavioral category` column when populated, falling back to the
-#'   literal `"behavior"` otherwise; `label` is the behaviour name,
+#'   literal `"behavior"` otherwise, including where the aggregated
+#'   export writes `"Not defined"` for a behaviour without a category;
+#'   `label` is the behaviour name,
 #'   and `type` is `"state"` or `"point"` mapped from BORIS's
 #'   `Behavior type` column. Overlap between bouts of the same channel
 #'   is permitted on the `anievent` side; [anicore::validate_anievent()]
@@ -42,8 +47,12 @@
 #'   anievent with an anipoint to keep frame-aligned semantics.
 #'
 #' @return An [anicore::anievent()] with metadata fields `source`,
-#'   `filename`, `unit_time`, and `sampling_rate` (when FPS is a
-#'   single numeric in the export) populated.
+#'   `filename`, `unit_time`, and `sampling_rate` populated. `start` and
+#'   `stop` are BORIS's times in seconds, or its frame numbers with the
+#'   first frame of the video at 0; see "Time" in [read_dataset()]. The
+#'   sampling rate is set when every media file in the export has the
+#'   same FPS; an observation of several media files lists one FPS per
+#'   file in a single cell, separated by `;` (and `|` between players).
 #'
 #' @references
 #' - Friard, O., & Gamba, M. (2016). BORIS: a free, versatile open-source
@@ -548,8 +557,8 @@ finalise_boris <- function(data, path, unit_time) {
 
   if (unit_time == "frame") {
     frames <- backcalculate_boris_frames(
-      start = as.numeric(data$image_index_start),
-      stop = as.numeric(data$image_index_stop),
+      start = boris_frame_index(data$image_index_start, data),
+      stop = boris_frame_index(data$image_index_stop, data),
       start_s = as.numeric(data$start_s),
       stop_s = as.numeric(data$stop_s),
       fps = fps
@@ -587,7 +596,11 @@ finalise_boris <- function(data, path, unit_time) {
 
   if ("behavioral_category" %in% names(data)) {
     cat_vec <- data$behavioral_category
-    cat_vec[is.na(cat_vec) | !nzchar(cat_vec)] <- NA_character_
+    # The aggregated export writes "Not defined" for a behaviour without
+    # a category, where the tabular export leaves the cell empty.
+    cat_vec[
+      is.na(cat_vec) | !nzchar(cat_vec) | cat_vec == "Not defined"
+    ] <- NA_character_
     data$channel <- ifelse(is.na(cat_vec), "behavior", cat_vec)
   } else {
     data$channel <- "behavior"
@@ -632,6 +645,32 @@ finalise_boris <- function(data, path, unit_time) {
   state_only <- ae[ae$type == "state", , drop = FALSE]
   anicore::validate_anievent(state_only)
   ae
+}
+
+#' The frame an image-index column points to, counted from 0
+#'
+#' For an observation of a media file, BORIS's image index is the frame
+#' number mpv reports (`estimated-frame-number`), which counts from 0. For an
+#' observation of a set of images, it is the image's position counted from 1
+#' (`image_idx + 1` in BORIS's `core.py`), so the first image is shifted to 0.
+#' The `Observation type` column says which: BORIS writes an observation of
+#' images as `"From directories of images"` in the tabular export and
+#' `"From pictures"` in the aggregated one (`export_observation.py`), and its
+#' own name for the type is `"IMAGES"`. An export without the column is taken
+#' to be of media.
+#'
+#' @param index The image-index column.
+#' @param data The export, for its `observation_type` column.
+#' @return A numeric vector.
+#' @noRd
+boris_frame_index <- function(index, data) {
+  index <- as.numeric(index)
+  if ("observation_type" %in% names(data)) {
+    images <- tolower(trimws(data$observation_type)) %in%
+      c("images", "from directories of images", "from pictures")
+    index[images] <- index[images] - 1
+  }
+  index
 }
 
 #' Recover frame numbers from timestamps when the image index is bad
@@ -742,7 +781,10 @@ extract_boris_fps <- function(data) {
   if (!"fps" %in% names(data)) {
     return(NULL)
   }
-  vals <- unique(suppressWarnings(as.numeric(data$fps)))
+  # An observation of several media files lists one FPS per file in the
+  # cell, `;`-separated within a player and `|`-separated between players.
+  vals <- unlist(strsplit(as.character(data$fps), "[;|]"))
+  vals <- unique(suppressWarnings(as.numeric(vals)))
   vals <- vals[!is.na(vals)]
   if (length(vals) == 1) vals else NULL
 }

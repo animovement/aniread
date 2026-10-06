@@ -396,3 +396,75 @@ test_that("a file that is only junk does not derail layout detection", {
   expect_no_error(layout <- detect_opticalflow_layout(path))
   expect_equal(layout$skip, 0)
 })
+
+# ---- The sensor has no fixed rate (#195) -------------------------------------
+
+# `sampling_rate` is the rate of the integration windows; the sensor itself
+# reports only when the ball moves, which anicore records as
+# `source_sampling_rate = NaN`. NA would mean "not declared yet", so check
+# for NaN specifically.
+expect_no_fixed_rate <- function(result, window_rate) {
+  rates <- anicore::get_metadata(
+    result,
+    c("sampling_rate", "source_sampling_rate")
+  )
+  expect_equal(rates$sampling_rate, window_rate)
+  expect_true(is.nan(rates$source_sampling_rate))
+}
+
+write_sensor_csv <- function(y = c(10, 20, 30)) {
+  path <- withr::local_tempfile(fileext = ".csv", .local_envir = parent.frame())
+  write.csv(
+    data.frame(time = c(0, 0.013, 0.2), x = 0, y = y),
+    path,
+    row.names = FALSE
+  )
+  path
+}
+
+test_that("read_trackball records no fixed rate with one sensor", {
+  result <- read_trackball(
+    paths = write_sensor_csv(),
+    setup = "of_fixed",
+    sampling_rate = 60,
+    counts_per_rotation = 1000
+  )
+
+  expect_no_fixed_rate(result, 60)
+})
+
+test_that("read_trackball records no fixed rate with two sensors, of_free", {
+  result <- read_trackball_quiet(
+    paths = c(write_sensor_csv(), write_sensor_csv(y = c(1, 2, 3))),
+    setup = "of_free",
+    sampling_rate = 25
+  )
+
+  expect_no_fixed_rate(result, 25)
+})
+
+test_that("read_trackball records no fixed rate with two sensors, of_fixed", {
+  result <- read_trackball_quiet(
+    paths = c(write_sensor_csv(), write_sensor_csv()),
+    setup = "of_fixed",
+    sampling_rate = 100,
+    ball_diameter = 5,
+    dots_per_cm = 400
+  )
+
+  expect_no_fixed_rate(result, 100)
+})
+
+test_that("a later sampling_rate leaves the no-fixed-rate marker", {
+  result <- read_trackball(
+    paths = write_sensor_csv(),
+    setup = "of_fixed",
+    sampling_rate = 60,
+    counts_per_rotation = 1000
+  )
+
+  # As after resampling: the data's rate changes, the sensor's does not.
+  resampled <- anicore::set_metadata(result, sampling_rate = 30)
+
+  expect_no_fixed_rate(resampled, 30)
+})

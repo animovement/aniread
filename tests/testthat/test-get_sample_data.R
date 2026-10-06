@@ -27,6 +27,9 @@
 # - TRex zip download emits "Extracting" message when not quiet
 # - TRex returns single path for single-file dataset
 # - Handles binary files correctly
+# - FreeMoCap serves the star-jump recording in each of its layouts (covers
+#   the "freemocap" datasets, which the loop over sources above leaves out
+#   until they are served)
 
 test_that("get_sample_data downloads data for valid sources", {
   skip_if_no_network()
@@ -164,7 +167,6 @@ test_that("get_sample_data returns correct file paths for sources", {
     list(source = "bonsai", pattern = "bonsai"),
     list(source = "deeplabcut", pattern = "deeplabcut"),
     list(source = "fictrac", pattern = "fictrac"),
-    list(source = "freemocap", pattern = "freemocap"),
     list(source = "idtracker", pattern = "idtracker"),
     list(source = "lightningpose", pattern = "lightningpose"),
     list(source = "sleap", pattern = "sleap")
@@ -471,4 +473,73 @@ test_that("get_sample_data handles binary files correctly", {
   path_dat <- get_sample_data("fictrac", cache_dir = temp_cache, quiet = TRUE)
   expect_true(file.exists(path_dat))
   expect_true(file.info(path_dat)$size > 0)
+})
+
+# The FreeMoCap star-jump files are served from movement-data's `main` only
+# once animovement/movement-data#14 is merged; until then their URLs return
+# 404. Remove this helper, and its call below, once that pull request is
+# merged, and add "freemocap" back to the loop over sources above.
+skip_if_freemocap_not_served <- function() {
+  testthat::skip_if_not_installed("curl")
+  url <- paste0(
+    "https://raw.githubusercontent.com/animovement/movement-data/main/data/",
+    "freemocap/freemocap_star-jump_by_frame.csv"
+  )
+  status <- tryCatch(
+    curl::curl_fetch_memory(
+      url,
+      handle = curl::new_handle(nobody = TRUE)
+    )$status_code,
+    error = function(e) NA_integer_
+  )
+  if (identical(status, 404L)) {
+    testthat::skip("The FreeMoCap star-jump files are not on movement-data yet")
+  }
+}
+
+test_that("get_sample_data('freemocap') serves the star-jump recording", {
+  skip_if_no_network()
+  skip_if_freemocap_not_served()
+  # A fresh directory, so no earlier download is reused or overwritten.
+  fresh_cache <- tempfile()
+  on.exit(unlink(fresh_cache, recursive = TRUE), add = TRUE)
+
+  expected <- list(
+    "star-jump" = c("freemocap_star-jump_by_frame.csv", "by_frame_9col"),
+    "star-jump_v1.7" = c(
+      "freemocap_star-jump_by_frame_v1.7.csv",
+      "by_frame_8col"
+    ),
+    "star-jump_by_trajectory" = c(
+      "freemocap_star-jump_by_trajectory.csv",
+      "by_trajectory"
+    ),
+    "star-jump_wide" = c(
+      "freemocap_star-jump_mediapipe_body_3d_xyz.csv",
+      "wide"
+    )
+  )
+
+  # The default is the 9-column by_frame file.
+  path <- get_sample_data("freemocap", cache_dir = fresh_cache, quiet = TRUE)
+  expect_equal(basename(path), expected[["star-jump"]][1])
+
+  for (dataset in names(expected)) {
+    path <- get_sample_data(
+      "freemocap",
+      dataset = dataset,
+      cache_dir = fresh_cache,
+      quiet = TRUE
+    )
+    expect_equal(basename(path), expected[[dataset]][1])
+    data <- read_freemocap(path)
+    expect_equal(
+      anicore::get_metadata(data)$source_format,
+      expected[[dataset]][2]
+    )
+    # 216 frames of 33 body points, and of 42 hand points and 15 centres of
+    # mass in every layout but the per-model body file
+    n_points <- if (dataset == "star-jump_wide") 33 else 90
+    expect_equal(nrow(data), 216 * n_points)
+  }
 })

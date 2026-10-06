@@ -11,7 +11,7 @@ test_that("read_dataset returns what the direct reader returns", {
     list(path = fixture("octron", "octron_sample.csv"), reader = read_octron),
     list(path = fixture("trex", "beetle.csv"), reader = read_trex),
     list(
-      path = fixture("freemocap", "freemocap_test_data_by_frame.csv"),
+      path = fixture("freemocap", "v1.7", "recording_by_frame.csv"),
       reader = read_freemocap
     ),
     list(
@@ -189,4 +189,22 @@ test_that("the registry advertises both SLEAP suffixes", {
   sleap <- get_supported_sources()[get_supported_sources()$source == "sleap", ]
 
   expect_setequal(sleap$suffix[[1]], c("h5", "csv"))
+})
+
+test_that("read_dataset keeps the trackball's no-fixed-rate marker", {
+  paths <- fixture(
+    "multi",
+    c("GB_COM6_2021-08-05T15_37_55.csv", "GB_COM7_2021-08-05T15_37_55.csv")
+  )
+
+  result <- read_dataset(
+    paths,
+    sampling_rate = 60,
+    col_time = 4,
+    col_dx = 1,
+    col_dy = 2
+  )
+
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 60)
+  expect_true(is.nan(anicore::get_metadata(result, "source_sampling_rate")))
 })

@@ -2,20 +2,20 @@
 % Please edit documentation in R/read_deeplabcut.R
 \name{read_deeplabcut_csv}
 \alias{read_deeplabcut_csv}
-\title{Read DeepLabCut data}
+\title{Read a DeepLabCut csv file}
 \usage{
-read_deeplabcut_csv(path, multianimal = NULL)
+read_deeplabcut_csv(path)
 }
 \arguments{
-\item{path}{Path to a DeepLabCut data file}
-
-\item{multianimal}{By default, whether a file is multi-animal is detected automatically. This gives an option to ensure it. logical TRUE/FALSE.}
+\item{path}{Path to a DeepLabCut \code{.csv} file.}
 }
 \value{
-a movement dataframe
+A list of \code{columns}, a data frame with one row per kept column
+and one column per level; \code{values}, a frames-by-columns matrix; and
+\code{index}, the frame index.
 }
 \description{
-Read csv files from DeepLabCut (DLC). The function recognises whether it is a
-single- or multi-animal dataset.
+The header rows are the column levels, each named in the first column;
+the data rows follow, with the frame index in the first column.
 }
 \keyword{internal}

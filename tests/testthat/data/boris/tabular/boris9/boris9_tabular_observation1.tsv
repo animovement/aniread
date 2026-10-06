@@ -1,0 +1,9 @@
+Observation id	Observation date	Description	Observation duration	Observation type	Source	Time offset (s)	Media duration (s)	FPS	a	b	c	Subject	Behavior	Behavioral category	Behavior type	Time	Media file name	Image index	Image file path	Comment
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		START	3.300	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		STOP	7.750	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		START	9.900	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		STOP	16.200	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		START	18.350	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject1	s		STOP	24.475	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject2	s		START	38.425	video_test_25fps_360s.mp4	NA	NA	
+observation #1	2016-11-27 01:57:26		42.800	Media file(s)	player #1:video_test_25fps_360s.mp4	0.0	359.960	25.000	12	text value for b	111	subject2	s		STOP	46.100	video_test_25fps_360s.mp4	NA	NA	

@@ -10,10 +10,18 @@
 #'   - "bonsai": Tracking data from Bonsai
 #'   - "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
 #'   - "fictrac": Fictrac sample data
-#'   - "freemocap": FreeMoCap motion capture test data
+#'   - "freemocap": FreeMoCap motion capture of a person doing star jumps
+#'     (4 datasets), from movement's sample data, written by FreeMoCap's own
+#'     saver. The default, "star-jump", is the 9-column `by_frame.csv` of
+#'     v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
+#'     versions; "star-jump_by_trajectory" and "star-jump_wide" are the
+#'     recording's `by_trajectory.csv` and `mediapipe_body_3d_xyz.csv`
 #'   - "idtracker": Trajectories from idtracker.ai
 #'   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
-#'   - "movement": Movement package native format (2 datasets)
+#'   - "movement": netCDF files saved by the movement Python package
+#'     (2 datasets). The default, "two-mice_octagon", has the dimension names
+#'     movement uses since 0.17.0; "legacy-plural" is the same recording
+#'     with the plural names of earlier versions
 #'   - "sleap": Animal tracking from SLEAP (3 datasets)
 #'   - "trex": Multi-animal tracking from TRex (2 datasets). The default,
 #'     "five-locusts", unpacks to one `.npz` per individual and returns a
@@ -50,7 +58,7 @@
 #' vector of paths to the individual files.
 #'
 #' The predefined data sources are hosted at:
-#' - https://gin.g-node.org/neuroinformatics/movement-test-data
+#' - https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data
 #' - https://github.com/animovement/movement-data
 #'
 #' @examples
@@ -82,7 +90,7 @@ get_sample_data <- function(
   list_datasets = FALSE
 ) {
   # Base URLs for data repositories
-  gin_base <- "https://gin.g-node.org/neuroinformatics/movement-test-data/raw/master"
+  gin_base <- "https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data/raw/master"
   github_base <- "https://raw.githubusercontent.com/animovement/movement-data/main/data"
 
   # Define available sources and their corresponding URLs
@@ -138,12 +146,37 @@ get_sample_data <- function(
       )
     ),
     freemocap = list(
-      "test-data" = list(
+      # movement's star-jump recording (CC BY 4.0, Max Staras), written by
+      # FreeMoCap v1.8.2's own saver: the 9-column by_frame layout.
+      "star-jump" = list(
         url = paste0(
           github_base,
-          "/freemocap/freemocap_test_data_by_frame.csv"
+          "/freemocap/freemocap_star-jump_by_frame.csv"
         ),
-        filename = "freemocap_test_data_by_frame.csv"
+        filename = "freemocap_star-jump_by_frame.csv"
+      ),
+      # The same recording as FreeMoCap v1.7.3 writes it: 8 columns, no
+      # reprojection_error.
+      "star-jump_v1.7" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_by_frame_v1.7.csv"
+        ),
+        filename = "freemocap_star-jump_by_frame_v1.7.csv"
+      ),
+      "star-jump_by_trajectory" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_by_trajectory.csv"
+        ),
+        filename = "freemocap_star-jump_by_trajectory.csv"
+      ),
+      "star-jump_wide" = list(
+        url = paste0(
+          github_base,
+          "/freemocap/freemocap_star-jump_mediapipe_body_3d_xyz.csv"
+        ),
+        filename = "freemocap_star-jump_mediapipe_body_3d_xyz.csv"
       )
     ),
     idtracker = list(
@@ -163,12 +196,19 @@ get_sample_data <- function(
       )
     ),
     movement = list(
+      # Saved by movement 0.17.0 or later, with singular dimension names
       "two-mice_octagon" = list(
+        url = paste0(gin_base, "/poses/MOVE_two-mice_octagon.analysis.nc"),
+        filename = "movement_two-mice_octagon.nc"
+      ),
+      # The same recording saved before 0.17.0, with the plural `individuals`
+      # and `keypoints` dimensions
+      "legacy-plural" = list(
         url = paste0(
           github_base,
           "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc"
         ),
-        filename = "sleap_two-mice_octagon.nc"
+        filename = "movement_two-mice_octagon_legacy-plural.nc"
       )
     ),
     sleap = list(

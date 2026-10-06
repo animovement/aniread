@@ -1,6 +1,8 @@
 #' Read a skeleton as an anistructure
 #'
 #' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Reads the skeleton a pose-estimation project defines — its keypoints and
 #' the edges between them — as an [anicore::anistructure()] with points and
 #' segments. Attach it to a frame with [anicore::set_structure()].
@@ -19,6 +21,17 @@
 #'
 #' Edges keep the direction the file lists them in, which is what
 #' [anicore::as_anisegment()] measures along.
+#'
+#' A frame reader attaches whatever its data file itself contains, so
+#' whether you need these depends on where the tool keeps its skeleton:
+#'
+#' * A SLEAP analysis `.h5` carries its skeleton, and [read_sleap()] attaches
+#'   it as it reads the tracks.
+#' * DeepLabCut keeps its skeleton in the project's `config.yaml`, not in the
+#'   data file, so [read_deeplabcut()] attaches none. Read the config with
+#'   `read_structure()` and attach it with [anicore::set_structure()].
+#' * SLEAP's analysis CSV carries no skeleton either. Read it from the `.slp`
+#'   or `.h5` of the same recording.
 #'
 #' @param path Path to the file.
 #' @param source `"auto"` to detect it from the file, or `"deeplabcut"` or
@@ -166,7 +179,8 @@ read_structure_sleap <- function(path, skeleton = NULL) {
 #' The skeleton a SLEAP analysis .h5 export carries
 #'
 #' `edge_inds` holds the body edges as 0-based node indices; files written
-#' without a skeleton have no edges.
+#' without a skeleton have no edges. [read_sleap()] attaches the same
+#' skeleton to the frames it reads from the file.
 #'
 #' @noRd
 read_sleap_analysis_skeleton <- function(path) {

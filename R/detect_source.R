@@ -187,10 +187,10 @@ peek_h5_names <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_animalta_file <- function(path) {
-  # Both AnimalTA layouts open the same way: the raw export continues into
-  # X_Arena<n>_Ind<n> columns, the detailed one into Arena;Ind;X;Y.
-  header <- peek_header(path, delim = ";")
-  length(header) >= 3 && identical(header[1:2], c("Frame", "Time"))
+  # The coordinates files open with Frame;Time and continue into
+  # X_Arena<a>_Ind<i> columns or Arena;Ind;X;Y; a detailed data file opens
+  # with Frame or Time and has X;Y.
+  !is.na(detect_animalta_format(path))
 }
 
 #' @rdname source_detectors
@@ -225,21 +225,22 @@ detect_boris_file <- function(path) {
 #' @keywords internal
 detect_freemocap_file <- function(path) {
   # Matched by inclusion rather than identity: FreeMoCap added a
-  # `reprojection_error` column at v1.8.0, and an exact match would stop
+  # `reprojection_error` column at v1.7.4, and an exact match would stop
   # recognising the format the next time a column is appended.
-  all(
-    c(
-      "frame",
-      "timestamp",
-      "timestamp_by_camera",
-      "model",
-      "keypoint",
-      "x",
-      "y",
-      "z"
-    ) %in%
-      peek_header(path)
+  header <- peek_header(path)
+  v1 <- c(
+    "frame",
+    "timestamp",
+    "timestamp_by_camera",
+    "model",
+    "keypoint",
+    "x",
+    "y",
+    "z"
   )
+  # v2's tidy export (skellyforge) has no timestamps but adds `trajectory`.
+  v2 <- c("frame", "keypoint", "x", "y", "z", "model", "trajectory")
+  all(v1 %in% header) || all(v2 %in% header)
 }
 
 #' @rdname source_detectors
@@ -338,7 +339,9 @@ has_deeplabcut_csv_header <- function(path) {
 #' @keywords internal
 detect_deeplabcut_file <- function(path) {
   if (identical(tolower(get_file_ext(path)), "h5")) {
-    return("df_with_missing" %in% peek_h5_names(path))
+    # Predictions are under `df_with_missing`, stitched tracklets (`_el.h5`)
+    # under `tracks`, each a group, where SLEAP has a `tracks` dataset.
+    return(!is.na(dlc_h5_key(path)))
   }
   has_deeplabcut_csv_header(path)
 }
@@ -354,14 +357,28 @@ detect_lightningpose_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_idtrackerai_file <- function(path) {
-  if (identical(tolower(get_file_ext(path)), "h5")) {
+  ext <- tolower(get_file_ext(path))
+  if (identical(ext, "h5")) {
     return("trajectories" %in% peek_h5_names(path))
   }
-  # The trajectories CSV pairs `seconds` with x1/y1... columns. The companion
-  # probabilities CSV shares `seconds` but not the coordinates, and is passed
-  # to read_idtracker() separately rather than read on its own.
+  if (identical(ext, "parquet")) {
+    return(is_idtracker_parquet(path))
+  }
+  # The tidy CSV export (idtracker.ai 6.0.14) has a fixed header.
+  if (is_idtracker_tidy_csv(path)) {
+    return(TRUE)
+  }
+  # The trajectories CSV is x1,y1,x2,y2..., after a time column: `seconds`,
+  # `time` in newer releases, or none when idtracker.ai could not read the
+  # frame rate. The companion probabilities CSV shares the time column but
+  # not the coordinates, and is passed to read_idtracker() separately rather
+  # than read on its own.
   header <- peek_header(path)
-  all(c("seconds", "x1", "y1") %in% header)
+  if (length(header) > 0 && header[[1]] %in% c("seconds", "time")) {
+    header <- header[-1]
+  }
+  n <- length(header) %/% 2
+  n >= 1 && identical(header, paste0(c("x", "y"), rep(seq_len(n), each = 2)))
 }
 
 
@@ -383,10 +400,12 @@ detect_sleap_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_movement_file <- function(path) {
-  all(
-    c("individuals", "keypoints", "position", "confidence") %in%
-      peek_h5_names(path)
-  )
+  # movement 0.17.0 renamed the `individuals` and `keypoints` dimensions to
+  # `individual` and `keypoint`; files saved before keep the plural names.
+  names <- peek_h5_names(path)
+  all(c("position", "confidence") %in% names) &&
+    any(c("individual", "individuals") %in% names) &&
+    any(c("keypoint", "keypoints") %in% names)
 }
 
 
@@ -411,5 +430,12 @@ detect_c3d_file <- function(path) {
 #' @rdname source_detectors
 #' @keywords internal
 detect_aniframe_file <- function(path) {
-  identical(rawToChar(peek_bytes(path, 4)), "PAR1")
+  # Every Parquet file opens with "PAR1", so idtracker.ai's Parquet export,
+  # recognised by its metadata, is set aside. That needs arrow; without it
+  # neither can be read, and read_aniframe() asks for it.
+  identical(rawToChar(peek_bytes(path, 4)), "PAR1") &&
+    !isTRUE(tryCatch(
+      rlang::is_installed("arrow") && is_idtracker_parquet(path),
+      error = function(e) FALSE
+    ))
 }

@@ -112,9 +112,9 @@ source_registry <- function() {
     list(
       source = "idtrackerai",
       reader = "read_idtracker",
-      suffix = c("csv", "h5"),
+      suffix = c("csv", "h5", "parquet"),
       detector = detect_idtrackerai_file,
-      requires = c(h5 = "rhdf5")
+      requires = c(h5 = "rhdf5", parquet = "arrow")
     ),
     # Written only. Listed after "aniframe", so an inferred .csv is a plain
     # table and inTRACKtive has to be named.

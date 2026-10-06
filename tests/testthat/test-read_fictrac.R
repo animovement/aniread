@@ -465,3 +465,85 @@ test_that("read_fictrac declares FicTrac's heading as the yaw", {
   expect_false("direction" %in% names(result))
   expect_equal(as.character(anicore::get_metadata(result, "unit_angle")), "rad")
 })
+
+# The 23- and 24-column fixtures are synthetic; see data/fictrac/README.md.
+fictrac_fixture <- function(name) testthat::test_path("data", "fictrac", name)
+
+test_that("read_fictrac reads the 23-column layout of FicTrac 2.0 to 2.02", {
+  path <- fictrac_fixture("fictrac_23col.dat")
+  raw <- utils::read.csv(path, header = FALSE)
+  expect_equal(ncol(raw), 23)
+
+  result <- read_fictrac(path)
+
+  expect_s3_class(result, "anipoint")
+  expect_named(result, c("keypoint", "time", "x", "y", "yaw"))
+  expect_equal(nrow(result), nrow(raw))
+  # Time comes from the timestamp in column 22, the only one there is.
+  expect_equal(result$time, (raw[[22]] - raw[[22]][1]) / 1000)
+  expect_equal(result$x, raw[[15]])
+  expect_equal(result$y, raw[[16]])
+  expect_equal(result$yaw, raw[[17]])
+  expect_equal(
+    anicore::get_metadata(result, "sampling_rate"),
+    100,
+    tolerance = 0.01
+  )
+})
+
+test_that("read_fictrac reads the 24-column layout of July 2019", {
+  path <- fictrac_fixture("fictrac_24col.dat")
+  raw <- utils::read.csv(path, header = FALSE)
+  expect_equal(ncol(raw), 24)
+
+  result <- read_fictrac(path)
+
+  expect_equal(nrow(result), nrow(raw))
+  expect_equal(result$x, raw[[15]])
+  expect_equal(result$y, raw[[16]])
+  expect_equal(result$yaw, raw[[17]])
+  # Time comes from the time since midnight in column 22. The recording
+  # crosses midnight, and time keeps running forward across it.
+  expect_equal(result$time, (seq_len(nrow(raw)) - 1) * 0.01)
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 100)
+})
+
+test_that("read_fictrac keeps time running forward past midnight", {
+  temp_file <- tempfile(fileext = ".dat")
+  on.exit(unlink(temp_file))
+  create_test_fictrac_file(temp_file, n_rows = 10, start_time = 86399980)
+  raw <- utils::read.csv(temp_file, header = FALSE)
+  # Wrap the alternative timestamp at midnight, as FicTrac does.
+  raw[[25]] <- raw[[25]] %% 86400000
+  expect_lt(min(diff(raw[[25]])), 0)
+  utils::write.table(
+    raw,
+    temp_file,
+    sep = ", ",
+    row.names = FALSE,
+    col.names = FALSE,
+    quote = FALSE
+  )
+
+  result <- read_fictrac(temp_file)
+
+  expect_equal(result$time, (0:9) * 0.007)
+})
+
+test_that("unwrap_midnight adds a day only where the clock passes midnight", {
+  day <- 86400000
+  expect_equal(unwrap_midnight(c(10, 20, 15, 30)), c(10, 20, 15, 30))
+  expect_equal(
+    unwrap_midnight(c(day - 10, 5, 15, day - 1, 3)),
+    c(day - 10, day + 5, day + 15, 2 * day - 1, 2 * day + 3)
+  )
+  expect_equal(unwrap_midnight(numeric()), numeric())
+})
+
+test_that("read_fictrac rejects a .dat with an unknown number of columns", {
+  temp_file <- tempfile(fileext = ".dat")
+  on.exit(unlink(temp_file))
+  writeLines(paste(seq_len(22), collapse = ", "), temp_file)
+
+  expect_error(read_fictrac(temp_file), "has 22")
+})

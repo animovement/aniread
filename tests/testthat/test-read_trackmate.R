@@ -15,6 +15,18 @@
 # - Keeps z and sets cartesian_3d when z varies
 # - Drops z when only one unique value (sets cartesian_2d)
 # - Frame column removed when time stamps exist
+# - Every TrackMate time and space unit maps onto anicore's, falling back to
+#   "unknown" and "none" with a warning
+# - sampling_rate from ImageData/@timeinterval, in Hz, only for a positive
+#   interval in a unit of time
+# - source_version from the root version attribute
+# - Reflects around height * pixelheight, the height in the spatial unit
+# - Labels tracks by Track/@name, without TrackMate's default `Track_`
+#   prefix, falling back to TRACK_ID; levels in numeric order
+# - Reads files written by TrackMate 6, 7.0 and 7.13 (data/trackmate)
+# - Reads a blank spatial unit as pixels when the pixel size is 1
+# - Splits a track that divides into its branches, numbered after the
+#   largest id in the file, with the lineage in `parent`
 
 test_that("read_trackmate errors on non-existent file", {
   expect_error(
@@ -450,4 +462,589 @@ test_that("read_trackmate removes frame column when time stamps exist", {
   result <- read_trackmate(tmp)
 
   expect_false("frame" %in% names(result))
+})
+
+# Write a minimal TrackMate XML with the calibration given, and return its path.
+# `NULL` leaves an attribute out; `image_data = FALSE` leaves out ImageData.
+write_trackmate_fixture <- function(
+  timeunits = "sec",
+  spatialunits = "pixel",
+  timeinterval = "1.0",
+  version = "7.11.1",
+  image_data = TRUE,
+  pixel_size = NULL,
+  env = parent.frame()
+) {
+  attr <- function(name, value) {
+    if (is.null(value)) "" else sprintf(' %s="%s"', name, value)
+  }
+  settings <- if (image_data) {
+    sprintf(
+      '<Settings><ImageData width="500" height="400"%s%s%s/></Settings>',
+      attr("timeinterval", timeinterval),
+      attr("pixelwidth", pixel_size),
+      attr("pixelheight", pixel_size)
+    )
+  } else {
+    ""
+  }
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    "<TrackMate",
+    attr("version", version),
+    ">",
+    "<Model",
+    attr("spatialunits", spatialunits),
+    attr("timeunits", timeunits),
+    ">",
+    "<AllSpots><SpotsInFrame frame=\"0\">",
+    '<Spot ID="1" POSITION_X="10.0" POSITION_Y="50.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="15.0" POSITION_Y="100.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    '<AllTracks><Track TRACK_ID="0">',
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>',
+    "</Track></AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model>",
+    settings,
+    "</TrackMate>"
+  )
+  tmp <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
+  writeLines(xml_content, tmp, useBytes = TRUE)
+  tmp
+}
+
+read_trackmate_quietly <- function(path) {
+  suppressMessages(read_trackmate(path))
+}
+
+test_that("read_trackmate maps every TrackMate time unit onto anicore's", {
+  cases <- c(
+    sec = "s",
+    s = "s",
+    seconds = "s",
+    msec = "ms",
+    ms = "ms",
+    "\u00b5s" = "us",
+    usec = "us",
+    ns = "ns",
+    min = "m",
+    hour = "h",
+    h = "h",
+    frame = "frame",
+    Frames = "frame"
+  )
+  for (unit in names(cases)) {
+    path <- write_trackmate_fixture(timeunits = unit)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_time")),
+      cases[[unit]],
+      label = unit
+    )
+  }
+})
+
+test_that("read_trackmate maps every TrackMate space unit onto anicore's", {
+  cases <- c(
+    pixel = "px",
+    pixels = "px",
+    micron = "um",
+    microns = "um",
+    um = "um",
+    "\u00b5m" = "um",
+    "\u03bcm" = "um",
+    nm = "nm",
+    mm = "mm",
+    cm = "cm",
+    m = "m",
+    km = "km"
+  )
+  for (unit in names(cases)) {
+    path <- write_trackmate_fixture(spatialunits = unit)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_space")),
+      cases[[unit]],
+      label = unit
+    )
+  }
+})
+
+test_that("read_trackmate falls back to unknown units with a warning", {
+  path <- write_trackmate_fixture(timeunits = "day")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "unknown"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+
+  path <- write_trackmate_fixture(spatialunits = "inch")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+})
+
+test_that("read_trackmate reads a file that records no units", {
+  path <- write_trackmate_fixture(timeunits = NULL, spatialunits = NULL)
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "unknown"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+})
+
+test_that("read_trackmate sets sampling_rate from the frame interval, in Hz", {
+  cases <- list(
+    list(unit = "sec", interval = "0.5", rate = 2),
+    list(unit = "sec", interval = "1.0", rate = 1),
+    list(unit = "msec", interval = "40", rate = 25),
+    list(unit = "\u00b5s", interval = "1000", rate = 1000),
+    list(unit = "ns", interval = "1e6", rate = 1000),
+    list(unit = "min", interval = "0.5", rate = 1 / 30),
+    list(unit = "h", interval = "2", rate = 1 / 7200)
+  )
+  for (case in cases) {
+    path <- write_trackmate_fixture(
+      timeunits = case$unit,
+      timeinterval = case$interval
+    )
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      anicore::get_metadata(result, "sampling_rate"),
+      case$rate,
+      label = paste(case$interval, case$unit)
+    )
+  }
+})
+
+test_that("read_trackmate leaves sampling_rate NA without a usable interval", {
+  # Frames are not a unit of time, so an interval in frames gives no rate
+  path <- write_trackmate_fixture(timeunits = "frame", timeinterval = "1.0")
+  result <- read_trackmate_quietly(path)
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+
+  for (interval in list("0.0", "-1", "NaN", "Infinity", "abc", NULL)) {
+    path <- write_trackmate_fixture(timeinterval = interval)
+    result <- read_trackmate_quietly(path)
+    expect_true(
+      is.na(anicore::get_metadata(result, "sampling_rate")),
+      label = format(interval)
+    )
+  }
+
+  path <- write_trackmate_fixture(image_data = FALSE)
+  result <- read_trackmate_quietly(path)
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+})
+
+test_that("read_trackmate sets source_version from the root version", {
+  path <- write_trackmate_fixture(version = "7.11.1")
+  result <- read_trackmate_quietly(path)
+  expect_equal(anicore::get_metadata(result, "source_version"), "7.11.1")
+
+  for (version in list(NULL, "")) {
+    path <- write_trackmate_fixture(version = version)
+    result <- read_trackmate_quietly(path)
+    expect_true(is.na(anicore::get_metadata(result, "source_version")))
+  }
+})
+
+# Write a TrackMate XML with two filtered tracks and the given ImageData and
+# Track attributes, and return its path.
+write_trackmate_tracks <- function(
+  image_data = 'width="500" height="400"',
+  track_attrs = c('name="Track_0"', 'name="Track_1"'),
+  extra_track = "",
+  env = parent.frame()
+) {
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate version="7.11.1">',
+    '<Model spatialunits="micron" timeunits="sec">',
+    '<AllSpots><SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="10.0" POSITION_Y="50.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="15.0" POSITION_Y="60.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    '<Spot ID="3" POSITION_X="20.0" POSITION_Y="70.0" POSITION_Z="0.0" POSITION_T="0.0" FRAME="0"/>',
+    '<Spot ID="4" POSITION_X="25.0" POSITION_Y="80.0" POSITION_Z="0.0" POSITION_T="1.0" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    "<AllTracks>",
+    sprintf('<Track TRACK_ID="0" %s>', track_attrs[[1]]),
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/></Track>',
+    sprintf('<Track TRACK_ID="1" %s>', track_attrs[[2]]),
+    '<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="4"/></Track>',
+    extra_track,
+    "</AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/><TrackID TRACK_ID="1"/></FilteredTracks>',
+    "</Model>",
+    sprintf("<Settings><ImageData %s/></Settings>", image_data),
+    "</TrackMate>"
+  )
+  tmp <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
+  writeLines(xml_content, tmp)
+  tmp
+}
+
+test_that("read_trackmate reflects around the height in the spatial unit", {
+  # 400 pixels at 0.5 micron per pixel: the image is 200 microns high, and
+  # the positions are in microns
+  path <- write_trackmate_tracks(
+    'width="500" height="400" pixelwidth="0.5" pixelheight="0.5"'
+  )
+  result <- read_trackmate_quietly(path)
+
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 200))
+  expect_equal(sort(result$y), sort(200 - c(50, 60, 70, 80)))
+})
+
+test_that("read_trackmate uses height alone without a usable pixelheight", {
+  for (image_data in c(
+    'width="500" height="400"',
+    'width="500" height="400" pixelheight="0.0"',
+    'width="500" height="400" pixelheight="NaN"'
+  )) {
+    path <- write_trackmate_tracks(image_data)
+    result <- read_trackmate_quietly(path)
+    expect_equal(
+      anicore::get_metadata(result, "axis_extents"),
+      c(y = 400),
+      label = image_data
+    )
+  }
+})
+
+test_that("read_trackmate `video_height` overrides the calibrated height", {
+  path <- write_trackmate_tracks('width="500" height="400" pixelheight="0.5"')
+  result <- suppressMessages(read_trackmate(path, video_height = 300))
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 300))
+})
+
+test_that("read_trackmate labels tracks by their names", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell A"', 'name="Cell B"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_setequal(as.character(unique(result$track)), c("Cell A", "Cell B"))
+
+  # TrackMate's default names, without the prefix
+  path <- write_trackmate_tracks()
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("0", "1"))
+
+  # Renamed and default names in one file: each is read on its own
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_0"', 'name="Cell B"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("0", "Cell B"))
+
+  # Only TrackMate's own pattern loses its prefix
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_A"', 'name="track_1"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("Track_A", "track_1"))
+})
+
+test_that("read_trackmate orders track ids as numbers", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Track_10"', 'name="Track_2"')
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("2", "10"))
+  expect_equal(levels(result$parent), c("2", "10"))
+
+  # Numbers first, then names
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell B"', 'name="Track_10"'),
+    extra_track = '<Track TRACK_ID="2" name="Track_9"/>'
+  )
+  result <- read_trackmate_quietly(path)
+  expect_equal(levels(result$track), c("10", "Cell B"))
+})
+
+test_that("read_trackmate gives a track that does not divide no parent", {
+  result <- read_trackmate_quietly(write_trackmate_tracks())
+  expect_true("parent" %in% names(result))
+  expect_true(all(is.na(result$parent)))
+  expect_equal(anicore::get_variables(result, "what"), c("track", "keypoint"))
+})
+
+test_that("read_trackmate only needs the names of the filtered tracks to differ", {
+  path <- write_trackmate_tracks(
+    track_attrs = c('name="Cell A"', 'name="Cell B"'),
+    extra_track = '<Track TRACK_ID="2" name="Cell A"/>'
+  )
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_setequal(as.character(unique(result$track)), c("Cell A", "Cell B"))
+})
+
+test_that("read_trackmate labels tracks by ID when names cannot identify them", {
+  # A track without a name, or with an empty one
+  for (attrs in list(c('name="Cell A"', ""), c('name="Cell A"', 'name=""'))) {
+    path <- write_trackmate_tracks(track_attrs = attrs)
+    expect_no_warning(result <- read_trackmate_quietly(path))
+    expect_setequal(as.character(unique(result$track)), c("0", "1"))
+  }
+
+  # Two tracks sharing a name, as written or once the prefix is dropped
+  for (attrs in list(
+    c('name="Cell A"', 'name="Cell A"'),
+    c('name="3"', 'name="Track_3"')
+  )) {
+    path <- write_trackmate_tracks(track_attrs = attrs)
+    expect_warning(
+      result <- read_trackmate_quietly(path),
+      "do not tell every track apart"
+    )
+    expect_setequal(as.character(unique(result$track)), c("0", "1"))
+  }
+})
+
+# Files written by TrackMate ------------------------------------------------
+
+# Trimmed from CC BY 4.0 files on Zenodo; data/trackmate/README.md records
+# their sources, creators and how they were trimmed.
+trackmate_file <- function(name) test_path("data/trackmate", name)
+
+test_that("read_trackmate reads a file written before TrackMate 7", {
+  path <- trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+
+  expect_equal(levels(result$track), c("0", "1"))
+  expect_equal(as.vector(table(result$track)), c(20, 20))
+  expect_equal(
+    head(result$time[result$track == "1"], 3),
+    c(0, 300.014, 600.028)
+  )
+  expect_equal(anicore::get_metadata(result, "source_version"), "6.0.1")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "s")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "um")
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 1 / 300.014)
+  # 774 pixels of 0.633 micron
+  expect_equal(
+    anicore::get_metadata(result, "axis_extents"),
+    c(y = 774 * 0.633)
+  )
+})
+
+test_that("read_trackmate reads a blank spatial unit as pixels", {
+  # TrackMate 7.13.2 wrote spatialunits=" ", with a pixel size of 1.
+  path <- trackmate_file("trpL_150310-11_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "px")
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_time")),
+    "frame"
+  )
+  expect_true(is.na(anicore::get_metadata(result, "sampling_rate")))
+  expect_equal(anicore::get_metadata(result, "source_version"), "7.13.2")
+  expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 727))
+
+  for (pixel_size in list(NULL, "1.0")) {
+    path <- write_trackmate_fixture(spatialunits = " ", pixel_size = pixel_size)
+    expect_no_warning(result <- read_trackmate_quietly(path))
+    expect_equal(
+      as.character(anicore::get_metadata(result, "unit_space")),
+      "px"
+    )
+  }
+
+  # Scaled pixels in a unit nobody named.
+  path <- write_trackmate_fixture(spatialunits = " ", pixel_size = "0.5")
+  expect_warning(
+    result <- read_trackmate_quietly(path),
+    "has no equivalent in anicore"
+  )
+  expect_equal(
+    as.character(anicore::get_metadata(result, "unit_space")),
+    "none"
+  )
+})
+
+# One row per track: when it starts and ends, and its parent
+lineage <- function(data) {
+  as.data.frame(data) |>
+    dplyr::summarise(
+      start = min(time),
+      end = max(time),
+      parent = as.character(dplyr::first(parent)),
+      .by = track
+    ) |>
+    dplyr::mutate(track = as.character(track))
+}
+
+test_that("read_trackmate splits a dividing track into its branches", {
+  path <- trackmate_file("CelegansEarly_MIP_trimmed.xml")
+  expect_no_warning(result <- read_trackmate_quietly(path))
+
+  # Tracks 0 and 2 each divide; their daughters are numbered after the
+  # largest id, 2, track by track.
+  expect_equal(levels(result$track), c("0", "2", "3", "4", "5", "6"))
+  expect_equal(levels(result$parent), levels(result$track))
+  expect_equal(
+    lineage(result)[c("track", "parent")],
+    data.frame(
+      track = c("0", "2", "3", "4", "5", "6"),
+      parent = c(NA, NA, "0", "0", "2", "2")
+    )
+  )
+  # Every spot is kept, once.
+  expect_equal(nrow(result), 51)
+  expect_false(anyDuplicated(as.data.frame(result)[c("track", "time")]) > 0)
+
+  # The daughters start after the mother's last spot, and are numbered by x.
+  times <- function(track) result$time[result$track == track]
+  expect_equal(max(times("0")), 16)
+  expect_equal(min(times("3")), 18)
+  expect_equal(min(times("4")), 18)
+  expect_equal(max(times("2")), 14)
+  expect_equal(min(times("5")), 16)
+  first_x <- function(track) result$x[result$track == track][[1]]
+  expect_lt(first_x("3"), first_x("4"))
+  expect_lt(first_x("5"), first_x("6"))
+
+  expect_equal(as.character(anicore::get_metadata(result, "unit_time")), "m")
+  expect_equal(as.character(anicore::get_metadata(result, "unit_space")), "um")
+  expect_equal(anicore::get_metadata(result, "sampling_rate"), 1 / 120)
+})
+
+test_that("read_trackmate numbers the branches of a lineage by generation", {
+  # One cell dividing at frame 7, and both daughters at frame 11: 1, 2, then
+  # 4 cells.
+  result <- read_trackmate_quietly(trackmate_file("trpL_150310-11_trimmed.xml"))
+
+  expect_equal(
+    lineage(result),
+    data.frame(
+      track = as.character(0:6),
+      start = c(0, 8, 8, 12, 12, 12, 12),
+      end = c(7, 11, 11, 13, 13, 13, 13),
+      parent = c(NA, "0", "0", "1", "1", "2", "2")
+    )
+  )
+  # Sisters are numbered by x.
+  first_x <- function(track) result$x[result$track == track][[1]]
+  expect_lt(first_x("1"), first_x("2"))
+  expect_lt(first_x("3"), first_x("4"))
+  expect_lt(first_x("5"), first_x("6"))
+})
+
+test_that("read_trackmate keeps whole a track that splits and merges in time", {
+  # Track_1 links frame 16 to both 17 and 18, and 17 to 18, so it never
+  # holds two spots in a frame.
+  result <- read_trackmate_quietly(
+    trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
+  )
+  expect_equal(sum(result$track == "1"), 20)
+  expect_true(all(is.na(result$parent)))
+})
+
+test_that("read_trackmate keeps whole a track whose branches merge", {
+  # Spots 1 and 2 share frame 0 and both link to spot 3.
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate><Model spatialunits="pixel" timeunits="sec"><AllSpots>',
+    '<SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="10" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '<Spot ID="2" POSITION_X="30" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '</SpotsInFrame><SpotsInFrame frame="1">',
+    '<Spot ID="3" POSITION_X="20" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    '<AllTracks><Track TRACK_ID="0" name="Track_0">',
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="3"/>',
+    '<Edge SPOT_SOURCE_ID="2" SPOT_TARGET_ID="3"/>',
+    "</Track></AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model></TrackMate>"
+  )
+  path <- withr::local_tempfile(fileext = ".xml")
+  writeLines(xml_content, path)
+
+  expect_warning(result <- read_trackmate_quietly(path), "duplicate")
+  expect_equal(as.character(unique(result$track)), "0")
+  expect_true(all(is.na(result$parent)))
+})
+
+# A track named `name` whose spot 1 divides into spots 2 (x = 30) and 3
+# (x = 10), with one link written backwards in time, and `extra_track`
+# beside it.
+write_trackmate_division <- function(
+  name = 'name="Track_0"',
+  extra_track = "",
+  env = parent.frame()
+) {
+  xml_content <- paste0(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<TrackMate><Model spatialunits="pixel" timeunits="sec"><AllSpots>',
+    '<SpotsInFrame frame="0">',
+    '<Spot ID="1" POSITION_X="20" POSITION_Y="20" POSITION_Z="0" POSITION_T="0" FRAME="0"/>',
+    '</SpotsInFrame><SpotsInFrame frame="1">',
+    '<Spot ID="2" POSITION_X="30" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    '<Spot ID="3" POSITION_X="10" POSITION_Y="20" POSITION_Z="0" POSITION_T="1" FRAME="1"/>',
+    "</SpotsInFrame></AllSpots>",
+    sprintf('<AllTracks><Track TRACK_ID="0" %s>', name),
+    '<Edge SPOT_SOURCE_ID="1" SPOT_TARGET_ID="2"/>',
+    '<Edge SPOT_SOURCE_ID="3" SPOT_TARGET_ID="1"/>',
+    "</Track>",
+    extra_track,
+    "</AllTracks>",
+    '<FilteredTracks><TrackID TRACK_ID="0"/></FilteredTracks>',
+    "</Model></TrackMate>"
+  )
+  path <- withr::local_tempfile(fileext = ".xml", .local_envir = env)
+  writeLines(xml_content, path)
+  path
+}
+
+test_that("read_trackmate follows a link written backwards in time", {
+  # TrackMate links a spot to a later one; a link from the later spot reads
+  # the same.
+  expect_no_warning(
+    result <- read_trackmate_quietly(write_trackmate_division())
+  )
+  expect_equal(result$x[result$track == "1"], 10)
+  expect_equal(result$x[result$track == "2"], 30)
+  expect_equal(as.character(result$parent), c(NA, "0", "0"))
+})
+
+test_that("read_trackmate numbers branches after every track in the file", {
+  # A track left out by the filter, with a larger TRACK_ID or name number
+  for (extra in c(
+    '<Track TRACK_ID="9" name="Track_4"/>',
+    '<Track TRACK_ID="4" name="Track_9"/>'
+  )) {
+    result <- read_trackmate_quietly(write_trackmate_division(
+      extra_track = extra
+    ))
+    expect_equal(levels(result$track), c("0", "10", "11"), label = extra)
+  }
+
+  # A track you named keeps its name, and its daughters are numbered.
+  result <- read_trackmate_quietly(write_trackmate_division('name="Cell A"'))
+  expect_equal(
+    lineage(result)[c("track", "parent")],
+    data.frame(
+      track = c("1", "2", "Cell A"),
+      parent = c("Cell A", "Cell A", NA)
+    )
+  )
+
+  # With no number anywhere but the TRACK_ID 0, daughters start at 1
+  result <- read_trackmate_quietly(write_trackmate_division(""))
+  expect_equal(levels(result$track), c("0", "1", "2"))
 })

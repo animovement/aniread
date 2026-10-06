@@ -21,10 +21,18 @@ Currently supported software names:
 \item "bonsai": Tracking data from Bonsai
 \item "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
 \item "fictrac": Fictrac sample data
-\item "freemocap": FreeMoCap motion capture test data
+\item "freemocap": FreeMoCap motion capture of a person doing star jumps
+(4 datasets), from movement's sample data, written by FreeMoCap's own
+saver. The default, "star-jump", is the 9-column \code{by_frame.csv} of
+v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
+versions; "star-jump_by_trajectory" and "star-jump_wide" are the
+recording's \code{by_trajectory.csv} and \code{mediapipe_body_3d_xyz.csv}
 \item "idtracker": Trajectories from idtracker.ai
 \item "lightningpose": Mouse tracking from LightningPose (2 datasets)
-\item "movement": Movement package native format (2 datasets)
+\item "movement": netCDF files saved by the movement Python package
+(2 datasets). The default, "two-mice_octagon", has the dimension names
+movement uses since 0.17.0; "legacy-plural" is the same recording
+with the plural names of earlier versions
 \item "sleap": Animal tracking from SLEAP (3 datasets)
 \item "trex": Multi-animal tracking from TRex (2 datasets). The default,
 "five-locusts", unpacks to one \code{.npz} per individual and returns a
@@ -71,7 +79,7 @@ vector of paths to the individual files.
 
 The predefined data sources are hosted at:
 \itemize{
-\item https://gin.g-node.org/neuroinformatics/movement-test-data
+\item https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data
 \item https://github.com/animovement/movement-data
 }
 }

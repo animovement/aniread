@@ -13,12 +13,24 @@ read_lightningpose(path, video_height = NULL)
 in pixels. Falls back to \code{max(y)} when not supplied.}
 }
 \value{
-an aniframe
+an aniframe. \code{time} is Lightning Pose's frame index, with the
+first frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read csv files from LightningPose (LP). Like DeepLabCut, the source
 is in image (top-left) coordinates and the reader reflects y to
 \code{bottom_left}.
+}
+\details{
+Lightning Pose writes DeepLabCut's csv layout, so the file is read by
+\code{\link[=read_deeplabcut]{read_deeplabcut()}}. That includes the output of its Ensemble Kalman
+Smoother (EKS, scorer \code{ensemble-kalman_tracker}), which has nine coords
+per keypoint: \code{x}, \code{y} and \code{likelihood} are read, and the ensemble
+medians and variances and the posterior variances (\code{x_ens_median},
+\code{y_ens_median}, \code{x_ens_var}, \code{y_ens_var}, \code{x_posterior_var},
+\code{y_posterior_var}) are not. Its multi-camera 3D output,
+\code{multicam_3d_results.csv}, reads as 3D with \code{x}, \code{y} and \code{z}, without
+confidence and without reflecting y; see \code{\link[=read_deeplabcut]{read_deeplabcut()}}.
 }
 \examples{
 path <- system.file("extdata", "lightningpose.csv", package = "aniread")

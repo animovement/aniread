@@ -7,7 +7,8 @@
 #' @param path Path to a Parquet file.
 #'
 #' @return The aniframe that was written, with its class: an anipoint, an
-#'   anievent, or another frame built on them, such as an anijoint.
+#'   anievent, or another frame built on them, such as an anijoint. `time` is
+#'   as it was written; see "Time" in [read_dataset()].
 #' @export
 #'
 #' @examples

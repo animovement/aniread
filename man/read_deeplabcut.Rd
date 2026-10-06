@@ -10,10 +10,11 @@ read_deeplabcut(path, video_height = NULL)
 \item{path}{Path to a DeepLabCut data file}
 
 \item{video_height}{Optional numeric height of the source video frame
-in pixels.}
+in pixels. Not used for 3D files.}
 }
 \value{
-an aniframe
+an aniframe. \code{time} is DeepLabCut's frame index, with the first
+frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Read files from DeepLabCut (DLC) in either csv or h5 format.
@@ -21,9 +22,38 @@ DeepLabCut stores predictions in image (top-left) coordinates; the
 reader reflects y so the returned aniframe is in the conventional
 \code{bottom_left} origin. DLC's csv/h5 exports do not contain the source
 video resolution (it lives in the project's \code{config.yaml}), so pass
-\code{video_height} to get an accurate flip — otherwise \code{max(y)} is used
+\code{video_height} to get an accurate flip; otherwise \code{max(y)} is used
 as a fallback.
 }
+\section{Layouts read}{
+
+The file is read from its column header, the \code{scorer}, \code{individuals}
+(multi-animal projects only), \code{bodyparts} and \code{coords} levels, so the
+same data reads the same from a csv and an h5. An h5 is read whichever
+way pandas stored it: DeepLabCut writes the "table" format, while a file
+saved again with pandas' defaults, as movement's \code{to_dlc_file()} does,
+is in the "fixed" format. Predictions are read from the HDF key
+\code{df_with_missing}, and the stitched tracklets of a multi-animal project
+(\verb{*_el.h5}) from the key \code{tracks}.
+
+Of the coords, \code{x}, \code{y}, \code{z} and \code{likelihood} are read, and \code{likelihood}
+becomes \code{confidence}. Any other coords, such as the variances the
+Ensemble Kalman Smoother adds, are not read.
+
+A multi-animal project tracks the bodyparts it does not assign to an
+animal (its \code{uniquebodyparts}) under the pseudo-individual \code{single}.
+They are kept as the keypoints of an \code{individual} called \code{"single"}.
+}
+
+\section{3D files}{
+
+DeepLabCut's triangulation writes \code{x}, \code{y} and \code{z} and no likelihood, so
+\code{confidence} is \code{NA}. Triangulated positions are in the units and frame
+of the stereo calibration rather than in image pixels, so they are
+returned as stored: y is not reflected and \code{video_height} is not used.
+The aniframe is 3D from its \code{z} column.
+}
+
 \examples{
 path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
 read_deeplabcut(path)

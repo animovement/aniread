@@ -47,7 +47,10 @@ cannot be used to cross-reference the two files. A warning is emitted if
 the count of malformed rows dropped from each file.}
 }
 \value{
-a movement dataframe
+a movement dataframe. \code{time} is in seconds from the first sample
+both sensors share; see "Time" in \code{\link[=read_dataset]{read_dataset()}}. \code{sampling_rate} is
+the \code{sampling_rate} given, the rate of the integration windows, and
+\code{source_sampling_rate} is \code{NaN}, since the sensor has no fixed rate.
 }
 \description{
 Read trackball data from a variety of setups and configurations.
@@ -73,6 +76,13 @@ recordings - readings from before the second sensor started, or after the
 first stopped, are discarded rather than zero-filled. \code{time = 0} is the first
 shared sample, and the \code{start_datetime} metadata is the wall-clock instant of
 that sample.
+
+The sensor has no fixed rate of its own: it reports motion as it happens,
+and nothing while the ball is still. The frame's \code{sampling_rate} is
+therefore the rate of the integration windows, and its
+\code{source_sampling_rate} is \code{NaN}, anicore's marker for a device with no
+fixed rate (see \code{\link[anicore:set_metadata]{anicore::set_metadata()}}), rather than \code{NA}, which would
+mean the rate has not been declared.
 }
 \examples{
 # A free-floating ball is tracked by two optical flow sensors,

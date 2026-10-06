@@ -41,7 +41,8 @@ Default is an empty list.}
 }
 \value{
 An aniframe with the selected and renamed columns, and attached
-metadata.
+metadata. \code{time} is the column as it is in the file; see "Time" in
+\code{\link[=read_dataset]{read_dataset()}} for the convention the other readers follow.
 }
 \description{
 Reads a file and selects/renames specified columns to create an aniframe.

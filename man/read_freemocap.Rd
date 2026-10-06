@@ -4,31 +4,53 @@
 \alias{read_freemocap}
 \title{Read FreeMoCap motion capture data}
 \usage{
-read_freemocap(path, format = c("auto", "by_frame", "by_trajectory", "wide"))
+read_freemocap(
+  path,
+  format = c("auto", "by_frame", "by_trajectory", "wide", "v2_by_frame", "v2_trajectory"),
+  trajectory = c("3d_xyz", "rigid_3d_xyz")
+)
 }
 \arguments{
-\item{path}{Path to a FreeMoCap CSV.}
+\item{path}{Path to a FreeMoCap CSV, or a v2 Parquet file.}
 
-\item{format}{Export layout. \code{"auto"} reads it from the column names;
-naming one requires that layout and errors on anything else.}
+\item{format}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Export layout.
+\code{"auto"} (default) reads it from the column names; naming one requires
+that layout and errors on anything else. The layout names may change
+while one convention for readers of a source with several export layouts
+is settled (\href{https://github.com/animovement/aniread/issues/118}{#118}).}
+
+\item{trajectory}{Which positions to read from the v2 tidy export:
+\code{"3d_xyz"} (default), the triangulated, filtered keypoints, or
+\code{"rigid_3d_xyz"}, the same keypoints with bone lengths held constant.
+FreeMoCap only computes \code{rigid_3d_xyz} for aspects with a joint
+hierarchy (the body), so other aspects keep \verb{3d_xyz} and a message says
+which. Ignored, with a warning, for every other layout.}
 }
 \value{
 An aniframe with \code{time}, \code{model}, \code{keypoint}, \code{confidence} and
 \code{x}/\code{y}/\code{z} in millimetres on a 3D cartesian coordinate system. \code{time}
 is seconds elapsed from \code{start_datetime} where the layout carries
-timestamps, and frames where it does not.
+timestamps, and frames where it does not. Either way the first frame is
+at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
-Reads all three layouts FreeMoCap writes, dispatching on the
-column names:
+Reads the layouts FreeMoCap v1 and v2 write, dispatching on
+the column names rather than the file name:
 \itemize{
-\item \verb{<recording>_by_frame.csv} — the tidy export. FreeMoCap added a
-\code{reprojection_error} column at v1.8.0, so this exists in an 8- and a
+\item \verb{<recording>_by_frame.csv}: the v1 tidy export. FreeMoCap added a
+\code{reprojection_error} column at v1.7.4, so this exists in an 8- and a
 9-column form; both are read.
-\item \verb{<recording>_by_trajectory.csv} — one column triple per tracked point,
-with the camera timestamps alongside.
-\item \verb{output_data/mediapipe_*_3d_xyz.csv} — the per-model wide files, one
+\item \verb{<recording>_by_trajectory.csv}: v1's one column triple per tracked
+point, with the camera timestamps alongside.
+\item \verb{output_data/mediapipe_*_3d_xyz.csv}: v1's per-model wide files, one
 model each and no timestamps.
+\item \code{output_data/freemocap_data_by_frame.csv}, and the \code{.parquet} beside it:
+the v2 tidy export, one row per keypoint per trajectory per frame (see
+\code{trajectory}). Reading the Parquet file needs the arrow package.
+\item \verb{output_data/<tracker>_<aspect>_<trajectory>.csv}: v2's per-trajectory
+files, such as \code{mediapipe_body_3d_xyz.csv}. They keep v1's names but are
+long (\code{frame}, \code{keypoint}, \code{x}, \code{y}, \code{z}), so they are told from v1's wide
+files by their columns. Their model is read from the file name.
 }
 
 Which layout was read is recorded in the \code{source_format} metadata field.
@@ -37,13 +59,13 @@ the same recording gives the same \code{model} and \code{keypoint} values whiche
 layout it is read from.
 }
 \details{
-\code{confidence} comes from \code{reprojection_error}, which only the 9-column
-\code{by_frame} export carries; every other layout gives all-\code{NA} confidence.
-The two run in opposite directions — a reprojection error is a distance in
-pixels, so zero is perfect and larger is worse, whereas every other reader
-in aniread fills \code{confidence} from a likelihood or a probability where
-larger is better. Storing the error unchanged would make
-\code{aniprocess::filter_na_across(method = "confidence")} drop the best
+\code{confidence} comes from \code{reprojection_error}, which the 9-column
+\code{by_frame} export and the v2 tidy export carry; every other layout gives
+all-\code{NA} confidence. The two run in opposite directions: a reprojection
+error is a distance in pixels, so zero is perfect and larger is worse,
+whereas every other reader in aniread fills \code{confidence} from a likelihood
+or a probability where larger is better. Storing the error unchanged would
+make \code{aniprocess::mask_na_across(method = "confidence")} mask the best
 points, so it is mapped through
 
 \deqn{confidence = 1 / (1 + error)}
@@ -51,6 +73,32 @@ points, so it is mapped through
 which is monotone decreasing onto \eqn{(0, 1]}: a zero error gives 1.
 The mapping is invertible, so the original error is recoverable as
 \code{1 / confidence - 1}.
+\subsection{FreeMoCap v2}{
+
+v2 writes its output through skellyforge. Its tidy export names each model
+\verb{<tracker>.<aspect>} (\code{mediapipe.body}, \code{rtmpose.left_hand}); these are
+read as \verb{<tracker>_<aspect>} (\code{mediapipe_body}, \code{rtmpose_left_hand}), the
+naming of v1's \code{model} column and of v2's own per-trajectory file names.
+The hands keep separate models, since v2's hand keypoint names do not say
+which hand they belong to.
+
+Each keypoint appears once per trajectory type, so only one set of
+positions is read, chosen by \code{trajectory}. The centres of mass
+(\code{total_body_center_of_mass} and \code{segment_center_of_mass}) are added as
+keypoints of a \verb{<tracker>_com} model, as v1 kept them in \code{mediapipe_com},
+with the keypoint names v2 gives them. (Only the body has centres of mass
+in FreeMoCap's models; another aspect's would go to \verb{<tracker>_<aspect>_com},
+so that segment names cannot collide.) Any other trajectory type is not
+read.
+
+v2 writes no timestamps, so \code{time} is the frame number and \code{sampling_rate}
+is left unset. FreeMoCap's main pipeline does not attach reprojection
+errors to the skeleton it saves, so \code{confidence} is usually all \code{NA} too.
+
+\code{\link[=detect_source]{detect_source()}} recognises the v2 tidy CSV. It does not claim the
+per-trajectory files, whose five columns any tidy export could have, or
+the Parquet file; read those with \code{read_freemocap()} directly.
+}
 }
 \examples{
 path <- system.file("extdata", "freemocap.csv", package = "aniread")
@@ -63,5 +111,9 @@ path <- system.file(
   package = "aniread"
 )
 read_freemocap(path)
+
+# FreeMoCap v2's tidy export, reading the rigid-body positions
+path <- system.file("extdata", "freemocap_v2.csv", package = "aniread")
+read_freemocap(path, trajectory = "rigid_3d_xyz")
 
 }

@@ -19,15 +19,15 @@ The file should contain columns for:
 file: the \code{.npz} export is a zip of \code{.npy} arrays, the CSV export is not.}
 
 \item{video_height}{Optional numeric height of the source video frame
-in the same spatial units as the tracking output (TRex defaults to
-centimetres). The \code{.npz} export records this as \code{video_size} and it is
+in the same spatial units as the tracking output, centimetres. The \code{.npz} export records this as \code{video_size} and it is
 used automatically; TRex's CSV export does not, so without it \code{max(y)}
 is used as a fallback when reflecting to \code{bottom_left}.}
 }
 \value{
 A data frame containing movement data with the following columns:
 \itemize{
-\item \code{time}: Time values from the tracking
+\item \code{time}: TRex's \code{time}, in seconds, with the first frame of the video
+at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}
 \item \code{individual}: Factor. The identity TRex assigned, from the \code{.npz}
 export; \code{NA} from the CSV export, which does not record it
 \item \code{keypoint}: Factor identifying tracked points (e.g., "head", "centroid")
@@ -51,6 +51,24 @@ carries the pose keypoints, a per-frame detection probability, the
 identity, and the recording's frame rate and frame size. The CSV export
 carries the centroid and midline of a single individual and none of that
 metadata, so several columns come back \code{NA}.
+
+Both exports give \code{time} in seconds, so \code{unit_time} is \code{"s"}. The \code{.npz}
+records the frame rate as \code{frame_rate}, which becomes \code{sampling_rate}. The
+CSV does not record it, but when it has both a \code{frame} and a \code{time} column,
+and every time is the frame number divided by one rate (to within the
+rounding of \code{time}), that rate becomes \code{sampling_rate}: the frames between
+the first and last row over the seconds between them, or the whole number
+nearest to it when that fits every row as well. Otherwise, as when the
+times are camera timestamps that vary from frame to frame, it is left \code{NA}.
+
+Both exports give positions in centimetres, so \code{unit_space} is \code{"cm"}.
+TRex converts from pixels with its \code{cm_per_pixel}, the real width of the
+image (\code{meta_real_width}) over its width in pixels. When nobody set the
+real width, TRex assumes 30 cm, so the centimetres are only as real as
+that setting. The \code{.npz} records the frame size as \code{video_size}, in
+pixels, and \code{cm_per_pixel}; their product is the frame's width and height
+in centimetres, which become the \code{axis_extents} of x and y and what y is
+reflected around.
 }
 \details{
 The function performs several processing steps:

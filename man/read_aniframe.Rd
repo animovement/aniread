@@ -11,7 +11,8 @@ read_aniframe(path)
 }
 \value{
 The aniframe that was written, with its class: an anipoint, an
-anievent, or another frame built on them, such as an anijoint.
+anievent, or another frame built on them, such as an anijoint. \code{time} is
+as it was written; see "Time" in \code{\link[=read_dataset]{read_dataset()}}.
 }
 \description{
 Reads movement data from a Parquet file and returns an aniframe object.
