@@ -85,24 +85,33 @@ write_aniframe_parquet <- function(data, filename, ...) {
 
   rlang::check_installed(
     "jsonlite",
-    reason = "to record the aniframe class in a Parquet file."
+    reason = "to record the aniframe's metadata in a Parquet file."
   )
 
-  # arrow strips the class from a grouped frame, so record it for read_aniframe()
-  table <- arrow::arrow_table(data) |>
-    suppressWarnings()
-  table$metadata[[ANIMOVEMENT_KEY]] <- as.character(jsonlite::toJSON(
-    list(class = aniframe_subclass(data))
-  ))
+  # The metadata goes in our own key, as JSON any language can read, rather
+  # than in arrow's R-only "r" key. arrow still keeps the table's own
+  # attributes there, such as its grouping.
+  subclass <- aniframe_subclass(data)
+  key <- paste0(
+    '{"class":',
+    jsonlite::toJSON(subclass),
+    ',"metadata":',
+    anicore::get_metadata_json(data),
+    "}"
+  )
+  attr(data, "metadata") <- NULL # anicore: allow-metadata
+  class(data) <- setdiff(class(data), c(subclass, "aniframe"))
+  table <- arrow::arrow_table(data)
+  table$metadata[[ANIMOVEMENT_KEY]] <- key
 
   # Write data
   arrow::write_parquet(table, filename, ...) |>
     suppressWarnings()
 }
 
-# Parquet key-value metadata holding animovement's own record of the frame,
-# as JSON readable from any language: for now {"class": ["anijoint"]}. The
-# metadata is to move here too, replacing arrow's R-only "r" key (#203).
+# Parquet key-value metadata holding animovement's record of the frame, as
+# JSON any language can read: {"class": ["anijoint"], "metadata": {...}}, the
+# metadata as anicore::get_metadata_json() writes it.
 ANIMOVEMENT_KEY <- "animovement"
 
 #' The classes an aniframe has in front of `aniframe`

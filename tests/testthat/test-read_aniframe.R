@@ -74,9 +74,43 @@ test_that("read_aniframe restores the subclass recorded in the file", {
     anicore::as_anijoint()
   write_aniframe(data, path)
 
-  stored <- arrow::read_parquet(path, as_data_frame = FALSE)$metadata
-  expect_identical(stored$animovement, '{"class":["anijoint"]}')
+  key <- arrow::read_parquet(path, as_data_frame = FALSE)$metadata$animovement
+  expect_identical(jsonlite::fromJSON(key)$class, "anijoint")
   expect_identical(class(read_aniframe(path)), class(data))
+})
+
+test_that("the metadata is written to the animovement key, not to arrow's", {
+  path <- withr::local_tempfile(fileext = ".parquet")
+  data <- anicore::example_anipoint() |>
+    anicore::set_metadata(sampling_rate = 30, unit_space = "mm")
+  write_aniframe(data, path)
+
+  stored <- arrow::read_parquet(path, as_data_frame = FALSE)$metadata
+  # Readable without R: plain JSON, values as the documented layout has them
+  key <- jsonlite::fromJSON(stored$animovement)
+  expect_identical(key$class, "anipoint")
+  expect_identical(key$metadata$time$sampling_rate, 30L)
+  expect_identical(key$metadata$space$unit_space, "mm")
+  # arrow's R-only key holds no second copy
+  expect_false(any(grepl("spec_version", stored$r %||% "", fixed = TRUE)))
+  expect_null(attr(arrow::read_parquet(path), "metadata")) # anicore: allow-metadata
+})
+
+test_that("a file whose key records only the class still reads", {
+  # As written between aniread#202 and #203: the class in our key, the
+  # metadata in arrow's
+  path <- withr::local_tempfile(fileext = ".parquet")
+  data <- anicore::example_anipoint(n_obs = 3, n_individuals = 1) |>
+    anicore::set_structure(anicore::example_structure()) |>
+    anicore::as_anijoint()
+  table <- arrow::arrow_table(data) |>
+    suppressWarnings()
+  table$metadata$animovement <- '{"class":["anijoint"]}'
+  arrow::write_parquet(table, path)
+
+  result <- read_aniframe(path)
+  expect_identical(class(result), class(data))
+  expect_identical(anicore::get_metadata(result), anicore::get_metadata(data))
 })
 
 test_that("read_aniframe infers the class of a file that records none", {

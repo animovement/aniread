@@ -35,10 +35,15 @@ read_aniframe <- function(path) {
 
   # Read file
   table <- arrow::read_parquet(path, as_data_frame = FALSE)
-  stored_class <- read_animovement_key(table$metadata[[ANIMOVEMENT_KEY]])$class
+  key <- read_animovement_key(table$metadata[[ANIMOVEMENT_KEY]])
   data <- dplyr::collect(table)
 
-  # Arrow strips the class but keeps the attribute, so presence is all there is to test.
+  if (!is.null(key$metadata)) {
+    return(rebuild_aniframe(data, key))
+  }
+
+  # Written before the metadata moved to our key: arrow restores it from "r",
+  # so presence is all there is to test.
   stored <- attr(data, "metadata") # anicore: allow-metadata
   if (is.null(stored)) {
     cli::cli_abort(
@@ -52,8 +57,8 @@ read_aniframe <- function(path) {
   # arrow keeps the class of an ungrouped frame but strips it from a grouped one
   if (!anicore::is_aniframe(data)) {
     class(data) <- c("aniframe", class(data))
-    subclass <- if (!is.null(stored_class)) {
-      stored_class
+    subclass <- if (!is.null(key$class)) {
+      unlist(key$class)
     } else {
       # Written before the class was recorded: tell the two apart by metadata
       interval <- anicore::get_metadata(data, "variables")$when$interval
@@ -67,7 +72,9 @@ read_aniframe <- function(path) {
 
 #' Parse animovement's Parquet metadata key
 #' @param json The key's value, or `NULL` when the file has none.
-#' @return A list, empty when there is no key.
+#' @return A list, empty when there is no key, parsed without simplifying so
+#'   [anicore::set_metadata_json()] can tell an empty array from an empty
+#'   object.
 #' @keywords internal
 read_animovement_key <- function(json) {
   if (is.null(json)) {
@@ -75,7 +82,21 @@ read_animovement_key <- function(json) {
   }
   rlang::check_installed(
     "jsonlite",
-    reason = "to read the aniframe class from a Parquet file."
+    reason = "to read the aniframe's metadata from a Parquet file."
   )
-  jsonlite::fromJSON(json, simplifyVector = TRUE)
+  jsonlite::fromJSON(json, simplifyVector = FALSE)
+}
+
+#' Rebuild an aniframe from its table and animovement's key
+#'
+#' arrow restores the table with its grouping and base class; the aniframe
+#' classes and the metadata come from the key.
+#'
+#' @param data The table arrow read.
+#' @param key The parsed key, with `class` and `metadata`.
+#' @return The aniframe.
+#' @keywords internal
+rebuild_aniframe <- function(data, key) {
+  class(data) <- c(unlist(key$class), "aniframe", class(data))
+  anicore::set_metadata_json(data, key$metadata)
 }
