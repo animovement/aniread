@@ -255,7 +255,7 @@ read_freemocap_by_frame <- function(data) {
 #'
 #' @param data A data frame read from a FreeMoCap `by_trajectory.csv`.
 #'
-#' @return As [read_freemocap_by_frame()].
+#' @return As `read_freemocap_by_frame()`.
 #' @noRd
 read_freemocap_by_trajectory <- function(data) {
   timestamps <- data$timestamp
@@ -273,7 +273,7 @@ read_freemocap_by_trajectory <- function(data) {
 #'
 #' @param data A data frame read from a FreeMoCap `*_3d_xyz.csv`.
 #'
-#' @return As [read_freemocap_by_frame()].
+#' @return As `read_freemocap_by_frame()`.
 #' @noRd
 read_freemocap_wide <- function(data) {
   pivot_freemocap_points(data, timestamps = NULL)
@@ -450,7 +450,7 @@ FREEMOCAP_COM_TRAJECTORIES <- c(
 #' @param data A data frame whose columns are all `<point>_<x|y|z>`.
 #' @param timestamps Optional vector of timestamps, one per row of `data`.
 #'
-#' @return As [read_freemocap_by_frame()].
+#' @return As `read_freemocap_by_frame()`.
 #' @noRd
 pivot_freemocap_points <- function(data, timestamps = NULL) {
   if (is.null(timestamps)) {
