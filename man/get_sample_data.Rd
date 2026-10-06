@@ -13,13 +13,16 @@ get_sample_data(
 )
 }
 \arguments{
-\item{source}{Character string specifying either a tracking software name or a URL.
-Currently supported software names:
+\item{source}{Character string specifying either a source name, as
+\code{\link[=read_dataset]{read_dataset()}} names it, or a URL. Currently supported source names:
 \itemize{
 \item "animalta": Data from AnimalTA
 \item "anipose": Mouse paw tracking data
 \item "bonsai": Tracking data from Bonsai
-\item "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
+\item "c3d": Motion capture in C3D (2 datasets): "example", a walking
+trial, and "sample-static", a static calibration trial
+\item "deeplabcut": Mouse/animal tracking from DeepLabCut (4 datasets)
+\item "fasttrack": Tracking from FastTrack
 \item "fictrac": Fictrac sample data
 \item "freemocap": FreeMoCap motion capture of a person doing star jumps
 (4 datasets), from movement's sample data, written by FreeMoCap's own
@@ -27,17 +30,28 @@ saver. The default, "star-jump", is the 9-column \code{by_frame.csv} of
 v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
 versions; "star-jump_by_trajectory" and "star-jump_wide" are the
 recording's \code{by_trajectory.csv} and \code{mediapipe_body_3d_xyz.csv}
-\item "idtracker": Trajectories from idtracker.ai
-\item "lightningpose": Mouse tracking from LightningPose (2 datasets)
+\item "idtrackerai": Trajectories from idtracker.ai (2 datasets): the \code{.h5}
+export, and "trajectories_csv", the CSV export
+\item "lightningpose": Mouse tracking from LightningPose (3 datasets). The
+default, "IBL-paw_EKS-left", is the Ensemble Kalman Smoother's output
+for one camera
 \item "movement": netCDF files saved by the movement Python package
 (2 datasets). The default, "two-mice_octagon", has the dimension names
 movement uses since 0.17.0; "legacy-plural" is the same recording
 with the plural names of earlier versions
-\item "sleap": Animal tracking from SLEAP (3 datasets)
+\item "octron": Segmentation tracking from OCTRON
+\item "sleap": Animal tracking from SLEAP (4 datasets)
+\item "trackball_bonsai": Two optical-flow sensors under a trackball,
+logged with Bonsai. Unpacks to one file per sensor and returns both
+paths, which \code{\link[=read_trackball]{read_trackball()}} reads as one recording
+\item "trackmate": Cell tracking from TrackMate (3 datasets)
 \item "trex": Multi-animal tracking from TRex (2 datasets). The default,
 "five-locusts", unpacks to one \code{.npz} per individual and returns a
 vector of paths, which \code{\link[=read_trex]{read_trex()}} reads as one recording
 }
+
+\code{"idtracker"} and \code{"trackball"}, the names before these matched
+\code{\link[=read_dataset]{read_dataset()}}, still work but are deprecated.
 
 Alternatively, provide a URL string (starting with "http://" or "https://")
 to download a file from a custom location.}
@@ -57,9 +71,10 @@ Can be called with or without specifying a source.}
 }
 \value{
 Character string (or vector) with the path(s) to the downloaded file(s).
-For TRex datasets, returns a character vector of paths to the individual tracking
-files. For all other sources, returns a single file path. Returns NULL invisibly
-if \code{list_datasets = TRUE}.
+For a dataset distributed as a zip file (the TRex "five-locusts" and
+trackball datasets), returns a character vector of paths to the files it
+unpacks to. For all others, returns a single file path. Returns NULL
+invisibly if \code{list_datasets = TRUE}.
 }
 \description{
 Downloads sample data for different animal tracking software and returns the path

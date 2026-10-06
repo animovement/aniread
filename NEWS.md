@@ -68,6 +68,8 @@
 
 ## Changed
 
+* `get_sample_data()` names sources as `read_dataset()` does, and serves a sample for every source that has a public one (#169). `"idtracker"` is now `"idtrackerai"` and `"trackball"` is now `"trackball_bonsai"`; the old names still work but are deprecated. New datasets: `"octron"`, `"trackmate"` (three recordings), `"fasttrack"`, idtracker.ai's CSV export (`"trajectories_csv"`), a second C3D file (`"sample-static"`), DeepLabCut's wasp as CSV (`"single-wasp_csv"`), and SLEAP's three Aeon mice, with named tracks (`"three-mice_Aeon"`). `get_sample_data("lightningpose")` now downloads the 172 kB `"IBL-paw_EKS-left"` by default rather than the 24 MB `"mouse-face"`, which is still available by name.
+
 * `write_intracktive()` numbers tracks by the frame's identity keys (`anicore::get_keys()`) rather than by a fixed list of `session`, `trial`, `model`, `individual` and `keypoint`. A frame read by `read_trackmate()`, whose tracks are told apart by `track`, was written with all its tracks under one `track_id`; each track now gets its own. Since the keys are read from the aniframe's metadata, `data` must now be an aniframe: a plain data frame errors, where it was written by whichever of those columns it had.
 
 * The FreeMoCap v1 example files, `freemocap.csv`, `freemocap_by_trajectory.csv` and `freemocap_wide.csv` in `inst/extdata`, are now written by FreeMoCap's own code (v1.8.2's `split_and_save()`, `DataLoader` and `DataSaver`) from one synthetic recording, and so are distributed under aniread's licence. They were excerpts of FreeMoCap's v1.8.0 test-data release, whose licence is unknown. `read_freemocap()`'s examples therefore show other values, and the three layouts now hold the same points, so they can be compared row for row. `tests/testthat/data/freemocap/README.md` records how they were made.
@@ -99,6 +101,8 @@
 * `read_freemocap()`'s error names the layout it found rather than only the one it wanted. Told a `by_trajectory.csv` or a per-model `mediapipe_body_3d_xyz.csv`, it said to look for a file ending in `by_frame.csv` — unhelpful when the recording never produced one. Neither layout is read yet; both are now recognised well enough to say so.
 
 ## Fixed
+
+* `get_sample_data()` downloads every file in binary mode. It chose text mode for any suffix not on a list, which left out `.c3d`, `.xml` and `.npz`; on Windows, text mode rewrites line endings, which corrupts a binary file such as a C3D.
 
 * `read_trackball()` records that a trackball sensor has no fixed rate (#195). The sensor reports motion only as it happens, so the `sampling_rate` a frame is given is the rate of the windows its readings are integrated into, and anicore (from 0.8.0.9008) took that first declared rate for the device's own as `source_sampling_rate`. `source_sampling_rate` is now `NaN`, anicore's marker for a device with no fixed rate, and `sampling_rate` is still the window rate.
 
