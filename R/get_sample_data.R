@@ -3,12 +3,15 @@
 #' Downloads sample data for different animal tracking software and returns the path
 #' to the downloaded file. The function caches the data to avoid repeated downloads.
 #'
-#' @param source Character string specifying either a tracking software name or a URL.
-#'   Currently supported software names:
+#' @param source Character string specifying either a source name, as
+#'   [read_dataset()] names it, or a URL. Currently supported source names:
 #'   - "animalta": Data from AnimalTA
 #'   - "anipose": Mouse paw tracking data
 #'   - "bonsai": Tracking data from Bonsai
-#'   - "deeplabcut": Mouse/animal tracking from DeepLabCut (3 datasets)
+#'   - "c3d": Motion capture in C3D (2 datasets): "example", a walking
+#'     trial, and "sample-static", a static calibration trial
+#'   - "deeplabcut": Mouse/animal tracking from DeepLabCut (4 datasets)
+#'   - "fasttrack": Tracking from FastTrack
 #'   - "fictrac": Fictrac sample data
 #'   - "freemocap": FreeMoCap motion capture of a person doing star jumps
 #'     (4 datasets), from movement's sample data, written by FreeMoCap's own
@@ -16,16 +19,27 @@
 #'     v1.7.4 and later; "star-jump_v1.7" is the 8-column one of earlier
 #'     versions; "star-jump_by_trajectory" and "star-jump_wide" are the
 #'     recording's `by_trajectory.csv` and `mediapipe_body_3d_xyz.csv`
-#'   - "idtracker": Trajectories from idtracker.ai
-#'   - "lightningpose": Mouse tracking from LightningPose (2 datasets)
+#'   - "idtrackerai": Trajectories from idtracker.ai (2 datasets): the `.h5`
+#'     export, and "trajectories_csv", the CSV export
+#'   - "lightningpose": Mouse tracking from LightningPose (3 datasets). The
+#'     default, "IBL-paw_EKS-left", is the Ensemble Kalman Smoother's output
+#'     for one camera
 #'   - "movement": netCDF files saved by the movement Python package
 #'     (2 datasets). The default, "two-mice_octagon", has the dimension names
 #'     movement uses since 0.17.0; "legacy-plural" is the same recording
 #'     with the plural names of earlier versions
-#'   - "sleap": Animal tracking from SLEAP (3 datasets)
+#'   - "octron": Segmentation tracking from OCTRON
+#'   - "sleap": Animal tracking from SLEAP (4 datasets)
+#'   - "trackball_bonsai": Two optical-flow sensors under a trackball,
+#'     logged with Bonsai. Unpacks to one file per sensor and returns both
+#'     paths, which [read_trackball()] reads as one recording
+#'   - "trackmate": Cell tracking from TrackMate (3 datasets)
 #'   - "trex": Multi-animal tracking from TRex (2 datasets). The default,
 #'     "five-locusts", unpacks to one `.npz` per individual and returns a
 #'     vector of paths, which [read_trex()] reads as one recording
+#'
+#'   `"idtracker"` and `"trackball"`, the names before these matched
+#'   [read_dataset()], still work but are deprecated.
 #'
 #'   Alternatively, provide a URL string (starting with "http://" or "https://")
 #'   to download a file from a custom location.
@@ -41,9 +55,10 @@
 #'   Can be called with or without specifying a source.
 #'
 #' @return Character string (or vector) with the path(s) to the downloaded file(s).
-#'   For TRex datasets, returns a character vector of paths to the individual tracking
-#'   files. For all other sources, returns a single file path. Returns NULL invisibly
-#'   if `list_datasets = TRUE`.
+#'   For a dataset distributed as a zip file (the TRex "five-locusts" and
+#'   trackball datasets), returns a character vector of paths to the files it
+#'   unpacks to. For all others, returns a single file path. Returns NULL
+#'   invisibly if `list_datasets = TRUE`.
 #'
 #' @details
 #' The function downloads sample data and caches it locally. If the file already exists
@@ -89,162 +104,10 @@ get_sample_data <- function(
   quiet = FALSE,
   list_datasets = FALSE
 ) {
-  # Base URLs for data repositories
-  gin_base <- "https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data/raw/master"
-  github_base <- "https://raw.githubusercontent.com/animovement/movement-data/main/data"
-
-  # Define available sources and their corresponding URLs
-  sources <- list(
-    animalta = list(
-      "single-individual" = list(
-        url = paste0(
-          github_base,
-          "/AnimalTA/single_individual_multi_arena.csv"
-        ),
-        filename = "animalta_single-individual.csv"
-      )
-    ),
-    anipose = list(
-      "mouse-paw" = list(
-        url = paste0(
-          gin_base,
-          "/poses/anipose_mouse-paw_anipose-paper.triangulation.csv"
-        ),
-        filename = "anipose_mouse-paw.csv"
-      )
-    ),
-    bonsai = list(
-      "LI850" = list(
-        url = paste0(github_base, "/bonsai/LI850.csv"),
-        filename = "bonsai_LI850.csv"
-      )
-    ),
-    deeplabcut = list(
-      "single-mouse_EPM" = list(
-        url = paste0(gin_base, "/poses/DLC_single-mouse_EPM.predictions.h5"),
-        filename = "deeplabcut_single-mouse_EPM.h5"
-      ),
-      "two-mice" = list(
-        url = paste0(gin_base, "/poses/DLC_two-mice.predictions.csv"),
-        filename = "deeplabcut_two-mice.csv"
-      ),
-      "single-wasp" = list(
-        url = paste0(gin_base, "/poses/DLC_single-wasp.predictions.h5"),
-        filename = "deeplabcut_single-wasp.h5"
-      )
-    ),
-    c3d = list(
-      "example" = list(
-        url = paste0(github_base, "/c3d/example.c3d"),
-        filename = "example.c3d"
-      )
-    ),
-    fictrac = list(
-      "sample" = list(
-        url = paste0(github_base, "/fictrac/fictrac_sample.dat"),
-        filename = "fictrac_sample.dat"
-      )
-    ),
-    freemocap = list(
-      # movement's star-jump recording (CC BY 4.0, Max Staras), written by
-      # FreeMoCap v1.8.2's own saver: the 9-column by_frame layout.
-      "star-jump" = list(
-        url = paste0(
-          github_base,
-          "/freemocap/freemocap_star-jump_by_frame.csv"
-        ),
-        filename = "freemocap_star-jump_by_frame.csv"
-      ),
-      # The same recording as FreeMoCap v1.7.3 writes it: 8 columns, no
-      # reprojection_error.
-      "star-jump_v1.7" = list(
-        url = paste0(
-          github_base,
-          "/freemocap/freemocap_star-jump_by_frame_v1.7.csv"
-        ),
-        filename = "freemocap_star-jump_by_frame_v1.7.csv"
-      ),
-      "star-jump_by_trajectory" = list(
-        url = paste0(
-          github_base,
-          "/freemocap/freemocap_star-jump_by_trajectory.csv"
-        ),
-        filename = "freemocap_star-jump_by_trajectory.csv"
-      ),
-      "star-jump_wide" = list(
-        url = paste0(
-          github_base,
-          "/freemocap/freemocap_star-jump_mediapipe_body_3d_xyz.csv"
-        ),
-        filename = "freemocap_star-jump_mediapipe_body_3d_xyz.csv"
-      )
-    ),
-    idtracker = list(
-      "trajectories" = list(
-        url = paste0(github_base, "/idtrackerai/trajectories.h5"),
-        filename = "idtracker_trajectories.h5"
-      )
-    ),
-    lightningpose = list(
-      "mouse-face" = list(
-        url = paste0(gin_base, "/poses/LP_mouse-face_AIND.predictions.csv"),
-        filename = "lightningpose_mouse-face.csv"
-      ),
-      "mouse-twoview" = list(
-        url = paste0(gin_base, "/poses/LP_mouse-twoview_AIND.predictions.csv"),
-        filename = "lightningpose_mouse-twoview.csv"
-      )
-    ),
-    movement = list(
-      # Saved by movement 0.17.0 or later, with singular dimension names
-      "two-mice_octagon" = list(
-        url = paste0(gin_base, "/poses/MOVE_two-mice_octagon.analysis.nc"),
-        filename = "movement_two-mice_octagon.nc"
-      ),
-      # The same recording saved before 0.17.0, with the plural `individuals`
-      # and `keypoints` dimensions
-      "legacy-plural" = list(
-        url = paste0(
-          github_base,
-          "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc"
-        ),
-        filename = "movement_two-mice_octagon_legacy-plural.nc"
-      )
-    ),
-    sleap = list(
-      "single-mouse_EPM" = list(
-        url = paste0(gin_base, "/poses/SLEAP_single-mouse_EPM.analysis.h5"),
-        filename = "sleap_single-mouse_EPM.h5"
-      ),
-      "two-mice_octagon" = list(
-        url = paste0(gin_base, "/poses/SLEAP_two-mice_octagon.analysis.h5"),
-        filename = "sleap_two-mice_octagon.h5"
-      ),
-      "zebras_drone" = list(
-        url = paste0(gin_base, "/poses/SLEAP_OSFM_zebras_drone.h5"),
-        filename = "sleap_zebras_drone.h5"
-      )
-    ),
-    trackball = list(
-      "beetles" = list(
-        url = paste0(github_base, "/trackball/single_named/trackball.zip"),
-        filename = "trackball_beetles.zip"
-      )
-    ),
-    trex = list(
-      # Listed first, so it is the default: five locusts over 2845 frames with
-      # pose keypoints, per-frame detection probability and identities, where
-      # "beetles" is a 19-frame CSV excerpt that cannot carry an example.
-      "five-locusts" = list(
-        url = paste0(gin_base, "/poses/TRex_five-locusts.zip"),
-        filename = "trex_five-locusts.zip"
-      ),
-      "beetles" = list(
-        url = paste0(github_base, "/trex/beetle.csv"),
-        filename = "trex_sample.csv"
-      )
-    )
-  )
+  sources <- sample_data_sources()
+  if (!missing(source)) {
+    source <- resolve_sample_source(source)
+  }
 
   # Handle list_datasets request
   if (list_datasets) {
@@ -394,22 +257,6 @@ get_sample_data <- function(
     dir.create(cache_dir, recursive = TRUE)
   }
 
-  # Determine download mode based on file extension
-  file_ext <- tolower(tools::file_ext(filename))
-  binary_extensions <- c(
-    "h5",
-    "hdf5",
-    "dat",
-    "zip",
-    "tar",
-    "gz",
-    "mp4",
-    "avi",
-    "slp",
-    "nc"
-  )
-  download_mode <- if (file_ext %in% binary_extensions) "wb" else "w"
-
   # Try to download the file with appropriate method
   download_success <- try(
     {
@@ -417,7 +264,9 @@ get_sample_data <- function(
         file_url,
         destfile = data_path,
         quiet = TRUE,
-        mode = download_mode,
+        # Binary for every file: text mode corrupts binary files on Windows,
+        # and keeps a text file's line endings as they are elsewhere
+        mode = "wb",
         method = "auto"
       )
     },
@@ -470,4 +319,207 @@ get_sample_data <- function(
   }
 
   return(data_path)
+}
+
+#' Sample datasets, by source
+#'
+#' Keys are the source names of [source_registry()], so a source is named the
+#' same here as in [read_dataset()]. The first dataset of a source is its
+#' default; keep defaults small.
+#'
+#' @return A named list of sources, each a named list of datasets with `url`
+#'   and `filename`.
+#' @keywords internal
+sample_data_sources <- function() {
+  gin_base <- "https://gin.swc.ucl.ac.uk/neuroinformatics/movement-sample-data/raw/master"
+  github_base <- "https://raw.githubusercontent.com/animovement/movement-data/main/data"
+  gin <- function(path, filename) {
+    list(url = paste0(gin_base, path), filename = filename)
+  }
+  github <- function(path, filename) {
+    list(url = paste0(github_base, path), filename = filename)
+  }
+
+  list(
+    animalta = list(
+      "single-individual" = github(
+        "/AnimalTA/single_individual_multi_arena.csv",
+        "animalta_single-individual.csv"
+      )
+    ),
+    anipose = list(
+      "mouse-paw" = gin(
+        "/poses/anipose_mouse-paw_anipose-paper.triangulation.csv",
+        "anipose_mouse-paw.csv"
+      )
+    ),
+    bonsai = list(
+      "LI850" = github("/bonsai/LI850.csv", "bonsai_LI850.csv")
+    ),
+    c3d = list(
+      "example" = github("/c3d/example.c3d", "example.c3d"),
+      "sample-static" = github(
+        "/c3d/Sample_Static.c3d",
+        "c3d_sample-static.c3d"
+      )
+    ),
+    deeplabcut = list(
+      "single-mouse_EPM" = gin(
+        "/poses/DLC_single-mouse_EPM.predictions.h5",
+        "deeplabcut_single-mouse_EPM.h5"
+      ),
+      "two-mice" = gin(
+        "/poses/DLC_two-mice.predictions.csv",
+        "deeplabcut_two-mice.csv"
+      ),
+      "single-wasp" = gin(
+        "/poses/DLC_single-wasp.predictions.h5",
+        "deeplabcut_single-wasp.h5"
+      ),
+      "single-wasp_csv" = gin(
+        "/poses/DLC_single-wasp.predictions.csv",
+        "deeplabcut_single-wasp.csv"
+      )
+    ),
+    fasttrack = list(
+      "tracking" = github("/fasttrack/tracking.txt", "fasttrack_tracking.txt")
+    ),
+    fictrac = list(
+      "sample" = github("/fictrac/fictrac_sample.dat", "fictrac_sample.dat")
+    ),
+    freemocap = list(
+      # movement's star-jump recording (CC BY 4.0, Max Staras), written by
+      # FreeMoCap v1.8.2's own saver: the 9-column by_frame layout.
+      "star-jump" = github(
+        "/freemocap/freemocap_star-jump_by_frame.csv",
+        "freemocap_star-jump_by_frame.csv"
+      ),
+      # The same recording as FreeMoCap v1.7.3 writes it: 8 columns, no
+      # reprojection_error.
+      "star-jump_v1.7" = github(
+        "/freemocap/freemocap_star-jump_by_frame_v1.7.csv",
+        "freemocap_star-jump_by_frame_v1.7.csv"
+      ),
+      "star-jump_by_trajectory" = github(
+        "/freemocap/freemocap_star-jump_by_trajectory.csv",
+        "freemocap_star-jump_by_trajectory.csv"
+      ),
+      "star-jump_wide" = github(
+        "/freemocap/freemocap_star-jump_mediapipe_body_3d_xyz.csv",
+        "freemocap_star-jump_mediapipe_body_3d_xyz.csv"
+      )
+    ),
+    idtrackerai = list(
+      "trajectories" = github(
+        "/idtrackerai/trajectories.h5",
+        "idtracker_trajectories.h5"
+      ),
+      "trajectories_csv" = github(
+        "/idtrackerai/trajectories_csv/trajectories.csv",
+        "idtracker_trajectories.csv"
+      )
+    ),
+    lightningpose = list(
+      # The Ensemble Kalman Smoother's output for one camera of IBL's paw
+      # recordings: 172 kB, where the two AIND recordings are 24 MB each.
+      "IBL-paw_EKS-left" = gin(
+        "/poses/EKS_IBL-paw_multicam_left.predictions.csv",
+        "lightningpose_IBL-paw_EKS-left.csv"
+      ),
+      "mouse-face" = gin(
+        "/poses/LP_mouse-face_AIND.predictions.csv",
+        "lightningpose_mouse-face.csv"
+      ),
+      "mouse-twoview" = gin(
+        "/poses/LP_mouse-twoview_AIND.predictions.csv",
+        "lightningpose_mouse-twoview.csv"
+      )
+    ),
+    movement = list(
+      # Saved by movement 0.17.0 or later, with singular dimension names
+      "two-mice_octagon" = gin(
+        "/poses/MOVE_two-mice_octagon.analysis.nc",
+        "movement_two-mice_octagon.nc"
+      ),
+      # The same recording saved before 0.17.0, with the plural `individuals`
+      # and `keypoints` dimensions
+      "legacy-plural" = github(
+        "/movement/SLEAP_two-mice_octagon.analysis-1768334869096.nc",
+        "movement_two-mice_octagon_legacy-plural.nc"
+      )
+    ),
+    octron = list(
+      "sample" = github("/octron/sample-data.csv", "octron_sample.csv")
+    ),
+    sleap = list(
+      "single-mouse_EPM" = gin(
+        "/poses/SLEAP_single-mouse_EPM.analysis.h5",
+        "sleap_single-mouse_EPM.h5"
+      ),
+      "two-mice_octagon" = gin(
+        "/poses/SLEAP_two-mice_octagon.analysis.h5",
+        "sleap_two-mice_octagon.h5"
+      ),
+      "zebras_drone" = gin(
+        "/poses/SLEAP_OSFM_zebras_drone.h5",
+        "sleap_zebras_drone.h5"
+      ),
+      # Named tracks, in 50 kB
+      "three-mice_Aeon" = gin(
+        "/poses/SLEAP_three-mice_Aeon_mixed-labels.analysis.h5",
+        "sleap_three-mice_Aeon.h5"
+      )
+    ),
+    trackball_bonsai = list(
+      "beetles" = github(
+        "/trackball/single_named/trackball.zip",
+        "trackball_beetles.zip"
+      )
+    ),
+    trackmate = list(
+      # Six tracks with divisions, and the frame interval recorded
+      "celegans-early" = github(
+        "/trackmate/CelegansEarly_MIP.xml",
+        "trackmate_celegans-early.xml"
+      ),
+      "U251" = github(
+        "/trackmate/U251_mitoRED_lifeAct670_3-MIP.xml",
+        "trackmate_U251.xml"
+      ),
+      "trpL" = github("/trackmate/trpL_150310-11.xml", "trackmate_trpL.xml")
+    ),
+    trex = list(
+      # Listed first, so it is the default: five locusts over 2845 frames with
+      # pose keypoints, per-frame detection probability and identities, where
+      # "beetles" is a 19-frame CSV excerpt that cannot carry an example.
+      "five-locusts" = gin(
+        "/poses/TRex_five-locusts.zip",
+        "trex_five-locusts.zip"
+      ),
+      "beetles" = github("/trex/beetle.csv", "trex_sample.csv")
+    )
+  )
+}
+
+# Source names get_sample_data() used before they matched the registry
+SAMPLE_DATA_ALIASES <- c(
+  idtracker = "idtrackerai",
+  trackball = "trackball_bonsai"
+)
+
+#' Map a superseded sample-data source name to its registry name
+#' @param source A source name or URL.
+#' @return The registry name, or `source` unchanged.
+#' @keywords internal
+resolve_sample_source <- function(source) {
+  if (!rlang::is_string(source) || !source %in% names(SAMPLE_DATA_ALIASES)) {
+    return(source)
+  }
+  new <- SAMPLE_DATA_ALIASES[[source]]
+  lifecycle::deprecate_soft(
+    "0.8.0",
+    I(sprintf('get_sample_data("%s")', source)),
+    I(sprintf('get_sample_data("%s")', new))
+  )
+  new
 }
