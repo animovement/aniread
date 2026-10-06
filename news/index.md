@@ -58,6 +58,19 @@
   is written as a plain table; inTRACKtive’s CSV needs
   `format = "intracktive"`.
 
+- [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+  writes one file per group with `by`
+  ([\#79](https://github.com/animovement/aniread/issues/79)):
+  `by = "individual"` writes `mice_individual-mouse1.csv`,
+  `mice_individual-mouse2.csv`, … from `"mice.csv"`. `by` takes several
+  keys, and the role names `"what"` and `"when"` stand for all identity
+  or all temporal keys, so `by = c("what", "when")` writes one file per
+  track. Keys in braces in the path name the files instead, and set
+  `by`: `"{session}/mice_{individual}.csv"`. Each file holds an aniframe
+  with the class and metadata of the whole. This is for tools that
+  cannot hold several individuals with differing keypoints in one file,
+  such as movement.
+
 - A Parquet file keeps the class it was written with
   ([\#135](https://github.com/animovement/aniread/issues/135)).
   [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)

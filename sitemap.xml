@@ -45,6 +45,7 @@
 <url><loc>https://animovement.dev/aniread/reference/join_trackball_files.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/parse_octron_column.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/parse_pickle.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/path_for_group.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/peek_bytes.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/peek_h5_names.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/peek_header.html</loc></url>
@@ -87,6 +88,7 @@
 <url><loc>https://animovement.dev/aniread/reference/registry_sources.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_animalta_layout.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_area_sum.html</loc></url>
+<url><loc>https://animovement.dev/aniread/reference/resolve_by.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_column.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_largest.html</loc></url>
 <url><loc>https://animovement.dev/aniread/reference/resolve_octron_segments.html</loc></url>

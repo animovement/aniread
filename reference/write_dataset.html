@@ -62,7 +62,7 @@ suffix.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">write_dataset</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span>, format <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">write_dataset</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span>, format <span class="op">=</span> <span class="cn">NULL</span>, by <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -84,6 +84,14 @@ the suffix of <code>path</code>. Otherwise one of the <code>"write"</code> sourc
 <code><a href="get_supported_sources.html">get_supported_sources()</a></code>.</p></dd>
 
 
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>Key columns to write one file per combination of, or <code>NULL</code>
+(the default) for a single file. Any of <code><a href="https://animovement.dev/anicore/reference/get_keys.html" class="external-link">anicore::get_keys()</a></code>; the role
+names <code>"what"</code> and <code>"when"</code> stand for all identity or all temporal keys,
+so <code>by = c("what", "when")</code> writes one file per track. See "Files per
+group".</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Passed on to the writer for <code>format</code>.</p></dd>
 
@@ -103,6 +111,20 @@ by <code><a href="write_aniframe.html">write_aniframe()</a></code>, and inTRACKt
 <p>Parquet keeps everything: <code><a href="read_dataset.html">read_dataset()</a></code> gives back the same class,
 grouping and metadata that were written. Other formats keep what the
 format can hold.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="files-per-group">Files per group<a class="anchor" aria-label="anchor" href="#files-per-group"></a></h2>
+
+
+<p>With <code>by</code>, each file is named from <code>path</code> with the key values appended
+before the suffix: <code>"mice.csv"</code> with <code>by = "individual"</code> gives
+<code>mice_individual-mouse1.csv</code>, <code>mice_individual-mouse2.csv</code>, and so on, and
+several keys give <code>mice_individual-mouse1_session-2.csv</code>.</p>
+<p>For other names, put the keys in <code>path</code> in braces:
+<code>"{session}/mice_{individual}.csv"</code>. The braces then set <code>by</code>, so it can be
+left out, and directories in <code>path</code> are created. Characters other than
+letters, digits, <code>.</code>, <code>_</code> and <code>-</code> in a value become <code>-</code>.</p>
+<p>Each file holds an aniframe with the same class and metadata as <code>data</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -139,7 +161,35 @@ format-specific arguments.</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Name the format where the suffix is shared</span></span></span>
 <span class="r-in"><span><span class="fu">write_dataset</span><span class="op">(</span><span class="va">data</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".csv"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"intracktive"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Wrote inTRACKtive CSV to <span style="color: #0000BB;">/tmp/RtmpwmXOge/file1a404e9ed252.csv</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Wrote inTRACKtive CSV to <span style="color: #0000BB;">/tmp/RtmpZBT9fG/file1a5735e25353.csv</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># One file per individual, or per track</span></span></span>
+<span class="r-in"><span><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">dir</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">write_dataset</span><span class="op">(</span><span class="va">data</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir</span>, <span class="st">"mice.parquet"</span><span class="op">)</span>, by <span class="op">=</span> <span class="st">"individual"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Wrote 3 files, one per <span style="color: #00BB00;">individual</span>, to <span style="color: #0000BB;">/tmp/RtmpZBT9fG/file1a575b86fe54</span>.</span>
+<span class="r-in"><span><span class="fu">write_dataset</span><span class="op">(</span><span class="va">data</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir</span>, <span class="st">"{individual}/{keypoint}.parquet"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Wrote 33 files, one per <span style="color: #00BB00;">individual</span> and <span style="color: #00BB00;">keypoint</span>, to</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;">/tmp/RtmpZBT9fG/file1a575b86fe54</span>.</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "1/abdomen.parquet"         "1/foot_left.parquet"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "1/foot_right.parquet"      "1/head.parquet"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "1/hip_left.parquet"        "1/hip_right.parquet"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "1/knee_left.parquet"       "1/knee_right.parquet"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "1/neck.parquet"            "1/shoulder_left.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "1/shoulder_right.parquet"  "2/abdomen.parquet"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "2/foot_left.parquet"       "2/foot_right.parquet"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "2/head.parquet"            "2/hip_left.parquet"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "2/hip_right.parquet"       "2/knee_left.parquet"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "2/knee_right.parquet"      "2/neck.parquet"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "2/shoulder_left.parquet"   "2/shoulder_right.parquet" </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "3/abdomen.parquet"         "3/foot_left.parquet"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "3/foot_right.parquet"      "3/head.parquet"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "3/hip_left.parquet"        "3/hip_right.parquet"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "3/knee_left.parquet"       "3/knee_right.parquet"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "3/neck.parquet"            "3/shoulder_left.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "3/shoulder_right.parquet"  "mice_individual-1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "mice_individual-2.parquet" "mice_individual-3.parquet"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

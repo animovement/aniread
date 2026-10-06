@@ -7,7 +7,7 @@ By default the format is worked out from the file suffix.
 ## Usage
 
 ``` r
-write_dataset(data, path, format = NULL, ...)
+write_dataset(data, path, format = NULL, by = NULL, ...)
 ```
 
 ## Arguments
@@ -28,6 +28,15 @@ write_dataset(data, path, format = NULL, ...)
   Which format to write. `NULL` (the default) infers it from the suffix
   of `path`. Otherwise one of the `"write"` sources in
   [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md).
+
+- by:
+
+  Key columns to write one file per combination of, or `NULL` (the
+  default) for a single file. Any of
+  [`anicore::get_keys()`](https://animovement.dev/anicore/reference/get_keys.html);
+  the role names `"what"` and `"when"` stand for all identity or all
+  temporal keys, so `by = c("what", "when")` writes one file per track.
+  See "Files per group".
 
 - ...:
 
@@ -52,6 +61,20 @@ Parquet keeps everything:
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md)
 gives back the same class, grouping and metadata that were written.
 Other formats keep what the format can hold.
+
+## Files per group
+
+With `by`, each file is named from `path` with the key values appended
+before the suffix: `"mice.csv"` with `by = "individual"` gives
+`mice_individual-mouse1.csv`, `mice_individual-mouse2.csv`, and so on,
+and several keys give `mice_individual-mouse1_session-2.csv`.
+
+For other names, put the keys in `path` in braces:
+`"{session}/mice_{individual}.csv"`. The braces then set `by`, so it can
+be left out, and directories in `path` are created. Characters other
+than letters, digits, `.`, `_` and `-` in a value become `-`.
+
+Each file holds an aniframe with the same class and metadata as `data`.
 
 ## See also
 
@@ -90,5 +113,33 @@ read_dataset(path)
 
 # Name the format where the suffix is shared
 write_dataset(data, tempfile(fileext = ".csv"), format = "intracktive")
-#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpwmXOge/file1a404e9ed252.csv
+#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpZBT9fG/file1a5735e25353.csv
+
+# One file per individual, or per track
+dir <- tempfile()
+dir.create(dir)
+write_dataset(data, file.path(dir, "mice.parquet"), by = "individual")
+#> Wrote 3 files, one per individual, to /tmp/RtmpZBT9fG/file1a575b86fe54.
+write_dataset(data, file.path(dir, "{individual}/{keypoint}.parquet"))
+#> Wrote 33 files, one per individual and keypoint, to
+#> /tmp/RtmpZBT9fG/file1a575b86fe54.
+list.files(dir, recursive = TRUE)
+#>  [1] "1/abdomen.parquet"         "1/foot_left.parquet"      
+#>  [3] "1/foot_right.parquet"      "1/head.parquet"           
+#>  [5] "1/hip_left.parquet"        "1/hip_right.parquet"      
+#>  [7] "1/knee_left.parquet"       "1/knee_right.parquet"     
+#>  [9] "1/neck.parquet"            "1/shoulder_left.parquet"  
+#> [11] "1/shoulder_right.parquet"  "2/abdomen.parquet"        
+#> [13] "2/foot_left.parquet"       "2/foot_right.parquet"     
+#> [15] "2/head.parquet"            "2/hip_left.parquet"       
+#> [17] "2/hip_right.parquet"       "2/knee_left.parquet"      
+#> [19] "2/knee_right.parquet"      "2/neck.parquet"           
+#> [21] "2/shoulder_left.parquet"   "2/shoulder_right.parquet" 
+#> [23] "3/abdomen.parquet"         "3/foot_left.parquet"      
+#> [25] "3/foot_right.parquet"      "3/head.parquet"           
+#> [27] "3/hip_left.parquet"        "3/hip_right.parquet"      
+#> [29] "3/knee_left.parquet"       "3/knee_right.parquet"     
+#> [31] "3/neck.parquet"            "3/shoulder_left.parquet"  
+#> [33] "3/shoulder_right.parquet"  "mice_individual-1.parquet"
+#> [35] "mice_individual-2.parquet" "mice_individual-3.parquet"
 ```
