@@ -4,7 +4,7 @@
 \alias{write_dataset}
 \title{Write a movement or event dataset to any supported format}
 \usage{
-write_dataset(data, path, format = NULL, ...)
+write_dataset(data, path, format = NULL, by = NULL, ...)
 }
 \arguments{
 \item{data}{An aniframe: an \link[anicore:anipoint]{anipoint},
@@ -15,6 +15,12 @@ write_dataset(data, path, format = NULL, ...)
 \item{format}{Which format to write. \code{NULL} (the default) infers it from
 the suffix of \code{path}. Otherwise one of the \code{"write"} sources in
 \code{\link[=get_supported_sources]{get_supported_sources()}}.}
+
+\item{by}{Key columns to write one file per combination of, or \code{NULL}
+(the default) for a single file. Any of \code{\link[anicore:get_keys]{anicore::get_keys()}}; the role
+names \code{"what"} and \code{"when"} stand for all identity or all temporal keys,
+so \code{by = c("what", "when")} writes one file per track. See "Files per
+group".}
 
 \item{...}{Passed on to the writer for \code{format}.}
 }
@@ -39,6 +45,21 @@ Parquet keeps everything: \code{\link[=read_dataset]{read_dataset()}} gives back
 grouping and metadata that were written. Other formats keep what the
 format can hold.
 }
+\section{Files per group}{
+
+With \code{by}, each file is named from \code{path} with the key values appended
+before the suffix: \code{"mice.csv"} with \code{by = "individual"} gives
+\code{mice_individual-mouse1.csv}, \code{mice_individual-mouse2.csv}, and so on, and
+several keys give \verb{mice_individual-mouse1_session-2.csv}.
+
+For other names, put the keys in \code{path} in braces:
+\code{"{session}/mice_{individual}.csv"}. The braces then set \code{by}, so it can be
+left out, and directories in \code{path} are created. Characters other than
+letters, digits, \code{.}, \verb{_} and \code{-} in a value become \code{-}.
+
+Each file holds an aniframe with the same class and metadata as \code{data}.
+}
+
 \examples{
 \dontshow{if (rlang::is_installed("arrow")) withAutoprint(\{ # examplesIf}
 data <- anicore::example_anipoint()
@@ -49,6 +70,13 @@ read_dataset(path)
 
 # Name the format where the suffix is shared
 write_dataset(data, tempfile(fileext = ".csv"), format = "intracktive")
+
+# One file per individual, or per track
+dir <- tempfile()
+dir.create(dir)
+write_dataset(data, file.path(dir, "mice.parquet"), by = "individual")
+write_dataset(data, file.path(dir, "{individual}/{keypoint}.parquet"))
+list.files(dir, recursive = TRUE)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
