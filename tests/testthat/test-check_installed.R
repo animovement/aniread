@@ -1,20 +1,25 @@
-# Testing check_rhdf5() and check_arrow()
-# - Functions call rlang::check_installed with correct arguments
-# - Custom action installs from correct repositories
-# - Correct reason messages are provided
+# Testing check_rhdf5(), check_arrow(), check_xml2() and check_c3dr()
+# - Each asks rlang::check_installed() for its package, with a reason
+# - rhdf5 installs from Bioconductor's r-universe, before the user's repos
+# - The CRAN packages install the default way, from the user's repos
 
-test_that("check_rhdf5 works and calls correct functions", {
-  captured_args <- NULL
-
+capture_check_installed <- function(env = parent.frame()) {
+  captured <- new.env()
   local_mocked_bindings(
-    check_installed = function(pkg, reason, action) {
-      captured_args <<- list(pkg = pkg, reason = reason, action = action)
-      # Actually execute the action to get coverage
-      action()
+    check_installed = function(pkg, reason = NULL, action = NULL, ...) {
+      captured$pkg <- pkg
+      captured$reason <- reason
+      captured$action <- action
+      invisible()
     },
-    .package = "rlang"
+    .package = "rlang",
+    .env = env
   )
+  captured
+}
 
+test_that("check_rhdf5 installs rhdf5 from Bioconductor's r-universe", {
+  captured <- capture_check_installed()
   install_args <- NULL
   local_mocked_bindings(
     install.packages = function(pkgs, repos, ...) {
@@ -22,124 +27,34 @@ test_that("check_rhdf5 works and calls correct functions", {
     },
     .package = "utils"
   )
+  withr::local_options(repos = c(CRAN = "https://cran.example.org"))
 
   check_rhdf5()
+  captured$action()
 
-  expect_equal(captured_args$pkg, "rhdf5")
-  expect_match(captured_args$reason, "for reading HDF5 files")
-  expect_type(captured_args$action, "closure")
-
+  expect_equal(captured$pkg, "rhdf5")
+  expect_match(captured$reason, "for reading HDF5 files")
   expect_equal(install_args$pkgs, "rhdf5")
   expect_equal(
-    install_args$repos,
-    c('https://bioc.r-universe.dev', 'https://cloud.r-project.org')
+    unname(install_args$repos),
+    c("https://bioc.r-universe.dev", "https://cran.example.org")
   )
 })
 
-test_that("check_arrow works and calls correct functions", {
-  captured_args <- NULL
-
-  local_mocked_bindings(
-    check_installed = function(pkg, reason, action) {
-      captured_args <<- list(pkg = pkg, reason = reason, action = action)
-      # Actually execute the action to get coverage
-      action()
-    },
-    .package = "rlang"
+test_that("check_arrow, check_xml2 and check_c3dr install from CRAN", {
+  helpers <- list(
+    arrow = list(check_arrow, "for reading and writing Parquet files"),
+    xml2 = list(check_xml2, "for reading TrackMate files"),
+    c3dr = list(check_c3dr, "for reading C3D files")
   )
 
-  install_args <- NULL
-  local_mocked_bindings(
-    install.packages = function(pkgs, repos, ...) {
-      install_args <<- list(pkgs = pkgs, repos = repos)
-    },
-    .package = "utils"
-  )
+  for (pkg in names(helpers)) {
+    captured <- capture_check_installed()
+    helpers[[pkg]][[1]]()
 
-  check_arrow()
-
-  expect_equal(captured_args$pkg, "arrow")
-  expect_match(
-    captured_args$reason,
-    "for reading and writing Parquet files"
-  )
-  expect_type(captured_args$action, "closure")
-
-  expect_equal(install_args$pkgs, "arrow")
-  expect_equal(
-    install_args$repos,
-    c('https://animovement.r-universe.dev', 'https://cloud.r-project.org')
-  )
-})
-
-test_that("check_xml2 works and calls correct functions", {
-  captured_args <- NULL
-
-  local_mocked_bindings(
-    check_installed = function(pkg, reason, action) {
-      captured_args <<- list(pkg = pkg, reason = reason, action = action)
-      # Actually execute the action to get coverage
-      action()
-    },
-    .package = "rlang"
-  )
-
-  install_args <- NULL
-  local_mocked_bindings(
-    install.packages = function(pkgs, repos, ...) {
-      install_args <<- list(pkgs = pkgs, repos = repos)
-    },
-    .package = "utils"
-  )
-
-  check_xml2()
-
-  expect_equal(captured_args$pkg, "xml2")
-  expect_match(
-    captured_args$reason,
-    "for reading TrackMate files"
-  )
-  expect_type(captured_args$action, "closure")
-
-  expect_equal(install_args$pkgs, "xml2")
-  expect_equal(
-    install_args$repos,
-    c('https://animovement.r-universe.dev', 'https://cloud.r-project.org')
-  )
-})
-
-test_that("check_c3dr works and calls correct functions", {
-  captured_args <- NULL
-
-  local_mocked_bindings(
-    check_installed = function(pkg, reason, action) {
-      captured_args <<- list(pkg = pkg, reason = reason, action = action)
-      # Actually execute the action to get coverage
-      action()
-    },
-    .package = "rlang"
-  )
-
-  install_args <- NULL
-  local_mocked_bindings(
-    install.packages = function(pkgs, repos, ...) {
-      install_args <<- list(pkgs = pkgs, repos = repos)
-    },
-    .package = "utils"
-  )
-
-  check_c3dr()
-
-  expect_equal(captured_args$pkg, "c3dr")
-  expect_match(
-    captured_args$reason,
-    "for reading C3D files"
-  )
-  expect_type(captured_args$action, "closure")
-
-  expect_equal(install_args$pkgs, "c3dr")
-  expect_equal(
-    install_args$repos,
-    c('https://animovement.r-universe.dev', 'https://cloud.r-project.org')
-  )
+    expect_equal(captured$pkg, pkg)
+    expect_match(captured$reason, helpers[[pkg]][[2]])
+    # No custom action: rlang installs from the user's own repos
+    expect_null(captured$action)
+  }
 })
