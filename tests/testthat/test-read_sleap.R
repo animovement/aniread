@@ -136,6 +136,11 @@ test_that("the h5 reader uses the track names SLEAP recorded", {
   expect_setequal(levels(data$individual), track_names)
 })
 
+# SLEAP_single-mouse_EPM.analysis.h5 is frames 165 to 174 (10 of 18485) of
+# movement's SLEAP_single-mouse_EPM.analysis.h5 sample, which
+# get_sample_data("sleap") downloads in full. Every dataset is copied as
+# SLEAP 1.3.1 wrote it, cut along the frame axis only.
+
 test_that("a recording with no tracks falls back to positional names", {
   skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
