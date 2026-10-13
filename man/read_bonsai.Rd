@@ -47,3 +47,10 @@ camera's rate. If you know it, set it with \code{\link[anicore:set_metadata]{ani
 path <- system.file("extdata", "bonsai.csv", package = "aniread")
 read_bonsai(path)
 }
+\references{
+\itemize{
+\item Lopes, G., Bonacchi, N., Frazão, J., et al. (2015). Bonsai: an
+event-based framework for processing and controlling data streams.
+\emph{Frontiers in Neuroinformatics}, 9, 7. \doi{10.3389/fninf.2015.00007}.
+}
+}

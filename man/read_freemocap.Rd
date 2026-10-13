@@ -117,3 +117,10 @@ path <- system.file("extdata", "freemocap_v2.csv", package = "aniread")
 read_freemocap(path, trajectory = "rigid_3d_xyz")
 
 }
+\references{
+\itemize{
+\item Matthis, J. S., Queen, P., Cherian, A., Wirth, T., Idehen, E., et al.
+FreeMoCap: a free, open-source markerless motion capture system
+(software). \doi{10.5281/zenodo.7233713}.
+}
+}

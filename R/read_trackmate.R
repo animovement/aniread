@@ -99,6 +99,16 @@
 #' @return An aniframe with columns including `time`, `track`, `keypoint`,
 #'   `parent`, `x`, `y`, `z` and `frame`.
 #'
+#' @references
+#' - Tinevez, J.-Y., Perry, N., Schindelin, J., Hoopes, G. M., Reynolds, G.
+#'   D., Laplantine, E., Bednarek, S. Y., Shorte, S. L., & Eliceiri, K. W.
+#'   (2017). TrackMate: An open and extensible platform for single-particle
+#'   tracking. *Methods*, 115, 80-90. \doi{10.1016/j.ymeth.2016.09.016}.
+#' - Ershov, D., Phan, M.-S., Pylvänäinen, J. W., et al. (2022). TrackMate 7:
+#'   integrating state-of-the-art segmentation algorithms into tracking
+#'   pipelines. *Nature Methods*, 19, 829-832.
+#'   \doi{10.1038/s41592-022-01507-1}.
+#'
 #' @examplesIf rlang::is_installed("xml2")
 #' # A cell that divides into tracks 1 and 2, whose parent is track 0
 #' path <- system.file("extdata", "trackmate.xml", package = "aniread")

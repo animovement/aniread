@@ -27,6 +27,12 @@
 #' each tracked keypoint. The coordinates are in whatever units you specified
 #' for your calibration board dimensions.
 #'
+#' @references
+#' - Karashchuk, P., Rupp, K. L., Dickinson, E. S., Walling-Bell, S., Sanders,
+#'   E., Azim, E., Brunton, B. W., & Tuthill, J. C. (2021). Anipose: A toolkit
+#'   for robust markerless 3D pose estimation. *Cell Reports*, 36(13), 109730.
+#'   \doi{10.1016/j.celrep.2021.109730}.
+#'
 #' @examples
 #' path <- system.file("extdata", "anipose.csv", package = "aniread")
 #'

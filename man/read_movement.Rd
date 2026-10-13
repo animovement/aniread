@@ -67,3 +67,11 @@ path <- system.file("extdata", "movement.nc", package = "aniread")
 read_movement(path)
 \dontshow{\}) # examplesIf}
 }
+\references{
+\itemize{
+\item Sirmpilatze, N., Lo, C. H., Miñano, S., Peri, B. D., Sharma, D., Porta,
+L., Varela, I., & Tyson, A. L. movement: Python tools for analysing body
+movements across space and time (software).
+\doi{10.5281/zenodo.12755724}.
+}
+}

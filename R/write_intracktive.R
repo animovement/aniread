@@ -55,8 +55,9 @@
 #' @return Returns the input data unchanged.
 #'
 #' @references
-#' Huijben, T.A.P.M., Anderson, A.G., Sweet, A. et al. (2025). inTRACKtive: a
-#' web-based tool for interactive cell tracking visualization. Nature Methods.
+#' - Huijben, T. A. P. M., Anderson, A. G., Sweet, A., et al. (2025). inTRACKtive:
+#'   a web-based tool for interactive cell tracking visualization.
+#'   *Nature Methods*. \doi{10.1038/s41592-025-02777-1}.
 #'
 #' @examples
 #' # Two flies tracked with SLEAP, one track for each fly and keypoint

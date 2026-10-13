@@ -52,3 +52,11 @@ read_anipose(path, unit_space = "cm")
 
 
 }
+\references{
+\itemize{
+\item Karashchuk, P., Rupp, K. L., Dickinson, E. S., Walling-Bell, S., Sanders,
+E., Azim, E., Brunton, B. W., & Tuthill, J. C. (2021). Anipose: A toolkit
+for robust markerless 3D pose estimation. \emph{Cell Reports}, 36(13), 109730.
+\doi{10.1016/j.celrep.2021.109730}.
+}
+}

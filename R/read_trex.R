@@ -59,9 +59,9 @@
 #' 5. Initializes metadata fields required for movement data
 #'
 #' @references
-#' Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
-#' system with markerless identification, and 2D estimation of posture and
-#' visual fields. eLife, 10, e64000.
+#' - Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
+#'   system with markerless identification, and 2D estimation of posture and
+#'   visual fields. *eLife*, 10, e64000. \doi{10.7554/eLife.64000}.
 #'
 #' @examples
 #' # TRex's native export: one .npz per tracked individual

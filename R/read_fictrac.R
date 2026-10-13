@@ -41,6 +41,13 @@
 #'   `unit_ball_radius`), and a Cartesian 2‑D coordinate system. `time` is in
 #'   seconds from the first row; see "Time" in [read_dataset()].
 #'
+#' @references
+#' - Moore, R. J. D., Taylor, G. J., Paulk, A. C., Pearson, T., van Swinderen,
+#'   B., & Srinivasan, M. V. (2014). FicTrac: a visual method for tracking
+#'   spherical motion and generating fictive animal paths. *Journal of
+#'   Neuroscience Methods*, 225, 106-119.
+#'   \doi{10.1016/j.jneumeth.2014.01.010}.
+#'
 #' @examples
 #' path <- system.file("extdata", "fictrac.dat", package = "aniread")
 #' traj <- read_fictrac(path, ball_radius = 0.5, unit_ball_radius = "cm")

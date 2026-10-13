@@ -78,3 +78,10 @@ anicore::get_structure(flies)
 anicore::get_metadata(flies, "source_version")
 \dontshow{\}) # examplesIf}
 }
+\references{
+\itemize{
+\item Pereira, T. D., Tabris, N., Matsliah, A., et al. (2022). SLEAP: A deep
+learning system for multi-animal pose tracking. \emph{Nature Methods}, 19,
+486-495. \doi{10.1038/s41592-022-01426-1}.
+}
+}

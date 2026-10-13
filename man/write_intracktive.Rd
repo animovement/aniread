@@ -80,6 +80,9 @@ head(read.csv(path))
 
 }
 \references{
-Huijben, T.A.P.M., Anderson, A.G., Sweet, A. et al. (2025). inTRACKtive: a
-web-based tool for interactive cell tracking visualization. Nature Methods.
+\itemize{
+\item Huijben, T. A. P. M., Anderson, A. G., Sweet, A., et al. (2025). inTRACKtive:
+a web-based tool for interactive cell tracking visualization.
+\emph{Nature Methods}. \doi{10.1038/s41592-025-02777-1}.
+}
 }

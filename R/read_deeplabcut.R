@@ -38,6 +38,16 @@
 #'   in pixels. Not used for 3D files.
 #' @return an aniframe. `time` is DeepLabCut's frame index, with the first
 #'   frame of the video at 0; see "Time" in [read_dataset()].
+#' @references
+#' - Mathis, A., Mamidanna, P., Cury, K. M., Abe, T., Murthy, V. N., Mathis,
+#'   M. W., & Bethge, M. (2018). DeepLabCut: markerless pose estimation of
+#'   user-defined body parts with deep learning. *Nature Neuroscience*, 21,
+#'   1281-1289. \doi{10.1038/s41593-018-0209-y}.
+#' - Nath, T., Mathis, A., Chen, A. C., Patel, A., Bethge, M., & Mathis, M. W.
+#'   (2019). Using DeepLabCut for 3D markerless pose estimation across species
+#'   and behaviors. *Nature Protocols*, 14, 2152-2176.
+#'   \doi{10.1038/s41596-019-0176-0}.
+#'
 #' @examples
 #' path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
 #' read_deeplabcut(path)

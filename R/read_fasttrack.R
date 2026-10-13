@@ -15,6 +15,11 @@
 #' @return An aniframe. `time` is FastTrack's `imageNumber`, with the first
 #'   frame of the video at 0; see "Time" in [read_dataset()].
 #'
+#' @references
+#' - Gallois, B., & Candelier, R. (2021). FastTrack: An open-source software
+#'   for tracking varying numbers of deformable objects. *PLOS Computational
+#'   Biology*, 17(2), e1008697. \doi{10.1371/journal.pcbi.1008697}.
+#'
 #' @examples
 #' path <- system.file("extdata", "fasttrack.txt", package = "aniread")
 #' read_fasttrack(path)
