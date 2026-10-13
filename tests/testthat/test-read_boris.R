@@ -627,7 +627,11 @@ test_that("tabular reader keeps modifiers in the pairing fingerprint", {
     "5.0\tA\tx\ta\tSTOP",
     "6.0\tA\tx\tb\tSTOP"
   ))
-  ae <- read_boris(path, format = "tabular")
+  # The two bouts overlap in time, which the anievent allows with a warning
+  expect_warning(
+    ae <- read_boris(path, format = "tabular"),
+    "overlapping bouts"
+  )
   expect_equal(nrow(ae), 2)
   # The bout with modifier `a` should have duration 4 (1→5); `b` 4 (2→6).
   for (i in seq_len(nrow(ae))) {

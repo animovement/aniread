@@ -254,22 +254,30 @@ detection_cases <- list(
   ),
   list(source = "anipose", path = synthetic_anipose),
   list(source = "fictrac", path = synthetic_fictrac),
-  list(source = "trackmate", path = synthetic_trackmate),
-  list(
-    source = "trackmate",
-    path = fixture("trackmate", "crop_1_60_ManualCuration_trimmed.xml")
-  ),
-  list(
-    source = "trackmate",
-    path = fixture("trackmate", "CelegansEarly_MIP_trimmed.xml")
-  ),
-  list(
-    source = "trackmate",
-    path = fixture("trackmate", "trpL_150310-11_trimmed.xml")
-  ),
   list(source = "c3d", path = synthetic_c3d),
   list(source = "aniframe", path = synthetic_parquet)
 )
+# Detecting a TrackMate XML file needs xml2.
+if (rlang::is_installed("xml2")) {
+  detection_cases <- c(
+    detection_cases,
+    list(
+      list(source = "trackmate", path = synthetic_trackmate),
+      list(
+        source = "trackmate",
+        path = fixture("trackmate", "crop_1_60_ManualCuration_trimmed.xml")
+      ),
+      list(
+        source = "trackmate",
+        path = fixture("trackmate", "CelegansEarly_MIP_trimmed.xml")
+      ),
+      list(
+        source = "trackmate",
+        path = fixture("trackmate", "trpL_150310-11_trimmed.xml")
+      )
+    )
+  )
+}
 # Telling idtracker.ai's Parquet export from an aniframe needs arrow.
 if (rlang::is_installed("arrow")) {
   detection_cases <- c(
@@ -457,6 +465,7 @@ test_that("idtracker.ai HDF5 is told apart from SLEAP HDF5", {
 })
 
 test_that("an aniframe Parquet file is told apart from idtracker.ai's", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   write_aniframe(anicore::example_anipoint(), path)

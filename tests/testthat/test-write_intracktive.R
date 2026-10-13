@@ -189,6 +189,7 @@ written_tracks <- function(result) {
 }
 
 test_that("numbers tracks by the identity keys, including a track key", {
+  skip_if_not_installed("xml2")
   written <- write_read_trackmate("CelegansEarly_MIP_trimmed.xml")
 
   expect_true("track" %in% anicore::get_keys(written$data))
@@ -204,6 +205,7 @@ test_that("numbers tracks by the identity keys, including a track key", {
 })
 
 test_that("writes TrackMate lineage as parent_track_id", {
+  skip_if_not_installed("xml2")
   # Tracks 0 and 2 each divide, into 3 and 4, and 5 and 6, which are written
   # as track_ids 1 to 6
   written <- write_read_trackmate("CelegansEarly_MIP_trimmed.xml")
@@ -231,6 +233,7 @@ test_that("writes TrackMate lineage as parent_track_id", {
 })
 
 test_that("writes -1 for every track of a frame without divisions", {
+  skip_if_not_installed("xml2")
   written <- write_read_trackmate("crop_1_60_ManualCuration_trimmed.xml")
   expect_equal(unique(written$result$parent_track_id), -1)
   expect_equal(sort(unique(written$result$track_id)), c(1, 2))
@@ -274,6 +277,7 @@ test_that("leaves parent_track_id out without a parent column", {
 })
 
 test_that("warns and writes -1 for a parent that is not in the data", {
+  skip_if_not_installed("xml2")
   data <- suppressMessages(read_trackmate(
     test_path("data", "trackmate", "CelegansEarly_MIP_trimmed.xml")
   ))
@@ -323,6 +327,7 @@ write_read <- function(data) {
 }
 
 test_that("writes time in frames as it is", {
+  skip_if_not_installed("xml2")
   data <- anicore::anipoint(
     individual = c(1, 1, 1),
     time = c(5, 6, 8),
@@ -381,6 +386,7 @@ test_that("converts seconds to frames with the sampling rate", {
 })
 
 test_that("converts TrackMate's minutes and seconds to frames with its rate", {
+  skip_if_not_installed("xml2")
   # C. elegans: a frame every 2 minutes, so a rate of 1/120 Hz
   written <- write_read_trackmate("CelegansEarly_MIP_trimmed.xml")
   expect_equal(

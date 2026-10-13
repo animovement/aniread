@@ -65,6 +65,8 @@ path_trackball_2 <- testthat::test_path(
 
 # Read file
 test_that("Read file", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("rhdf5")
   expect_no_error(read_animalta(path_animalta_raw, format = "fixed"))
   expect_no_error(read_animalta(path_animalta_detailed, format = "variable"))
   expect_error(read_animalta(path_animalta_raw, format = "variable"))
