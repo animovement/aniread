@@ -25,26 +25,39 @@
 #'   [read_dataset()] for the convention the other readers follow.
 #'
 #' @examples
-#' \dontrun{
+#' # A small file with columns named the tracker's way
+#' path <- tempfile(fileext = ".csv")
+#' write.csv(
+#'   data.frame(
+#'     frame = c(1, 2, 3, 1, 2),
+#'     pos_x = c(0.1, 0.4, 0.9, 2.0, 2.2),
+#'     pos_y = c(1.0, 1.2, 1.1, 0.5, 0.7),
+#'     track_id = c(1, 1, 1, 2, 2),
+#'     trial_num = 1
+#'   ),
+#'   path,
+#'   row.names = FALSE
+#' )
+#'
 #' # Simple case: rename columns to standard names, use defaults
-#' read_custom("data.csv", cols = c(time = "frame", x = "pos_x", y = "pos_y"))
+#' read_custom(path, cols = c(time = "frame", x = "pos_x", y = "pos_y"))
 #'
 #' # With identity variable
 #' read_custom(
-#'   "data.csv",
+#'   path,
 #'   cols = c(track = "track_id", time = "frame", x = "pos_x", y = "pos_y"),
 #'   variables_what = "track"
 #' )
 #'
 #' # Full specification with trials
 #' read_custom(
-#'   "data.csv",
+#'   path,
 #'   cols = c(
-#'     id = "animal_id",
+#'     id = "track_id",
 #'     trial = "trial_num",
-#'     frame = "frame_idx",
-#'     x = "x_coord",
-#'     y = "y_coord"
+#'     frame = "frame",
+#'     x = "pos_x",
+#'     y = "pos_y"
 #'   ),
 #'   variables_what = "id",
 #'   variables_when = "trial",
@@ -52,8 +65,7 @@
 #' )
 #'
 #' # Using column positions
-#' read_custom("data.csv", cols = c(time = 1, x = 2, y = 3))
-#' }
+#' read_custom(path, cols = c(time = 1, x = 2, y = 3))
 #' @export
 read_custom <- function(
   path,

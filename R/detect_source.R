@@ -39,10 +39,10 @@
 #'   the supported formats.
 #'
 #' @examples
-#' \dontrun{
-#' detect_source("mouse.csv")
-#' #> [1] "deeplabcut/lightningpose"
-#' }
+#' detect_source(system.file("extdata", "sleap.analysis.csv", package = "aniread"))
+#'
+#' # DeepLabCut and Lightning Pose write the same CSV layout
+#' detect_source(system.file("extdata", "deeplabcut.csv", package = "aniread"))
 #' @export
 detect_source <- function(paths) {
   path <- paths[[1]]

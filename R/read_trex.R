@@ -68,10 +68,9 @@
 #' path <- system.file("extdata", "trex_id3.npz", package = "aniread")
 #' read_trex(path)
 #'
-#' \dontrun{
+#' @examplesIf interactive()
 #' # A whole recording is the vector of paths get_sample_data() returns
 #' read_trex(get_sample_data("trex"))
-#' }
 #'
 #' @seealso
 #' - TRex software: https://trex.run

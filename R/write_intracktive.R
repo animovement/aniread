@@ -59,13 +59,13 @@
 #' web-based tool for interactive cell tracking visualization. Nature Methods.
 #'
 #' @examples
-#' \dontrun{
-#' # Write aniframe to inTRACKtive CSV
-#' write_intracktive(my_data, "tracks.csv")
-#'
-#' # Get formatted data without writing
-#' formatted <- write_intracktive(my_data)
-#' }
+#' # Two flies tracked with SLEAP, one track for each fly and keypoint
+#' flies <- read_sleap(
+#'   system.file("extdata", "sleap.analysis.csv", package = "aniread")
+#' )
+#' path <- tempfile(fileext = ".csv")
+#' write_intracktive(flies, path)
+#' head(read.csv(path))
 #'
 #' @export
 write_intracktive <- function(data, filename, quiet = FALSE) {

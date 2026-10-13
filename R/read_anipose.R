@@ -28,13 +28,13 @@
 #' for your calibration board dimensions.
 #'
 #' @examples
-#' \dontrun{
+#' path <- system.file("extdata", "anipose.csv", package = "aniread")
+#'
 #' # Read anipose data with default millimeter units
-#' pose_data <- read_anipose("path/to/pose-3d/trial001.csv")
+#' read_anipose(path)
 #'
 #' # Read with centimeter units
-#' pose_data <- read_anipose("path/to/pose-3d/trial001.csv", unit_space = "cm")
-#' }
+#' read_anipose(path, unit_space = "cm")
 #'
 #'
 #' @export

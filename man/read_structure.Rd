@@ -60,9 +60,32 @@ or \code{.h5} of the same recording.
 }
 }
 \examples{
-\dontrun{
-skeleton <- read_structure("my-project/config.yaml")
-af <- read_deeplabcut("my-project/videos/mouse1DLC.csv") |>
+\dontshow{if (rlang::is_installed("yaml")) withAutoprint(\{ # examplesIf}
+# A DeepLabCut project keeps its skeleton in config.yaml
+config <- tempfile(fileext = ".yaml")
+writeLines(
+  c(
+    "bodyparts:",
+    "- head",
+    "- stinger",
+    "skeleton:",
+    "- - head",
+    "  - stinger"
+  ),
+  config
+)
+skeleton <- read_structure(config)
+skeleton
+
+# Attach it to a frame with the same body parts
+path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
+read_deeplabcut(path) |>
   anicore::set_structure(skeleton)
-}
+\dontshow{\}) # examplesIf}
+\dontshow{if (rlang::is_installed("rhdf5")) withAutoprint(\{ # examplesIf}
+# A SLEAP analysis .h5 carries the skeleton of its tracks
+path <- system.file("extdata", "sleap.analysis.h5", package = "aniread")
+skeleton <- read_structure(path)
+skeleton
+\dontshow{\}) # examplesIf}
 }

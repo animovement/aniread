@@ -11,10 +11,10 @@
 #'   as it was written; see "Time" in [read_dataset()].
 #' @export
 #'
-#' @examples
-#' \dontrun{
-#' data <- read_aniframe("movement_data.parquet")
-#' }
+#' @examplesIf rlang::is_installed(c("arrow", "jsonlite"))
+#' path <- tempfile(fileext = ".parquet")
+#' write_aniframe(anicore::example_anipoint(), path)
+#' read_aniframe(path)
 read_aniframe <- function(path) {
   # Check for the arrow package
   check_arrow()

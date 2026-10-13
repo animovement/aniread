@@ -77,13 +77,14 @@
 #' - https://github.com/animovement/movement-data
 #'
 #' @examples
-#' \dontrun{
 #' # See all available sources and datasets
 #' get_sample_data(list_datasets = TRUE)
 #'
 #' # See datasets for a specific source
 #' get_sample_data("sleap", list_datasets = TRUE)
 #'
+#' @examplesIf interactive()
+#' # Downloading needs an internet connection
 #' # Get default dataset for SLEAP
 #' path <- get_sample_data("sleap")
 #'
@@ -94,8 +95,7 @@
 #' paths <- get_sample_data("trex")
 #'
 #' # Download from a custom URL
-#' path <- get_sample_data("https://example.com/data/tracking.csv")
-#' }
+#' # path <- get_sample_data("https://example.com/data/tracking.csv")
 #' @export
 get_sample_data <- function(
   source,
