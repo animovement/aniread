@@ -14,3 +14,4 @@
 ^_snaps$
 ^AGENTS\.md$
 ^data-raw$
+^tests/perf$
