@@ -115,6 +115,13 @@ recognises the v2 tidy CSV. It does not claim the per-trajectory files,
 whose five columns any tidy export could have, or the Parquet file; read
 those with `read_freemocap()` directly.
 
+## References
+
+- Matthis, J. S., Queen, P., Cherian, A., Wirth, T., Idehen, E., et al.
+  FreeMoCap: a free, open-source markerless motion capture system
+  (software).
+  [doi:10.5281/zenodo.7233713](https://doi.org/10.5281/zenodo.7233713) .
+
 ## Examples
 
 ``` r

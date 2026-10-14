@@ -97,32 +97,32 @@ read_dataset(path)
 #> #   hip_left, knee_right, knee_left, foot_right, foot_left
 #> # Sessions:    1
 #> # Trials:      1
-#>    individual keypoint session trial  time        x       y confidence
-#>         <int> <fct>      <int> <int> <int>    <dbl>   <dbl>      <dbl>
-#>  1          1 head           1     1     1 -1.40    -1.01        0.774
-#>  2          1 head           1     1     2  0.255    0.932       0.802
-#>  3          1 head           1     1     3 -2.44    -0.651       0.516
-#>  4          1 head           1     1     4 -0.00557  0.436       0.725
-#>  5          1 head           1     1     5  0.622   -0.164       0.484
-#>  6          1 head           1     1     6  1.15     1.27        0.779
-#>  7          1 head           1     1     7 -1.82     0.415       0.566
-#>  8          1 head           1     1     8 -0.247   -0.0481      0.931
-#>  9          1 head           1     1     9 -0.244    0.198       0.578
-#> 10          1 head           1     1    10 -0.283   -0.389       0.806
+#>    individual keypoint session trial  time       x      y confidence
+#>         <int> <fct>      <int> <int> <int>   <dbl>  <dbl>      <dbl>
+#>  1          1 head           1     1     1 -2.73   -0.417      0.426
+#>  2          1 head           1     1     2 -0.117   1.04       0.826
+#>  3          1 head           1     1     3  0.796   1.08       0.867
+#>  4          1 head           1     1     4 -0.795   0.270      0.888
+#>  5          1 head           1     1     5  0.125   0.905      0.699
+#>  6          1 head           1     1     6 -0.346  -1.30       0.732
+#>  7          1 head           1     1     7  0.490  -0.152      0.682
+#>  8          1 head           1     1     8  0.0369  2.22       0.756
+#>  9          1 head           1     1     9  0.944  -2.26       0.819
+#> 10          1 head           1     1    10 -0.537   0.754      0.694
 #> # ℹ 1,640 more rows
 
 # Name the format where the suffix is shared
 write_dataset(data, tempfile(fileext = ".csv"), format = "intracktive")
-#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpZBT9fG/file1a5735e25353.csv
+#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpWPD11v/file1918ea3f49f.csv
 
 # One file per individual, or per track
 dir <- tempfile()
 dir.create(dir)
 write_dataset(data, file.path(dir, "mice.parquet"), by = "individual")
-#> Wrote 3 files, one per individual, to /tmp/RtmpZBT9fG/file1a575b86fe54.
+#> Wrote 3 files, one per individual, to /tmp/RtmpWPD11v/file1918158b1b6c.
 write_dataset(data, file.path(dir, "{individual}/{keypoint}.parquet"))
 #> Wrote 33 files, one per individual and keypoint, to
-#> /tmp/RtmpZBT9fG/file1a575b86fe54.
+#> /tmp/RtmpWPD11v/file1918158b1b6c.
 list.files(dir, recursive = TRUE)
 #>  [1] "1/abdomen.parquet"         "1/foot_left.parquet"      
 #>  [3] "1/foot_right.parquet"      "1/head.parquet"           

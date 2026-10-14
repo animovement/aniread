@@ -30,6 +30,14 @@ An aniframe. `time` is FastTrack's `imageNumber`, with the first frame
 of the video at 0; see "Time" in
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
+## References
+
+- Gallois, B., & Candelier, R. (2021). FastTrack: An open-source
+  software for tracking varying numbers of deformable objects. *PLOS
+  Computational Biology*, 17(2), e1008697.
+  [doi:10.1371/journal.pcbi.1008697](https://doi.org/10.1371/journal.pcbi.1008697)
+  .
+
 ## Examples
 
 ``` r

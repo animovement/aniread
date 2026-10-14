@@ -137,13 +137,68 @@ The predefined data sources are hosted at:
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # See all available sources and datasets
 get_sample_data(list_datasets = TRUE)
+#> 
+#> ── Available sources and datasets ──
+#> 
+#> 
+#> ℹ animalta: "single-individual"
+#> ℹ anipose: "mouse-paw"
+#> ℹ bonsai: "LI850"
+#> ℹ c3d (2 datasets)
+#> • "example" (default)
+#> • "sample-static"
+#> ℹ deeplabcut (4 datasets)
+#> • "single-mouse_EPM" (default)
+#> • "two-mice"
+#> • "single-wasp"
+#> • "single-wasp_csv"
+#> ℹ fasttrack: "tracking"
+#> ℹ fictrac: "sample"
+#> ℹ freemocap (4 datasets)
+#> • "star-jump" (default)
+#> • "star-jump_v1.7"
+#> • "star-jump_by_trajectory"
+#> • "star-jump_wide"
+#> ℹ idtrackerai (2 datasets)
+#> • "trajectories" (default)
+#> • "trajectories_csv"
+#> ℹ lightningpose (3 datasets)
+#> • "IBL-paw_EKS-left" (default)
+#> • "mouse-face"
+#> • "mouse-twoview"
+#> ℹ movement (2 datasets)
+#> • "two-mice_octagon" (default)
+#> • "legacy-plural"
+#> ℹ octron: "sample"
+#> ℹ sleap (4 datasets)
+#> • "single-mouse_EPM" (default)
+#> • "two-mice_octagon"
+#> • "zebras_drone"
+#> • "three-mice_Aeon"
+#> ℹ trackball_bonsai: "beetles"
+#> ℹ trackmate (3 datasets)
+#> • "celegans-early" (default)
+#> • "U251"
+#> • "trpL"
+#> ℹ trex (2 datasets)
+#> • "five-locusts" (default)
+#> • "beetles"
 
 # See datasets for a specific source
 get_sample_data("sleap", list_datasets = TRUE)
+#> 
+#> ── Available datasets for sleap ──
+#> 
+#> 
+#> • "single-mouse_EPM" (default)
+#> • "two-mice_octagon"
+#> • "zebras_drone"
+#> • "three-mice_Aeon"
 
+if (FALSE) { # interactive()
+# Downloading needs an internet connection
 # Get default dataset for SLEAP
 path <- get_sample_data("sleap")
 
@@ -154,6 +209,6 @@ path <- get_sample_data("sleap", dataset = "zebras_drone")
 paths <- get_sample_data("trex")
 
 # Download from a custom URL
-path <- get_sample_data("https://example.com/data/tracking.csv")
-} # }
+# path <- get_sample_data("https://example.com/data/tracking.csv")
+}
 ```

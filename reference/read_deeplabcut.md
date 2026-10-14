@@ -57,6 +57,22 @@ of the stereo calibration rather than in image pixels, so they are
 returned as stored: y is not reflected and `video_height` is not used.
 The aniframe is 3D from its `z` column.
 
+## References
+
+- Mathis, A., Mamidanna, P., Cury, K. M., Abe, T., Murthy, V. N.,
+  Mathis, M. W., & Bethge, M. (2018). DeepLabCut: markerless pose
+  estimation of user-defined body parts with deep learning. *Nature
+  Neuroscience*, 21, 1281-1289.
+  [doi:10.1038/s41593-018-0209-y](https://doi.org/10.1038/s41593-018-0209-y)
+  .
+
+- Nath, T., Mathis, A., Chen, A. C., Patel, A., Bethge, M., &
+  Mathis, M. W. (2019). Using DeepLabCut for 3D markerless pose
+  estimation across species and behaviors. *Nature Protocols*, 14,
+  2152-2176.
+  [doi:10.1038/s41596-019-0176-0](https://doi.org/10.1038/s41596-019-0176-0)
+  .
+
 ## Examples
 
 ``` r

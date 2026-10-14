@@ -65,12 +65,30 @@ twelve hours from one row to the next, the reader takes it as having
 passed midnight and adds a day from there on. A recording that crosses
 midnight therefore keeps running forward rather than jumping back.
 
+## References
+
+- Moore, R. J. D., Taylor, G. J., Paulk, A. C., Pearson, T., van
+  Swinderen, B., & Srinivasan, M. V. (2014). FicTrac: a visual method
+  for tracking spherical motion and generating fictive animal paths.
+  *Journal of Neuroscience Methods*, 225, 106-119.
+  [doi:10.1016/j.jneumeth.2014.01.010](https://doi.org/10.1016/j.jneumeth.2014.01.010)
+  .
+
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Assuming you have a FicTrac file called "fly1.dat"
-traj <- read_fictrac("fly1.dat", ball_radius = 0.5, unit_ball_radius = "cm")
+path <- system.file("extdata", "fictrac.dat", package = "aniread")
+traj <- read_fictrac(path, ball_radius = 0.5, unit_ball_radius = "cm")
 head(traj)
-} # }
+#> # Keypoints:     centroid
+#> # Sampling rate: 100 Hz
+#> # Time:          00:00:00.000 to 00:00:00.050
+#>   keypoint   time        x          y      yaw
+#>   <fct>     <dbl>    <dbl>      <dbl>    <dbl>
+#> 1 centroid 0      0        0          0       
+#> 2 centroid 0.0102 0.000621 0.00000829 0.000982
+#> 3 centroid 0.02   0.00125  0.0000252  0.00284 
+#> 4 centroid 0.03   0.00185  0.0000489  0.00536 
+#> 5 centroid 0.0402 0.00241  0.0000769  0.00828 
+#> 6 centroid 0.05   0.00294  0.000108   0.0113  
 ```

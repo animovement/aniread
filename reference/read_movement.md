@@ -69,6 +69,14 @@ what has a place in the metadata:
   [`anicore::set_metadata()`](https://animovement.dev/anicore/reference/set_metadata.html)
   if you know it.
 
+## References
+
+- Sirmpilatze, N., Lo, C. H., Miñano, S., Peri, B. D., Sharma, D.,
+  Porta, L., Varela, I., & Tyson, A. L. movement: Python tools for
+  analysing body movements across space and time (software).
+  [doi:10.5281/zenodo.12755724](https://doi.org/10.5281/zenodo.12755724)
+  .
+
 ## Examples
 
 ``` r

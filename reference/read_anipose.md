@@ -48,15 +48,50 @@ Anipose outputs CSV files with columns like `bodypart_x`, `bodypart_y`,
 for each tracked keypoint. The coordinates are in whatever units you
 specified for your calibration board dimensions.
 
+## References
+
+- Karashchuk, P., Rupp, K. L., Dickinson, E. S., Walling-Bell, S.,
+  Sanders, E., Azim, E., Brunton, B. W., & Tuthill, J. C. (2021).
+  Anipose: A toolkit for robust markerless 3D pose estimation. *Cell
+  Reports*, 36(13), 109730.
+  [doi:10.1016/j.celrep.2021.109730](https://doi.org/10.1016/j.celrep.2021.109730)
+  .
+
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+path <- system.file("extdata", "anipose.csv", package = "aniread")
+
 # Read anipose data with default millimeter units
-pose_data <- read_anipose("path/to/pose-3d/trial001.csv")
+read_anipose(path)
+#> # Keypoints: l-base, r-base
+#>    keypoint  time     x     y     z confidence
+#>    <fct>    <dbl> <dbl> <dbl> <dbl>      <dbl>
+#>  1 l-base       0 -5.63  2.59  311.      0.934
+#>  2 l-base       1 -4.82  3.24  309.      0.959
+#>  3 l-base       2 -5.84  3.37  307.      0.822
+#>  4 l-base       3 -3.40  3.29  304.      0.945
+#>  5 l-base       4 -4.67  2.85  310.      0.882
+#>  6 r-base       0 -5.08  3.47  313.      0.978
+#>  7 r-base       1 -5.22  3.42  310.      0.973
+#>  8 r-base       2 -5.92  2.76  311.      0.878
+#>  9 r-base       3 -7.99  3.26  310.      0.955
+#> 10 r-base       4 -5.38  3.71  307.      0.992
 
 # Read with centimeter units
-pose_data <- read_anipose("path/to/pose-3d/trial001.csv", unit_space = "cm")
-} # }
+read_anipose(path, unit_space = "cm")
+#> # Keypoints: l-base, r-base
+#>    keypoint  time     x     y     z confidence
+#>    <fct>    <dbl> <dbl> <dbl> <dbl>      <dbl>
+#>  1 l-base       0 -5.63  2.59  311.      0.934
+#>  2 l-base       1 -4.82  3.24  309.      0.959
+#>  3 l-base       2 -5.84  3.37  307.      0.822
+#>  4 l-base       3 -3.40  3.29  304.      0.945
+#>  5 l-base       4 -4.67  2.85  310.      0.882
+#>  6 r-base       0 -5.08  3.47  313.      0.978
+#>  7 r-base       1 -5.22  3.42  310.      0.973
+#>  8 r-base       2 -5.92  2.76  311.      0.878
+#>  9 r-base       3 -7.99  3.26  310.      0.955
+#> 10 r-base       4 -5.38  3.71  307.      0.992
 
 ```

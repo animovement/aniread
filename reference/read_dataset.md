@@ -128,20 +128,68 @@ format-specific arguments.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Let aniread work out the format
-data <- read_dataset("mouse.h5")
+path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")
+read_dataset(path)
+#> # Individuals: track_0, track_1
+#> # Keypoints:   abdomen, eyeL, eyeR, forelegL4, forelegR4, head, hindlegL4,
+#> #   hindlegR4, midlegL4, midlegR4, thorax, wingL, wingR
+#>    individual keypoint  time     x     y confidence
+#>    <fct>      <fct>    <dbl> <dbl> <dbl>      <dbl>
+#>  1 track_0    abdomen      0  240. 432.       0.489
+#>  2 track_0    abdomen      1  403. 224.       0.955
+#>  3 track_0    abdomen      2  584.  92.4      0.580
+#>  4 track_0    abdomen      3  380.  99.8      0.741
+#>  5 track_0    abdomen      4  265. 333.       0.636
+#>  6 track_0    abdomen      5  268. 336.       0.736
+#>  7 track_0    eyeL         0  213. 372.       0.851
+#>  8 track_0    eyeL         1  440. 180.       1.07 
+#>  9 track_0    eyeL         2  600.  28.4      1.00 
+#> 10 track_0    eyeL         3  328. 128.       0.781
+#> # ℹ 146 more rows
 
 # Name it explicitly
-data <- read_dataset("mouse.h5", source = "sleap")
+read_dataset(path, source = "sleap")
+#> # Individuals: track_0, track_1
+#> # Keypoints:   abdomen, eyeL, eyeR, forelegL4, forelegR4, head, hindlegL4,
+#> #   hindlegR4, midlegL4, midlegR4, thorax, wingL, wingR
+#>    individual keypoint  time     x     y confidence
+#>    <fct>      <fct>    <dbl> <dbl> <dbl>      <dbl>
+#>  1 track_0    abdomen      0  240. 432.       0.489
+#>  2 track_0    abdomen      1  403. 224.       0.955
+#>  3 track_0    abdomen      2  584.  92.4      0.580
+#>  4 track_0    abdomen      3  380.  99.8      0.741
+#>  5 track_0    abdomen      4  265. 333.       0.636
+#>  6 track_0    abdomen      5  268. 336.       0.736
+#>  7 track_0    eyeL         0  213. 372.       0.851
+#>  8 track_0    eyeL         1  440. 180.       1.07 
+#>  9 track_0    eyeL         2  600.  28.4      1.00 
+#> 10 track_0    eyeL         3  328. 128.       0.781
+#> # ℹ 146 more rows
 
 # Reader-specific arguments pass straight through
-data <- read_dataset(
-  c("sensor1.csv", "sensor2.csv"),
-  sampling_rate = 60,
-  col_time = 4,
-  col_dx = 1,
-  col_dy = 2
+paths <- c(
+  system.file("extdata", "trackball_sensor_1.csv", package = "aniread"),
+  system.file("extdata", "trackball_sensor_2.csv", package = "aniread")
 )
-} # }
+read_dataset(
+  paths,
+  setup = "of_free",
+  sampling_rate = 60,
+  col_time = "datetime"
+)
+#> # Keypoints:     centroid
+#> # Sampling rate: 60 Hz (recorded with no fixed rate)
+#> # Time:          2023-09-14 14:37:55.977 to 2023-09-14 14:37:56.110
+#>   keypoint   time     x     y
+#>   <fct>     <dbl> <dbl> <dbl>
+#> 1 centroid 0          0     0
+#> 2 centroid 0.0167     2     2
+#> 3 centroid 0.0333     5     5
+#> 4 centroid 0.05       6     6
+#> 5 centroid 0.0667     6     6
+#> 6 centroid 0.0833     7     7
+#> 7 centroid 0.1       12    12
+#> 8 centroid 0.117     16    16
+#> 9 centroid 0.133     22    22
 ```

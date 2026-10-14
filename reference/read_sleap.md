@@ -73,6 +73,14 @@ The CSV carries neither, so a frame read from it has no structure and no
 and
 [`anicore::set_structure()`](https://animovement.dev/anicore/reference/structures.html).
 
+## References
+
+- Pereira, T. D., Tabris, N., Matsliah, A., et al. (2022). SLEAP: A deep
+  learning system for multi-animal pose tracking. *Nature Methods*, 19,
+  486-495.
+  [doi:10.1038/s41592-022-01426-1](https://doi.org/10.1038/s41592-022-01426-1)
+  .
+
 ## Examples
 
 ``` r

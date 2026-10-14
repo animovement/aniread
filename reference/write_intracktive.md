@@ -89,18 +89,28 @@ their command-line tools or Python package.
 
 ## References
 
-Huijben, T.A.P.M., Anderson, A.G., Sweet, A. et al. (2025). inTRACKtive:
-a web-based tool for interactive cell tracking visualization. Nature
-Methods.
+- Huijben, T. A. P. M., Anderson, A. G., Sweet, A., et al. (2025).
+  inTRACKtive: a web-based tool for interactive cell tracking
+  visualization. *Nature Methods*.
+  [doi:10.1038/s41592-025-02777-1](https://doi.org/10.1038/s41592-025-02777-1)
+  .
 
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-# Write aniframe to inTRACKtive CSV
-write_intracktive(my_data, "tracks.csv")
-
-# Get formatted data without writing
-formatted <- write_intracktive(my_data)
-} # }
+# Two flies tracked with SLEAP, one track for each fly and keypoint
+flies <- read_sleap(
+  system.file("extdata", "sleap.analysis.csv", package = "aniread")
+)
+path <- tempfile(fileext = ".csv")
+write_intracktive(flies, path)
+#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpWPD11v/file1918254b4a56.csv
+head(read.csv(path))
+#>   track_id t        x         y
+#> 1        1 0 240.2638 432.35559
+#> 2        1 1 403.4669 224.37061
+#> 3        1 2 584.4957  92.43579
+#> 4        1 3 380.3433  99.75391
+#> 5        1 4 265.0309 333.14148
+#> 6        1 5 268.3435 336.32416
 ```

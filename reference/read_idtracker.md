@@ -134,6 +134,21 @@ tidy CSV whose `time` equals its `frame` in every row is read as one
 without a frame rate, and otherwise the rate is taken from the two
 columns, as for the CSV export.
 
+## References
+
+- Romero-Ferrero, F., Bergomi, M. G., Hinz, R. C., Heras, F. J. H., & de
+  Polavieja, G. G. (2019). idtracker.ai: tracking all individuals in
+  small or large collectives of unmarked animals. *Nature Methods*, 16,
+  179-182.
+  [doi:10.1038/s41592-018-0295-5](https://doi.org/10.1038/s41592-018-0295-5)
+  .
+
+- Torrents, J., Costa, T., & de Polavieja, G. G. (2025). New
+  idtracker.ai: rethinking multi-animal tracking as a representation
+  learning problem to increase accuracy and reduce tracking times.
+  *eLife* (reviewed preprint).
+  [doi:10.7554/eLife.107602](https://doi.org/10.7554/eLife.107602) .
+
 ## Examples
 
 ``` r

@@ -40,6 +40,21 @@ multi-camera 3D output, `multicam_3d_results.csv`, reads as 3D with `x`,
 `y` and `z`, without confidence and without reflecting y; see
 [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md).
 
+## References
+
+- Biderman, D., Whiteway, M. R., Hurwitz, C., et al. (2024). Lightning
+  Pose: improved animal pose estimation via semi-supervised learning,
+  Bayesian ensembling and cloud-native open-source tools. *Nature
+  Methods*, 21, 1316-1328.
+  [doi:10.1038/s41592-024-02319-1](https://doi.org/10.1038/s41592-024-02319-1)
+  .
+
+- Aharon, L., Whiteway, M. R., et al. (2026). Lightning Pose 3D: an
+  uncertainty-aware framework for data-efficient multi-view animal pose
+  estimation. *bioRxiv*.
+  [doi:10.64898/2026.04.20.719731](https://doi.org/10.64898/2026.04.20.719731)
+  .
+
 ## Examples
 
 ``` r

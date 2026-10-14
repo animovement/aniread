@@ -6,7 +6,7 @@ The validator ensures that:
 
 - A valid number of files are provided.
 
-- Identical suffixes when tewo files are given.
+- Identical suffixes when two files are given.
 
 ## Usage
 
@@ -28,3 +28,8 @@ validate_trackball(paths, setup, col_time)
 - col_time:
 
   Column which contains time
+
+## Value
+
+`NULL`, invisibly. Called for its side effect of throwing an error when
+a check fails.

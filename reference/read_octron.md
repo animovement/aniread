@@ -100,6 +100,13 @@ image's row axis. It is kept as Octron wrote it, in image coordinates:
 it is not reflected with `y` and not declared as the frame's
 orientation.
 
+## References
+
+- Jacobsen, R. I., et al. (2025). OCTRON: a general purpose segmentation
+  and tracking pipeline for behavioral experiments. *bioRxiv*.
+  [doi:10.64898/2025.12.20.695663](https://doi.org/10.64898/2025.12.20.695663)
+  .
+
 ## Examples
 
 ``` r

@@ -64,8 +64,10 @@ for the supported formats.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
-detect_source("mouse.csv")
+detect_source(system.file("extdata", "sleap.analysis.csv", package = "aniread"))
+#> [1] "sleap"
+
+# DeepLabCut and Lightning Pose write the same CSV layout
+detect_source(system.file("extdata", "deeplabcut.csv", package = "aniread"))
 #> [1] "deeplabcut/lightningpose"
-} # }
 ```

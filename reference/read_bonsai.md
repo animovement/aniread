@@ -51,6 +51,14 @@ a movement dataframe. `time` is in seconds from the first row; see
 "Time" in
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 
+## References
+
+- Lopes, G., Bonacchi, N., Frazão, J., et al. (2015). Bonsai: an
+  event-based framework for processing and controlling data streams.
+  *Frontiers in Neuroinformatics*, 9, 7.
+  [doi:10.3389/fninf.2015.00007](https://doi.org/10.3389/fninf.2015.00007)
+  .
+
 ## Examples
 
 ``` r

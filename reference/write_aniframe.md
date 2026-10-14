@@ -49,14 +49,14 @@ The original `data` object (invisibly), enabling pipe‑friendly usage.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 ## Create a small aniframe for demonstration
 df <- anicore::example_anipoint()
 
 ## Write the aniframe as CSV
-write_aniframe(df, "demo.csv")
+write_aniframe(df, tempfile(fileext = ".csv"))
+#> Warning: csv files do not preserve metadata. We highly recommend saving in `parquet`
+#> format to preserve all metadata.
 
 ## Write the same aniframe as Parquet
-write_aniframe(df, "demo.parquet")
-} # }
+write_aniframe(df, tempfile(fileext = ".parquet"))
 ```

@@ -104,9 +104,10 @@ The function performs several processing steps:
 
 ## References
 
-Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
-system with markerless identification, and 2D estimation of posture and
-visual fields. eLife, 10, e64000.
+- Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
+  system with markerless identification, and 2D estimation of posture
+  and visual fields. *eLife*, 10, e64000.
+  [doi:10.7554/eLife.64000](https://doi.org/10.7554/eLife.64000) .
 
 ## See also
 
@@ -140,8 +141,8 @@ read_trex(path)
 #> 14 3          pose1    0.100   12.5  25.5      0.800
 #> 15 3          pose1    0.133   13    25        0.950
 
-if (FALSE) { # \dontrun{
+if (FALSE) { # interactive()
 # A whole recording is the vector of paths get_sample_data() returns
 read_trex(get_sample_data("trex"))
-} # }
+}
 ```
