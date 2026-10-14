@@ -50,9 +50,6 @@ paths, which \code{\link[=read_trackball]{read_trackball()}} reads as one record
 vector of paths, which \code{\link[=read_trex]{read_trex()}} reads as one recording
 }
 
-\code{"idtracker"} and \code{"trackball"}, the names before these matched
-\code{\link[=read_dataset]{read_dataset()}}, still work but are deprecated.
-
 Alternatively, provide a URL string (starting with "http://" or "https://")
 to download a file from a custom location.}
 

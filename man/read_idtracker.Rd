@@ -7,7 +7,6 @@
 read_idtracker(
   path,
   path_probabilities = NULL,
-  version = 6,
   video_height = NULL,
   format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 )
@@ -16,8 +15,6 @@ read_idtracker(
 \item{path}{Path to an idtracker.ai data frame}
 
 \item{path_probabilities}{Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.}
-
-\item{version}{idtracker.ai version. Currently only v6 output is implemented}
 
 \item{video_height}{Optional numeric height of the source video frame in
 pixels. Overrides the value read from the h5 or Parquet file when both

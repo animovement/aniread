@@ -142,6 +142,7 @@ test_that("read_trackball sets metadata correctly", {
 
   metadata <- anicore::get_metadata(result)
   expect_equal(metadata$sampling_rate, 60)
+  expect_equal(metadata$source_format, "csv")
 })
 
 test_that("read_trackball converts time_group to seconds using sampling_rate", {

@@ -50,6 +50,7 @@ read_c3d <- function(path) {
         all_data$parameters$MANUFACTURER$VERSION,
         collapse = "."
       ),
+      source_format = "c3d",
       filename = basename(path),
       unit_time = "frame",
       unit_space = all_data$parameters$POINT$UNITS

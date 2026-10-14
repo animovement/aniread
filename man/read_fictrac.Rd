@@ -48,6 +48,9 @@ timestamp", the frame capture time in ms since midnight. \code{time} is taken
 from column 25.
 }
 
+Which layout was read is recorded in the \code{source_format} metadata field,
+as \code{"23col"}, \code{"24col"} or \code{"25col"}.
+
 \code{time} counts in seconds from the first row. A time in ms since midnight
 starts again from zero at midnight, so where it drops by more than twelve
 hours from one row to the next, the reader takes it as having passed

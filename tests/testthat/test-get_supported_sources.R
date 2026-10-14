@@ -3,6 +3,8 @@
 # - Returns a tibble with the documented columns and types
 # - `direction` is "read" or "write", one row per source and direction
 # - `suffix` is a list column of character vectors
+# - `format` lists the `source_format` values a reader records, and is
+#   empty for the write rows and for aniframe (#118)
 # - Every listed function is an exported aniread function of its direction
 # - No leading dots on suffixes; values are lower-case
 # - The generic read_custom reader is intentionally excluded
@@ -12,11 +14,12 @@ test_that("get_supported_sources returns a tibble with the expected columns", {
   result <- get_supported_sources()
 
   expect_s3_class(result, "tbl_df")
-  expect_named(result, c("source", "direction", "fun", "suffix"))
+  expect_named(result, c("source", "direction", "fun", "suffix", "format"))
   expect_type(result$source, "character")
   expect_type(result$direction, "character")
   expect_type(result$fun, "character")
   expect_type(result$suffix, "list")
+  expect_type(result$format, "list")
   expect_gt(nrow(result), 0)
 })
 
@@ -34,6 +37,24 @@ test_that("each row's suffix is a non-empty character vector", {
     expect_type(s, "character")
     expect_gt(length(s), 0)
   }
+})
+
+test_that("each reader lists the formats it records, writers none", {
+  result <- get_supported_sources()
+
+  for (i in seq_len(nrow(result))) {
+    format <- result$format[[i]]
+    expect_type(format, "character")
+    expect_false(anyDuplicated(format) > 0, info = result$source[[i]])
+    if (result$direction[[i]] == "write" || result$source[[i]] == "aniframe") {
+      expect_length(format, 0)
+    } else {
+      expect_gt(length(format), 0)
+    }
+  }
+
+  boris <- result[result$source == "boris", ]
+  expect_identical(boris$format[[1]], c("aggregated", "tabular"))
 })
 
 test_that("every listed function is an exported aniread function", {

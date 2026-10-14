@@ -78,7 +78,6 @@
 #'
 #' @param path Path to an idtracker.ai data frame
 #' @param path_probabilities Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.
-#' @param version idtracker.ai version. Currently only v6 output is implemented
 #' @param video_height Optional numeric height of the source video frame in
 #'   pixels. Overrides the value read from the h5 or Parquet file when both
 #'   are available.
@@ -107,7 +106,6 @@
 read_idtracker <- function(
   path,
   path_probabilities = NULL,
-  version = 6,
   video_height = NULL,
   format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 ) {
@@ -124,7 +122,7 @@ read_idtracker <- function(
     ))
   }
   if (format == "csv") {
-    data <- read_idtracker_csv(path, path_probabilities, version = version)
+    data <- read_idtracker_csv(path, path_probabilities)
     recorded <- list(
       source_version = NA_character_,
       sampling_rate = NA_real_,
@@ -139,7 +137,7 @@ read_idtracker <- function(
       unit_time <- "frame"
     }
   } else if (format == "h5") {
-    data <- read_idtracker_h5(path, version = version)
+    data <- read_idtracker_h5(path)
     recorded <- read_idtracker_h5_attributes(path)
     data$individual <- label_idtracker_individuals(
       data$individual,
@@ -388,7 +386,7 @@ idtracker_positive_number <- function(x) {
 
 #' @inheritParams read_idtracker
 #' @keywords internal
-read_idtracker_csv <- function(path, path_probabilities, version = 6) {
+read_idtracker_csv <- function(path, path_probabilities) {
   data <- vroom::vroom(
     path,
     delim = ",",
@@ -486,7 +484,7 @@ idtracker_csv_has_time <- function(path) {
 
 #' @inheritParams read_idtracker
 #' @keywords internal
-read_idtracker_h5 <- function(path, version = version) {
+read_idtracker_h5 <- function(path) {
   # Check that rhdf5 is installed
   check_rhdf5()
 

@@ -4,6 +4,9 @@
 # every detector. Twelve sources read .csv, so a detector firing on another
 # source's file is the failure mode that matters, and only the full
 # cross-product catches it.
+#
+# The same fixtures also check that each reader records a `source_format`
+# its registry entry lists (#118).
 
 fixture <- function(...) testthat::test_path("data", ...)
 
@@ -355,6 +358,28 @@ test_that("no detector fires on another source's file", {
         )
       )
     }
+  }
+})
+
+test_that("each reader records a source_format its registry entry lists", {
+  # The stubs only have to detect, not read, and a trackball file is read
+  # with its partner (both are covered by their readers' own tests).
+  stubs <- c(synthetic_c3d, synthetic_parquet, synthetic_trackmate)
+
+  for (case in detection_cases) {
+    if (case$path %in% stubs || case$source == "trackball_bonsai") {
+      next
+    }
+    source <- strsplit(case$source, "/", fixed = TRUE)[[1]][[1]]
+    data <- read_dataset(case$path, source = source) |>
+      suppressWarnings() |>
+      suppressMessages()
+
+    expect_true(
+      anicore::get_metadata(data, "source_format") %in%
+        registry_entry(source)$format,
+      info = basename(case$path)
+    )
   }
 })
 

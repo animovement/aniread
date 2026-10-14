@@ -88,6 +88,7 @@ read_anipose <- function(path, unit_space = "mm") {
   data <- data |>
     anicore::set_metadata(
       source = "anipose",
+      source_format = "csv",
       filename = basename(path),
       unit_space = unit_space,
       coordinate_system = "cartesian_3d"

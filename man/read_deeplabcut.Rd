@@ -43,6 +43,10 @@ Ensemble Kalman Smoother adds, are not read.
 A multi-animal project tracks the bodyparts it does not assign to an
 animal (its \code{uniquebodyparts}) under the pseudo-individual \code{single}.
 They are kept as the keypoints of an \code{individual} called \code{"single"}.
+
+The layout read is recorded in the \code{source_format} metadata field: the
+file type, single- or multi-animal, and \verb{_3d} for triangulated positions,
+such as \code{"csv_single_animal"} or \code{"h5_multi_animal"}.
 }
 
 \section{3D files}{

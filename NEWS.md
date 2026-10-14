@@ -12,6 +12,8 @@
 
   They could not be wired in as they stood: they require exactly `time`, `individual`, `keypoint`, `x`, `y` and `confidence`, which is a narrower contract than the aniframe has had for some time. Five of the seven sample sources fail it — `read_deeplabcut()` returns no `individual`, `read_anipose()` and `read_c3d()` return `z`, `read_freemocap()` returns `model`, and `read_fictrac()` and `read_c3d()` return no `confidence`. `anicore::validate_aniframe()` is the metadata-aware successor: it checks the frame against what it declares rather than against a fixed column list.
 
+* The deprecated `read_animalta(detailed = )`, `read_idtracker(version = )` and `get_sample_data()` source names `"idtracker"` and `"trackball"` are removed; use `read_animalta(format = )`, `read_idtracker(format = )`, `"idtrackerai"` and `"trackball_bonsai"` (#223).
+
 ## Added
 
 * `write_dataset()` writes to any supported format, inferring it from the file suffix, as the counterpart of `read_dataset()` (#135). A `.csv` is written as a plain table; inTRACKtive's CSV needs `format = "intracktive"`.
@@ -60,6 +62,8 @@
 
 * `read_sleap()` records which export it read in the `source_format` metadata field.
 
+* Every reader now records the export it read in the `source_format` metadata field (#118), so which layout a frame came from no longer has to be guessed. `read_boris()` records `"aggregated"` or `"tabular"`, `read_fictrac()` its layout by column count, `"23col"`, `"24col"` or `"25col"`, and `read_deeplabcut()` and `read_lightningpose()` the file type, single- or multi-animal, and 3D, such as `"csv_multi_animal"` or `"h5_single_animal_3d"`; a reader of a single layout records its file type, such as `"csv"` for `read_octron()`. `get_supported_sources()` gains a `format` list column with the values each reader records, so the layouts aniread reads can be listed, and checked against the test fixtures.
+
 * `read_trex()` reads TRex's native `.npz` export (#116). It is a zip of `.npy` arrays, one file per tracked individual, so a whole recording is the vector of paths `get_sample_data("trex")` returns — which previously errored, because the registry declared TRex a CSV-only source. The arrays are parsed directly rather than through a new dependency: `.npy` is a short header over a raw buffer, and `unz()` reads zip members without unpacking.
 
   The `.npz` carries what the CSV export does not, so three of this reader's documented limitations turn out to be limitations of the CSV rather than of TRex: `individual` is the identity TRex assigned instead of `NA`, `confidence` is its per-frame `detection_p` instead of `NA`, and the pose keypoints are present at all. The frame rate and frame size are recorded too, so `sampling_rate` is set and the reflection to `bottom_left` no longer has to guess the frame height from `max(y)`.
@@ -80,7 +84,7 @@
 
 ## Changed
 
-* `get_sample_data()` names sources as `read_dataset()` does, and serves a sample for every source that has a public one (#169). `"idtracker"` is now `"idtrackerai"` and `"trackball"` is now `"trackball_bonsai"`; the old names still work but are deprecated. New datasets: `"octron"`, `"trackmate"` (three recordings), `"fasttrack"`, idtracker.ai's CSV export (`"trajectories_csv"`), a second C3D file (`"sample-static"`), DeepLabCut's wasp as CSV (`"single-wasp_csv"`), and SLEAP's three Aeon mice, with named tracks (`"three-mice_Aeon"`). `get_sample_data("lightningpose")` now downloads the 172 kB `"IBL-paw_EKS-left"` by default rather than the 24 MB `"mouse-face"`, which is still available by name.
+* `get_sample_data()` names sources as `read_dataset()` does, and serves a sample for every source that has a public one (#169). `"idtracker"` is now `"idtrackerai"` and `"trackball"` is now `"trackball_bonsai"`; the old names are removed (#223). New datasets: `"octron"`, `"trackmate"` (three recordings), `"fasttrack"`, idtracker.ai's CSV export (`"trajectories_csv"`), a second C3D file (`"sample-static"`), DeepLabCut's wasp as CSV (`"single-wasp_csv"`), and SLEAP's three Aeon mice, with named tracks (`"three-mice_Aeon"`). `get_sample_data("lightningpose")` now downloads the 172 kB `"IBL-paw_EKS-left"` by default rather than the 24 MB `"mouse-face"`, which is still available by name.
 
 * `write_intracktive()` numbers tracks by the frame's identity keys (`anicore::get_keys()`) rather than by a fixed list of `session`, `trial`, `model`, `individual` and `keypoint`. A frame read by `read_trackmate()`, whose tracks are told apart by `track`, was written with all its tracks under one `track_id`; each track now gets its own. Since the keys are read from the aniframe's metadata, `data` must now be an aniframe: a plain data frame errors, where it was written by whichever of those columns it had.
 
@@ -92,7 +96,9 @@
 
 * `get_sample_data("movement")` downloads `MOVE_two-mice_octagon.analysis.nc` from SWC GIN, saved by movement 0.17.0 or later with the singular dimension names (#167). The file it used to download, the same recording saved with the plural names of earlier versions, is the dataset `"legacy-plural"`. Both are cached under new file names, so a cache from before holds no stale copy.
 
-* `read_animalta()` takes the layout as `format = c("auto", "fixed", "variable", "detailed")`, following `read_boris()` and `read_freemocap()` (#118), and records it in the `source_format` metadata field. The layout `detailed = TRUE` named, `Frame;Time;Arena;Ind;X;Y`, is not AnimalTA's detailed data but its coordinates file for a variable number of targets, so it is now `format = "variable"`, the one-pair-per-target coordinates file is `format = "fixed"`, and `format = "detailed"` names the detailed data files. `detailed` is deprecated: `detailed = TRUE` and `detailed = FALSE` still read as `"variable"` and `"fixed"`, with a warning.
+* `read_animalta()` takes the layout as `format = c("auto", "fixed", "variable", "detailed")`, following `read_boris()` and `read_freemocap()` (#118), and records it in the `source_format` metadata field. The layout `detailed = TRUE` named, `Frame;Time;Arena;Ind;X;Y`, is not AnimalTA's detailed data but its coordinates file for a variable number of targets, so it is now `format = "variable"`, the one-pair-per-target coordinates file is `format = "fixed"`, and `format = "detailed"` names the detailed data files. `detailed` is removed (#223): use `format = "variable"` for `detailed = TRUE` and `format = "fixed"` for `detailed = FALSE`.
+
+* `read_idtracker()`'s `version` argument is removed (#118, #223). It was never used: the reader recognises the export from the file, as `format` names it, and reads the version that wrote it into `source_version` where the file records one.
 
 * `read_trackmate()` labels tracks by the name TrackMate gave them rather than by the numeric `TRACK_ID` (#149). TrackMate's default names `Track_0`, `Track_1`, ... are read as their numbers, `0`, `1`, ..., since the column already says they are tracks, and a name you gave a track in TrackMate is kept as written, so a file with some tracks renamed reads as, say, `0`, `2` and `Cell A`. It falls back to `TRACK_ID` when a track has no name, or with a warning when two tracks would get the same id. The levels of `track` are now in numeric order, `2` before `10`, rather than sorted as text, with any names after the numbers.
 

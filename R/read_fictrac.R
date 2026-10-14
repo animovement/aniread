@@ -23,6 +23,9 @@
 #'   timestamp", the frame capture time in ms since midnight. `time` is taken
 #'   from column 25.
 #'
+#' Which layout was read is recorded in the `source_format` metadata field,
+#' as `"23col"`, `"24col"` or `"25col"`.
+#'
 #' `time` counts in seconds from the first row. A time in ms since midnight
 #' starts again from zero at midnight, so where it drops by more than twelve
 #' hours from one row to the next, the reader takes it as having passed
@@ -68,7 +71,8 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
     show_col_types = FALSE
   ) |>
     suppressMessages()
-  names(data) <- fictrac_headers(ncol(data))
+  n_columns <- ncol(data)
+  names(data) <- fictrac_headers(n_columns)
 
   # Files from 2.03 on keep the time since midnight in column 25; the
   # 24-column layout keeps it in column 22, where the 23-column layout keeps
@@ -103,6 +107,7 @@ read_fictrac <- function(path, ball_radius = NULL, unit_ball_radius = "cm") {
     anicore::set_variables(where = list(orientation = c(yaw = "yaw"))) |>
     anicore::set_metadata(
       source = "fictrac",
+      source_format = paste0(n_columns, "col"),
       filename = basename(path),
       sampling_rate = sampling_rate,
       unit_space = "none",

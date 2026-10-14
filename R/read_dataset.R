@@ -28,6 +28,12 @@
 #' `source` metadata is set to `"deeplabcut/lightningpose"` to record that the
 #' distinction is undetermined. Pass `source` explicitly to override this.
 #'
+#' Every reader records the export it read in the `source_format` metadata
+#' field, so a file in a layout a reader does not expect can be traced back
+#' to it; [get_supported_sources()] lists the values each reader records.
+#' The version of the software that wrote the file goes in `source_version`
+#' only where the file states it, and is `NA` otherwise.
+#'
 #' @section Time:
 #' Every reader gives `time` as the time elapsed since the first frame of the
 #' video, so the first frame of the video is at `time = 0`, whatever the unit

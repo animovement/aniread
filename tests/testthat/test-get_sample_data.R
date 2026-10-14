@@ -564,28 +564,6 @@ test_that("every sample dataset has a URL and a distinct file name", {
   expect_false(any(duplicated(filenames)))
 })
 
-test_that("the old source names still work, with a deprecation", {
-  lifecycle::expect_deprecated(
-    expect_identical(resolve_sample_source("idtracker"), "idtrackerai")
-  )
-  lifecycle::expect_deprecated(
-    expect_identical(resolve_sample_source("trackball"), "trackball_bonsai")
-  )
-  expect_identical(resolve_sample_source("sleap"), "sleap")
-  expect_identical(
-    resolve_sample_source("https://example.com/idtracker"),
-    "https://example.com/idtracker"
-  )
-})
-
-test_that("an old source name lists the datasets of its new one", {
-  withr::local_options(lifecycle_verbosity = "quiet")
-  expect_no_error(
-    get_sample_data("idtracker", list_datasets = TRUE) |>
-      suppressMessages()
-  )
-})
-
 test_that("every default dataset is read by its source's reader", {
   skip_if_no_network()
   skip_on_ci()
