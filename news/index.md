@@ -78,6 +78,21 @@
   cannot hold several individuals with differing keypoints in one file,
   such as movement.
 
+- A Parquet file written by
+  [`write_aniframe()`](https://animovement.dev/aniread/reference/write_aniframe.md)
+  or
+  [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
+  keeps its metadata where any language can read it
+  ([\#203](https://github.com/animovement/aniread/issues/203)). The
+  metadata, with the class, is JSON under the file’s `animovement` key,
+  `{"class": ["anipoint"], "metadata": {...}}`, in the layout
+  [`anicore::get_metadata_json()`](https://animovement.dev/anicore/reference/metadata_json.html)
+  documents. It was in arrow’s `r` key, as R code that Python, DuckDB
+  and other readers cannot use, and is no longer kept there.
+  [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)
+  restores the metadata from the key, and still reads files written
+  before. Needs anicore with `get_metadata_json()`.
+
 - A Parquet file keeps the class it was written with
   ([\#135](https://github.com/animovement/aniread/issues/135)).
   [`read_aniframe()`](https://animovement.dev/aniread/reference/read_aniframe.md)
