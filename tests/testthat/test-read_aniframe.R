@@ -90,6 +90,8 @@ test_that("read_aniframe restores the subclass recorded in the file", {
 })
 
 test_that("the metadata is written to the animovement key, not to arrow's", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint() |>
     anicore::set_metadata(sampling_rate = 30, unit_space = "mm")
@@ -107,6 +109,8 @@ test_that("the metadata is written to the animovement key, not to arrow's", {
 })
 
 test_that("a file whose key records only the class still reads", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   # As written between aniread#202 and #203: the class in our key, the
   # metadata in arrow's
   path <- withr::local_tempfile(fileext = ".parquet")

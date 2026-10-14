@@ -370,6 +370,10 @@ test_that("each reader records a source_format its registry entry lists", {
     if (case$path %in% stubs || case$source == "trackball_bonsai") {
       next
     }
+    # Reading idtracker.ai's attributes needs jsonlite; detecting them does not.
+    if (case$source == "idtrackerai" && !rlang::is_installed("jsonlite")) {
+      next
+    }
     source <- strsplit(case$source, "/", fixed = TRUE)[[1]][[1]]
     data <- read_dataset(case$path, source = source) |>
       suppressWarnings() |>
