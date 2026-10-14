@@ -351,11 +351,14 @@ test_that("writes time in frames as it is", {
 })
 
 test_that("errors on times in frames that are not whole", {
+  # Declared in frames: without a declared unit, anicore leaves a time that
+  # isn't whole numbers "unknown" rather than "frame".
   data <- anicore::anipoint(
     individual = c(1, 1, 1),
     time = c(0, 0.5, 1),
     x = c(10, 11, 12),
-    y = c(5, 6, 7)
+    y = c(5, 6, 7),
+    metadata = list(unit_time = "frame")
   )
   path <- withr::local_tempfile(fileext = ".csv")
   expect_error(
