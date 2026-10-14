@@ -5,7 +5,6 @@
 # - Probabilities CSV with either column name joins correctly
 # - The h5 reader records the version, frame rate and frame height the file
 #   carries, and leaves them NA when it does not (#146)
-# - The unused `version` argument is deprecated, and ignored (#118)
 
 test_that("read_idtracker reads CSV with legacy `seconds` column", {
   trajectories <- test_path(
@@ -552,11 +551,4 @@ test_that("a CSV export of ten or more individuals keeps them apart", {
   expect_equal(levels(data$individual), as.character(1:11))
   expect_equal(data$x[data$individual == "10"], 100)
   expect_equal(data$x[data$individual == "2"], 20)
-})
-
-test_that("`version` is deprecated and ignored", {
-  path <- test_path("data/idtrackerai/trajectories_csv", "trajectories.csv")
-
-  lifecycle::expect_deprecated(old <- read_idtracker(path, version = 6))
-  expect_equal(old, read_idtracker(path))
 })

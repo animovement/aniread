@@ -89,10 +89,6 @@
 #'   pixels for the coordinates files. AnimalTA does not record this in the
 #'   export, so when not supplied the maximum observed `y` is used as a
 #'   fallback.
-#' @param detailed `r lifecycle::badge("deprecated")` Use `format` instead.
-#'   `detailed = TRUE` named the layout of a variable number of targets,
-#'   now `format = "variable"`, and `detailed = FALSE` the fixed one, now
-#'   `format = "fixed"`.
 #'
 #' @return a movement dataframe. `time` is AnimalTA's `Time` (or `Frame`),
 #'   with the first frame of the video at 0; see "Time" in [read_dataset()].
@@ -109,24 +105,9 @@
 read_animalta <- function(
   path,
   format = c("auto", "fixed", "variable", "detailed"),
-  video_height = NULL,
-  detailed = deprecated()
+  video_height = NULL
 ) {
-  # `detailed` was the second argument, so a logical given by position
-  # lands in `format`.
-  if (is.logical(format)) {
-    detailed <- format
-    format <- "auto"
-  }
   validate_files(path)
-  if (lifecycle::is_present(detailed)) {
-    lifecycle::deprecate_warn(
-      "0.8.0",
-      "read_animalta(detailed)",
-      "read_animalta(format)"
-    )
-    format <- animalta_format_from_detailed(detailed)
-  }
   format <- resolve_animalta_layout(path, format)
 
   if (format != "detailed" && length(path) > 1) {
@@ -594,23 +575,4 @@ detect_animalta_format <- function(path) {
     return("detailed")
   }
   NA_character_
-}
-
-#' The layout the deprecated `detailed` argument named
-#'
-#' @param detailed `TRUE`, `FALSE` or `"auto"`.
-#' @return The matching `format`.
-#' @noRd
-animalta_format_from_detailed <- function(detailed) {
-  if (identical(detailed, "auto")) {
-    return("auto")
-  }
-  if (!rlang::is_bool(detailed)) {
-    cli::cli_abort(c(
-      "{.arg detailed} must be {.val auto}, {.val TRUE} or {.val FALSE}.",
-      "x" = "Got {.val {detailed}}.",
-      "i" = "{.arg detailed} is deprecated; use {.arg format}."
-    ))
-  }
-  if (detailed) "variable" else "fixed"
 }

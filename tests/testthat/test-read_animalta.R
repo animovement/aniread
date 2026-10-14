@@ -70,40 +70,6 @@ test_that("read_dataset reads a variable-layout export", {
   expect_s3_class(result, "anipoint")
 })
 
-# ---- Deprecated `detailed` ---------------------------------------------
-
-test_that("detailed = TRUE and FALSE still read, with a deprecation warning", {
-  variable <- testthat::test_path(
-    "data/animalta/variable_individuals_single_arena.csv"
-  )
-  fixed <- testthat::test_path(
-    "data/animalta/single_individual_multi_arena.csv"
-  )
-
-  lifecycle::expect_deprecated(old <- read_animalta(variable, detailed = TRUE))
-  expect_equal(as.data.frame(old), as.data.frame(read_animalta(variable)))
-  lifecycle::expect_deprecated(old <- read_animalta(fixed, detailed = FALSE))
-  expect_equal(as.data.frame(old), as.data.frame(read_animalta(fixed)))
-  lifecycle::expect_deprecated(read_animalta(fixed, detailed = "auto"))
-})
-
-test_that("a logical given by position is taken as the old `detailed`", {
-  # `detailed` used to be the second argument.
-  fixed <- testthat::test_path(
-    "data/animalta/single_individual_multi_arena.csv"
-  )
-
-  lifecycle::expect_deprecated(old <- read_animalta(fixed, FALSE))
-  expect_equal(as.data.frame(old), as.data.frame(read_animalta(fixed)))
-})
-
-test_that("a deprecated `detailed` that is neither auto nor logical errors", {
-  path <- testthat::test_path("data/animalta/single_individual_multi_arena.csv")
-
-  withr::local_options(lifecycle_verbosity = "quiet")
-  expect_error(read_animalta(path, detailed = "yes"), "must be")
-})
-
 # ---- Head and tail -----------------------------------------------------
 
 test_that("head and tail columns become keypoints of one individual", {

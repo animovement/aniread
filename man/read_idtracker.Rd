@@ -7,7 +7,6 @@
 read_idtracker(
   path,
   path_probabilities = NULL,
-  version = deprecated(),
   video_height = NULL,
   format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 )
@@ -16,10 +15,6 @@ read_idtracker(
 \item{path}{Path to an idtracker.ai data frame}
 
 \item{path_probabilities}{Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.}
-
-\item{version}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Unused: the export is
-recognised from the file, and the version that wrote it is read from
-the file where it is recorded. Use \code{format} to name the export.}
 
 \item{video_height}{Optional numeric height of the source video frame in
 pixels. Overrides the value read from the h5 or Parquet file when both

@@ -38,9 +38,6 @@
 #'     "five-locusts", unpacks to one `.npz` per individual and returns a
 #'     vector of paths, which [read_trex()] reads as one recording
 #'
-#'   `"idtracker"` and `"trackball"`, the names before these matched
-#'   [read_dataset()], still work but are deprecated.
-#'
 #'   Alternatively, provide a URL string (starting with "http://" or "https://")
 #'   to download a file from a custom location.
 #'
@@ -105,9 +102,6 @@ get_sample_data <- function(
   list_datasets = FALSE
 ) {
   sources <- sample_data_sources()
-  if (!missing(source)) {
-    source <- resolve_sample_source(source)
-  }
 
   # Handle list_datasets request
   if (list_datasets) {
@@ -499,27 +493,4 @@ sample_data_sources <- function() {
       "beetles" = github("/trex/beetle.csv", "trex_sample.csv")
     )
   )
-}
-
-# Source names get_sample_data() used before they matched the registry
-SAMPLE_DATA_ALIASES <- c(
-  idtracker = "idtrackerai",
-  trackball = "trackball_bonsai"
-)
-
-#' Map a superseded sample-data source name to its registry name
-#' @param source A source name or URL.
-#' @return The registry name, or `source` unchanged.
-#' @keywords internal
-resolve_sample_source <- function(source) {
-  if (!rlang::is_string(source) || !source %in% names(SAMPLE_DATA_ALIASES)) {
-    return(source)
-  }
-  new <- SAMPLE_DATA_ALIASES[[source]]
-  lifecycle::deprecate_soft(
-    "0.8.0",
-    I(sprintf('get_sample_data("%s")', source)),
-    I(sprintf('get_sample_data("%s")', new))
-  )
-  new
 }
