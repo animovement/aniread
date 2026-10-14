@@ -88,8 +88,7 @@ file, also when it has a single arena.
 read_animalta(
   path,
   format = c("auto", "fixed", "variable", "detailed"),
-  video_height = NULL,
-  detailed = deprecated()
+  video_height = NULL
 )
 ```
 
@@ -114,12 +113,6 @@ read_animalta(
   Optional numeric height of the source video frame, in pixels for the
   coordinates files. AnimalTA does not record this in the export, so
   when not supplied the maximum observed `y` is used as a fallback.
-
-- detailed:
-
-  **\[deprecated\]** Use `format` instead. `detailed = TRUE` named the
-  layout of a variable number of targets, now `format = "variable"`, and
-  `detailed = FALSE` the fixed one, now `format = "fixed"`.
 
 ## Value
 

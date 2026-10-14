@@ -76,10 +76,6 @@ get_sample_data(
     [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
     reads as one recording
 
-  `"idtracker"` and `"trackball"`, the names before these matched
-  [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md),
-  still work but are deprecated.
-
   Alternatively, provide a URL string (starting with "http://" or
   "https://") to download a file from a custom location.
 

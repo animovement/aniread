@@ -263,8 +263,7 @@ arena.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_animalta</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"fixed"</span>, <span class="st">"variable"</span>, <span class="st">"detailed"</span><span class="op">)</span>,</span>
-<span>  video_height <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  detailed <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span></span>
+<span>  video_height <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -291,13 +290,6 @@ source with several export layouts is settled
 pixels for the coordinates files. AnimalTA does not record this in the
 export, so when not supplied the maximum observed <code>y</code> is used as a
 fallback.</p></dd>
-
-
-<dt id="arg-detailed">detailed<a class="anchor" aria-label="anchor" href="#arg-detailed"></a></dt>
-<dd><p><a href="https://lifecycle.r-lib.org/articles/stages.html#deprecated" class="external-link"><img src="figures/lifecycle-deprecated.svg" alt="[Deprecated]"></a> Use <code>format</code> instead.
-<code>detailed = TRUE</code> named the layout of a variable number of targets,
-now <code>format = "variable"</code>, and <code>detailed = FALSE</code> the fixed one, now
-<code>format = "fixed"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

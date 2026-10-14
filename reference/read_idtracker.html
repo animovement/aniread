@@ -74,7 +74,6 @@ height, so pass <code>video_height</code> explicitly to get an accurate flip
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_idtracker</span><span class="op">(</span></span>
 <span>  <span class="va">path</span>,</span>
 <span>  path_probabilities <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  version <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  video_height <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"h5"</span>, <span class="st">"csv"</span>, <span class="st">"csv_tidy"</span>, <span class="st">"parquet"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -90,12 +89,6 @@ height, so pass <code>video_height</code> explicitly to get an accurate flip
 
 <dt id="arg-path-probabilities">path_probabilities<a class="anchor" aria-label="anchor" href="#arg-path-probabilities"></a></dt>
 <dd><p>Path to a csv file with probabilities. Only needed if you are reading csv files as they are included in h5 files.</p></dd>
-
-
-<dt id="arg-version">version<a class="anchor" aria-label="anchor" href="#arg-version"></a></dt>
-<dd><p><a href="https://lifecycle.r-lib.org/articles/stages.html#deprecated" class="external-link"><img src="figures/lifecycle-deprecated.svg" alt="[Deprecated]"></a> Unused: the export is
-recognised from the file, and the version that wrote it is read from
-the file where it is recorded. Use <code>format</code> to name the export.</p></dd>
 
 
 <dt id="arg-video-height">video_height<a class="anchor" aria-label="anchor" href="#arg-video-height"></a></dt>

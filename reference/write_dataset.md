@@ -113,16 +113,16 @@ read_dataset(path)
 
 # Name the format where the suffix is shared
 write_dataset(data, tempfile(fileext = ".csv"), format = "intracktive")
-#> ✔ Wrote inTRACKtive CSV to /tmp/Rtmpe5OzeN/file19d632d5f02f.csv
+#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpKfQ6tU/file193a2d872abc.csv
 
 # One file per individual, or per track
 dir <- tempfile()
 dir.create(dir)
 write_dataset(data, file.path(dir, "mice.parquet"), by = "individual")
-#> Wrote 3 files, one per individual, to /tmp/Rtmpe5OzeN/file19d66c0a3fec.
+#> Wrote 3 files, one per individual, to /tmp/RtmpKfQ6tU/file193a5c722384.
 write_dataset(data, file.path(dir, "{individual}/{keypoint}.parquet"))
 #> Wrote 33 files, one per individual and keypoint, to
-#> /tmp/Rtmpe5OzeN/file19d66c0a3fec.
+#> /tmp/RtmpKfQ6tU/file193a5c722384.
 list.files(dir, recursive = TRUE)
 #>  [1] "1/abdomen.parquet"         "1/foot_left.parquet"      
 #>  [3] "1/foot_right.parquet"      "1/head.parquet"           

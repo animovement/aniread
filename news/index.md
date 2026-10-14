@@ -48,6 +48,14 @@
   is the metadata-aware successor: it checks the frame against what it
   declares rather than against a fixed column list.
 
+- The deprecated `read_animalta(detailed = )`,
+  `read_idtracker(version = )` and
+  [`get_sample_data()`](https://animovement.dev/aniread/reference/get_sample_data.md)
+  source names `"idtracker"` and `"trackball"` are removed; use
+  `read_animalta(format = )`, `read_idtracker(format = )`,
+  `"idtrackerai"` and `"trackball_bonsai"`
+  ([\#223](https://github.com/animovement/aniread/issues/223)).
+
 ### Added
 
 - [`write_dataset()`](https://animovement.dev/aniread/reference/write_dataset.md)
@@ -417,7 +425,8 @@
   does, and serves a sample for every source that has a public one
   ([\#169](https://github.com/animovement/aniread/issues/169)).
   `"idtracker"` is now `"idtrackerai"` and `"trackball"` is now
-  `"trackball_bonsai"`; the old names still work but are deprecated. New
+  `"trackball_bonsai"`; the old names are removed
+  ([\#223](https://github.com/animovement/aniread/issues/223)). New
   datasets: `"octron"`, `"trackmate"` (three recordings), `"fasttrack"`,
   idtracker.ai’s CSV export (`"trajectories_csv"`), a second C3D file
   (`"sample-static"`), DeepLabCut’s wasp as CSV (`"single-wasp_csv"`),
@@ -510,17 +519,18 @@
   detailed data but its coordinates file for a variable number of
   targets, so it is now `format = "variable"`, the one-pair-per-target
   coordinates file is `format = "fixed"`, and `format = "detailed"`
-  names the detailed data files. `detailed` is deprecated:
-  `detailed = TRUE` and `detailed = FALSE` still read as `"variable"`
-  and `"fixed"`, with a warning.
+  names the detailed data files. `detailed` is removed
+  ([\#223](https://github.com/animovement/aniread/issues/223)): use
+  `format = "variable"` for `detailed = TRUE` and `format = "fixed"` for
+  `detailed = FALSE`.
 
 - [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)’s
-  `version` argument is deprecated
-  ([\#118](https://github.com/animovement/aniread/issues/118)). It was
+  `version` argument is removed
+  ([\#118](https://github.com/animovement/aniread/issues/118),
+  [\#223](https://github.com/animovement/aniread/issues/223)). It was
   never used: the reader recognises the export from the file, as
   `format` names it, and reads the version that wrote it into
-  `source_version` where the file records one. Passing `version` still
-  reads the file, with a warning.
+  `source_version` where the file records one.
 
 - [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
   labels tracks by the name TrackMate gave them rather than by the
