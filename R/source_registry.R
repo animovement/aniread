@@ -94,7 +94,7 @@ source_registry <- function() {
       source = "deeplabcut",
       reader = "read_deeplabcut",
       suffix = c("csv", "h5"),
-      format = c("csv", "h5"),
+      format = deeplabcut_formats(),
       detector = detect_deeplabcut_file,
       requires = c(h5 = "rhdf5")
     ),
@@ -148,7 +148,8 @@ source_registry <- function() {
       source = "lightningpose",
       reader = "read_lightningpose",
       suffix = "csv",
-      format = "csv",
+      # Read by read_deeplabcut(), which names the layout.
+      format = deeplabcut_formats("csv"),
       detector = detect_lightningpose_file,
       requires = NULL
     ),

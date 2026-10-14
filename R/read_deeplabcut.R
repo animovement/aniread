@@ -26,6 +26,10 @@
 #' animal (its `uniquebodyparts`) under the pseudo-individual `single`.
 #' They are kept as the keypoints of an `individual` called `"single"`.
 #'
+#' The layout read is recorded in the `source_format` metadata field: the
+#' file type, single- or multi-animal, and `_3d` for triangulated positions,
+#' such as `"csv_single_animal"` or `"h5_multi_animal"`.
+#'
 #' @section 3D files:
 #' DeepLabCut's triangulation writes `x`, `y` and `z` and no likelihood, so
 #' `confidence` is `NA`. Triangulated positions are in the units and frame
@@ -55,11 +59,12 @@
 read_deeplabcut <- function(path, video_height = NULL) {
   validate_files(path, expected_suffix = c("csv", "h5"))
 
-  data <- read_deeplabcut_points(path) |>
+  points <- read_deeplabcut_points(path)
+  data <- points |>
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "deeplabcut",
-      source_format = get_file_ext(path),
+      source_format = deeplabcut_format(path, points),
       filename = basename(path)
     )
 
@@ -89,6 +94,36 @@ read_deeplabcut_points <- function(path) {
     read_deeplabcut_h5(path)
   }
   dlc_points_long(wide)
+}
+
+#' Name the DeepLabCut layout a file was read as
+#'
+#' The file type, then single- or multi-animal (a multi-animal file has an
+#' `individuals` header level), then `_3d` for triangulated positions, e.g.
+#' `"csv_multi_animal"` or `"h5_single_animal_3d"`.
+#'
+#' @param path Path to the file.
+#' @param points The points read from it, as from [read_deeplabcut_points()].
+#' @return A string, one of [deeplabcut_formats()].
+#' @keywords internal
+deeplabcut_format <- function(path, points) {
+  animals <- if ("individual" %in% names(points)) "multi" else "single"
+  paste0(
+    get_file_ext(path),
+    "_",
+    animals,
+    "_animal",
+    if ("z" %in% names(points)) "_3d"
+  )
+}
+
+#' Every layout [deeplabcut_format()] can name
+#' @param ext File types to include.
+#' @keywords internal
+deeplabcut_formats <- function(ext = c("csv", "h5")) {
+  layouts <- c("single_animal", "multi_animal")
+  layouts <- c(layouts, paste0(layouts, "_3d"))
+  as.vector(outer(ext, layouts, paste, sep = "_"))
 }
 
 #' The coords the DeepLabCut reader keeps

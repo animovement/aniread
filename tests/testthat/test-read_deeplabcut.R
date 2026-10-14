@@ -8,6 +8,7 @@
 #   pandas "table" and "fixed" h5, and the `df_with_missing` and `tracks`
 #   keys all read, and the csv and h5 of the same data agree
 # - dlc_points_long(): every value lands on its own row
+# - deeplabcut_format(): the layout read is recorded as `source_format`
 # - parse_pickle(): the protocol 0 pickles pandas stores its labels in
 #
 # Fixtures in data/deeplabcut:
@@ -510,4 +511,43 @@ test_that("fixed-format sample files from GIN read (#168)", {
 
   wasp <- read_deeplabcut(paths[[3]])
   expect_setequal(levels(wasp$keypoint), c("head", "stinger"))
+})
+
+test_that("the layout read is recorded as source_format", {
+  layouts <- c(
+    "mouse_single.csv" = "csv_single_animal",
+    "mouse_multi.csv" = "csv_multi_animal",
+    "dlc3_3d.csv" = "csv_single_animal_3d"
+  )
+  if (rlang::is_installed("rhdf5")) {
+    layouts <- c(
+      layouts,
+      "dlc3_single.h5" = "h5_single_animal",
+      "dlc3_tracks_el.h5" = "h5_multi_animal",
+      "dlc3_3d.h5" = "h5_single_animal_3d"
+    )
+  }
+
+  for (file in names(layouts)) {
+    data <- read_deeplabcut(fixture_path(file))
+    expect_equal(
+      anicore::get_metadata(data, "source_format"),
+      layouts[[file]],
+      info = file
+    )
+    expect_in(layouts[[file]], deeplabcut_formats())
+  }
+})
+
+test_that("deeplabcut_formats() names every file type and layout", {
+  expect_length(deeplabcut_formats(), 8)
+  expect_setequal(
+    deeplabcut_formats("csv"),
+    c(
+      "csv_single_animal",
+      "csv_multi_animal",
+      "csv_single_animal_3d",
+      "csv_multi_animal_3d"
+    )
+  )
 })

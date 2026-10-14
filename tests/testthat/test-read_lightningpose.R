@@ -30,6 +30,10 @@ test_that("read_lightningpose records its source", {
 
   expect_s3_class(result, "anipoint")
   expect_equal(anicore::get_metadata(result)$source, "lightningpose")
+  expect_equal(
+    anicore::get_metadata(result, "source_format"),
+    "csv_single_animal"
+  )
 })
 
 test_that("EKS output keeps its keypoints, x, y and likelihood", {
