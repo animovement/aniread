@@ -50,7 +50,7 @@
 #'   for what can be written, and the individual `write_*()` functions for
 #'   format-specific arguments.
 #'
-#' @examplesIf rlang::is_installed("arrow")
+#' @examplesIf rlang::is_installed(c("arrow", "jsonlite"))
 #' data <- anicore::example_anipoint()
 #' path <- tempfile(fileext = ".parquet")
 #'

@@ -61,7 +61,7 @@ Each file holds an aniframe with the same class and metadata as \code{data}.
 }
 
 \examples{
-\dontshow{if (rlang::is_installed("arrow")) withAutoprint(\{ # examplesIf}
+\dontshow{if (rlang::is_installed(c("arrow", "jsonlite"))) withAutoprint(\{ # examplesIf}
 data <- anicore::example_anipoint()
 path <- tempfile(fileext = ".parquet")
 
