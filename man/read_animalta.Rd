@@ -7,8 +7,7 @@
 read_animalta(
   path,
   format = c("auto", "fixed", "variable", "detailed"),
-  video_height = NULL,
-  detailed = deprecated()
+  video_height = NULL
 )
 }
 \arguments{
@@ -26,11 +25,6 @@ source with several export layouts is settled
 pixels for the coordinates files. AnimalTA does not record this in the
 export, so when not supplied the maximum observed \code{y} is used as a
 fallback.}
-
-\item{detailed}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{format} instead.
-\code{detailed = TRUE} named the layout of a variable number of targets,
-now \code{format = "variable"}, and \code{detailed = FALSE} the fixed one, now
-\code{format = "fixed"}.}
 }
 \value{
 a movement dataframe. \code{time} is AnimalTA's \code{Time} (or \code{Frame}),
