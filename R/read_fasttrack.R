@@ -104,6 +104,7 @@ read_fasttrack <- function(path, video_height = NULL) {
   data <- anicore::as_anipoint(data) |>
     anicore::set_metadata(
       source = "fasttrack",
+      source_format = "txt",
       filename = basename(path)
     ) |>
     reflect_to_bottom_left(video_height = video_height)

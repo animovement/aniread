@@ -83,6 +83,7 @@ read_bonsai <- function(path, video_height = NULL) {
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "bonsai",
+      source_format = "csv",
       filename = basename(path),
       start_datetime = data$time[[1]],
       unit_time = "s"

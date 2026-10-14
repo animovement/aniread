@@ -30,6 +30,9 @@ argument of \code{\link[=read_dataset]{read_dataset()}} and the \code{format} ar
 a format that is only written.}
 \item{\code{suffix}}{File suffix(es) the reader accepts, without a leading
 dot.}
+\item{\code{format}}{The values the reader can record in the \code{source_format}
+metadata field, one per export layout it reads. Empty for \code{aniframe},
+whose files keep the \code{source_format} of the data they hold.}
 \item{\code{detector}}{Function of a single path returning \code{TRUE} when the
 file is of this source. See \code{\link[=detect_source]{detect_source()}} for the contract.}
 \item{\code{requires}}{Named character vector mapping a suffix to the

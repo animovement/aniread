@@ -36,6 +36,7 @@
 read_lightningpose <- function(path, video_height = NULL) {
   read_deeplabcut(path, video_height = video_height) |>
     anicore::set_metadata(
-      source = "lightningpose"
+      source = "lightningpose",
+      source_format = "csv"
     )
 }

@@ -16,6 +16,11 @@ direction, and the columns:
 it.}
 \item{\code{suffix}}{List column of character vectors - the file
 suffix(es) the function reads or writes.}
+\item{\code{format}}{List column of character vectors - the export
+layouts a reader tells apart, as it records them in the
+\code{source_format} metadata field. Empty for the \code{"write"} rows, and
+for \code{aniframe}, whose files keep the \code{source_format} of the data
+they hold.}
 }
 }
 \description{
@@ -44,8 +49,11 @@ get_supported_sources()
 supported <- get_supported_sources()
 supported[supported$direction == "write", ]
 
-# Which sources read HDF5 (`.h5`) files?
+# The export layouts FreeMoCap has written:
 readers <- supported[supported$direction == "read", ]
+readers$format[[which(readers$source == "freemocap")]]
+
+# Which sources read HDF5 (`.h5`) files?
 readers$source[vapply(readers$suffix, \(s) "h5" \%in\% s, logical(1))]
 
 }

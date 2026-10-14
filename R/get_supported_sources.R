@@ -26,6 +26,11 @@
 #'       it.}
 #'     \item{`suffix`}{List column of character vectors - the file
 #'       suffix(es) the function reads or writes.}
+#'     \item{`format`}{List column of character vectors - the export
+#'       layouts a reader tells apart, as it records them in the
+#'       `source_format` metadata field. Empty for the `"write"` rows, and
+#'       for `aniframe`, whose files keep the `source_format` of the data
+#'       they hold.}
 #'   }
 #'
 #' @examples
@@ -35,8 +40,11 @@
 #' supported <- get_supported_sources()
 #' supported[supported$direction == "write", ]
 #'
-#' # Which sources read HDF5 (`.h5`) files?
+#' # The export layouts FreeMoCap has written:
 #' readers <- supported[supported$direction == "read", ]
+#' readers$format[[which(readers$source == "freemocap")]]
+#'
+#' # Which sources read HDF5 (`.h5`) files?
 #' readers$source[vapply(readers$suffix, \(s) "h5" %in% s, logical(1))]
 #'
 #' @export
@@ -47,7 +55,8 @@ get_supported_sources <- function() {
         source = entry$source,
         direction = "read",
         fun = entry$reader,
-        suffix = list(entry$suffix)
+        suffix = list(entry$suffix),
+        format = list(entry$format)
       )
     }
     write <- if (!is.null(entry$writer)) {
@@ -55,7 +64,8 @@ get_supported_sources <- function() {
         source = entry$source,
         direction = "write",
         fun = entry$writer,
-        suffix = list(entry$write_suffix)
+        suffix = list(entry$write_suffix),
+        format = list(character())
       )
     }
     dplyr::bind_rows(read, write)

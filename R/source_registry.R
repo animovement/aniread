@@ -20,6 +20,9 @@
 #'     a format that is only written.}
 #'   \item{`suffix`}{File suffix(es) the reader accepts, without a leading
 #'     dot.}
+#'   \item{`format`}{The values the reader can record in the `source_format`
+#'     metadata field, one per export layout it reads. Empty for `aniframe`,
+#'     whose files keep the `source_format` of the data they hold.}
 #'   \item{`detector`}{Function of a single path returning `TRUE` when the
 #'     file is of this source. See [detect_source()] for the contract.}
 #'   \item{`requires`}{Named character vector mapping a suffix to the
@@ -41,6 +44,7 @@ source_registry <- function() {
       source = "aniframe",
       reader = "read_aniframe",
       suffix = "parquet",
+      format = character(),
       detector = detect_aniframe_file,
       requires = NULL,
       writer = "write_aniframe",
@@ -50,6 +54,7 @@ source_registry <- function() {
       source = "animalta",
       reader = "read_animalta",
       suffix = "csv",
+      format = c("fixed", "variable", "detailed"),
       detector = detect_animalta_file,
       requires = NULL
     ),
@@ -57,6 +62,7 @@ source_registry <- function() {
       source = "anipose",
       reader = "read_anipose",
       suffix = "csv",
+      format = "csv",
       detector = detect_anipose_file,
       requires = NULL
     ),
@@ -64,6 +70,7 @@ source_registry <- function() {
       source = "bonsai",
       reader = "read_bonsai",
       suffix = "csv",
+      format = "csv",
       detector = detect_bonsai_file,
       requires = NULL
     ),
@@ -71,6 +78,7 @@ source_registry <- function() {
       source = "boris",
       reader = "read_boris",
       suffix = c("csv", "tsv"),
+      format = c("aggregated", "tabular"),
       detector = detect_boris_file,
       requires = NULL
     ),
@@ -78,6 +86,7 @@ source_registry <- function() {
       source = "c3d",
       reader = "read_c3d",
       suffix = "c3d",
+      format = "c3d",
       detector = detect_c3d_file,
       requires = NULL
     ),
@@ -85,6 +94,7 @@ source_registry <- function() {
       source = "deeplabcut",
       reader = "read_deeplabcut",
       suffix = c("csv", "h5"),
+      format = c("csv", "h5"),
       detector = detect_deeplabcut_file,
       requires = c(h5 = "rhdf5")
     ),
@@ -92,6 +102,7 @@ source_registry <- function() {
       source = "fasttrack",
       reader = "read_fasttrack",
       suffix = "txt",
+      format = "txt",
       detector = detect_fasttrack_file,
       requires = NULL
     ),
@@ -99,6 +110,7 @@ source_registry <- function() {
       source = "fictrac",
       reader = "read_fictrac",
       suffix = "dat",
+      format = c("23col", "24col", "25col"),
       detector = detect_fictrac_file,
       requires = NULL
     ),
@@ -106,6 +118,14 @@ source_registry <- function() {
       source = "freemocap",
       reader = "read_freemocap",
       suffix = "csv",
+      format = c(
+        "by_frame_8col",
+        "by_frame_9col",
+        "by_trajectory",
+        "wide",
+        "v2_by_frame",
+        "v2_trajectory"
+      ),
       detector = detect_freemocap_file,
       requires = NULL
     ),
@@ -113,6 +133,7 @@ source_registry <- function() {
       source = "idtrackerai",
       reader = "read_idtracker",
       suffix = c("csv", "h5", "parquet"),
+      format = c("h5", "csv", "csv_tidy", "parquet"),
       detector = detect_idtrackerai_file,
       requires = c(h5 = "rhdf5", parquet = "arrow")
     ),
@@ -127,6 +148,7 @@ source_registry <- function() {
       source = "lightningpose",
       reader = "read_lightningpose",
       suffix = "csv",
+      format = "csv",
       detector = detect_lightningpose_file,
       requires = NULL
     ),
@@ -134,6 +156,7 @@ source_registry <- function() {
       source = "movement",
       reader = "read_movement",
       suffix = c("nc", "h5"),
+      format = "netcdf",
       detector = detect_movement_file,
       requires = c(nc = "rhdf5", h5 = "rhdf5")
     ),
@@ -141,6 +164,7 @@ source_registry <- function() {
       source = "octron",
       reader = "read_octron",
       suffix = "csv",
+      format = "csv",
       detector = detect_octron_file,
       requires = NULL
     ),
@@ -148,6 +172,7 @@ source_registry <- function() {
       source = "sleap",
       reader = "read_sleap",
       suffix = c("h5", "csv"),
+      format = c("h5", "csv"),
       detector = detect_sleap_file,
       requires = c(h5 = "rhdf5")
     ),
@@ -156,6 +181,7 @@ source_registry <- function() {
       source = "trackball_bonsai",
       reader = "read_trackball",
       suffix = "csv",
+      format = "csv",
       detector = detect_trackball_file,
       requires = NULL
     ),
@@ -163,6 +189,7 @@ source_registry <- function() {
       source = "trackmate",
       reader = "read_trackmate",
       suffix = "xml",
+      format = "xml",
       detector = detect_trackmate_file,
       requires = c(xml = "xml2")
     ),
@@ -170,6 +197,7 @@ source_registry <- function() {
       source = "trex",
       reader = "read_trex",
       suffix = c("csv", "npz"),
+      format = c("csv", "npz"),
       detector = detect_trex_file,
       requires = NULL
     )
