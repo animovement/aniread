@@ -10,7 +10,9 @@ read_animovement_key(json)
 \item{json}{The key's value, or \code{NULL} when the file has none.}
 }
 \value{
-A list, empty when there is no key.
+A list, empty when there is no key, parsed without simplifying so
+\code{\link[anicore:set_metadata_json]{anicore::set_metadata_json()}} can tell an empty array from an empty
+object.
 }
 \description{
 Parse animovement's Parquet metadata key
