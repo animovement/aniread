@@ -286,8 +286,9 @@ test_that("read_anipose output works with aniframe functions", {
 test_that("read_anipose preserves data relationships", {
   result <- read_anipose(path_valid)
 
-  # Each time point should have the same number of keypoints
-  keypoints_per_time <- result |>
+  # Each time point should have the same number of keypoints. Counted on a
+  # plain table, since group_by() on an anipoint keeps its keys.
+  keypoints_per_time <- dplyr::as_tibble(result) |>
     dplyr::group_by(time) |>
     dplyr::summarise(n_keypoints = dplyr::n(), .groups = "drop")
 
