@@ -43,10 +43,9 @@
   [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
   and
   [`read_c3d()`](https://animovement.dev/aniread/reference/read_c3d.md)
-  return no `confidence`.
-  [`anicore::validate_aniframe()`](https://animovement.dev/anicore/reference/anicore-deprecated.html)
-  is the metadata-aware successor: it checks the frame against what it
-  declares rather than against a fixed column list.
+  return no `confidence`. `anicore::validate_aniframe()` is the
+  metadata-aware successor: it checks the frame against what it declares
+  rather than against a fixed column list.
 
 - The deprecated `read_animalta(detailed = )`,
   `read_idtracker(version = )` and

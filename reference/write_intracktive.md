@@ -104,7 +104,7 @@ flies <- read_sleap(
 )
 path <- tempfile(fileext = ".csv")
 write_intracktive(flies, path)
-#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpKfQ6tU/file193a4528ad8b.csv
+#> ✔ Wrote inTRACKtive CSV to /tmp/RtmpzWPxXY/file1966487f9eab.csv
 head(read.csv(path))
 #>   track_id t        x         y
 #> 1        1 0 240.2638 432.35559
