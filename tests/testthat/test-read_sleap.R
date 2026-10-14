@@ -57,6 +57,8 @@ test_that("confidence comes from the per-node score", {
 })
 
 test_that("the CSV and the h5 of one recording read the same", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("rhdf5")
   # The strongest check available: both exports describe the same 20 frames
   # of the same three tracks. video_height is supplied to both, because the
   # max(y) fallback would otherwise reflect them around different extents.
@@ -125,6 +127,8 @@ test_that("get_supported_sources() advertises both SLEAP suffixes", {
 })
 
 test_that("the h5 reader uses the track names SLEAP recorded", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("rhdf5")
   path <- test_path("data/sleap/SLEAP_three-mice_Aeon_mixed-labels.analysis.h5")
   data <- read_sleap(path)
   track_names <- as.vector(rhdf5::h5read(path, "track_names"))
@@ -132,7 +136,14 @@ test_that("the h5 reader uses the track names SLEAP recorded", {
   expect_setequal(levels(data$individual), track_names)
 })
 
+# SLEAP_single-mouse_EPM.analysis.h5 is frames 165 to 174 (10 of 18485) of
+# movement's SLEAP_single-mouse_EPM.analysis.h5 sample, which
+# get_sample_data("sleap") downloads in full. Every dataset is copied as
+# SLEAP 1.3.1 wrote it, cut along the frame axis only.
+
 test_that("a recording with no tracks falls back to positional names", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("rhdf5")
   # SLEAP writes no track_names for a single untracked instance, so there is
   # nothing to name it with.
   path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
@@ -162,6 +173,7 @@ write_sleap_h5 <- function(edges = NULL, provenance = NULL) {
 }
 
 test_that("the h5 reader attaches the skeleton read_structure() reads", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
   data <- read_sleap(path)
@@ -249,6 +261,7 @@ test_that("the CSV export reads without a structure or version", {
 })
 
 test_that("attaching the skeleton again replaces the one the reader attached", {
+  skip_if_not_installed("jsonlite")
   # The guides on animovement.dev attach read_structure() after reading.
   skip_if_not_installed("rhdf5")
   path <- test_path("data/sleap/SLEAP_single-mouse_EPM.analysis.h5")
@@ -303,6 +316,7 @@ sleap_rows <- function(d) {
 }
 
 test_that("both sleap-io presets read the same", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   matlab <- read_sleap(sleap_fixture(
     "SLEAP_two-flies_sleap-io.matlab.analysis.h5"
@@ -322,6 +336,7 @@ test_that("both sleap-io presets read the same", {
 })
 
 test_that("a sleap-io h5 reads as its CSV does", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   base <- "SLEAP_two-flies_sleap-io"
   h5 <- read_sleap(
@@ -366,6 +381,7 @@ test_that("the sleap-io CSV's sorted columns are matched by name", {
 })
 
 test_that("the frame axis of a sleap-io h5 runs to the end of the video", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   # Six labelled frames of a nine-frame video: the last three come back as
   # NA rows, one per track and node, as undetected frames always have.
@@ -384,6 +400,7 @@ test_that("the frame axis of a sleap-io h5 runs to the end of the video", {
 })
 
 test_that("custom axes are read from the dims attribute", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   path <- sleap_fixture("SLEAP_untracked-pair_sleap-io.custom.analysis.h5")
   expect_equal(
@@ -414,6 +431,7 @@ test_that("custom axes are read from the dims attribute", {
 })
 
 test_that("the first frame of the video reads as time 0 (#150)", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   # sleap-io writes the frame axis from the video's frame 0, and the CSV
   # gives frame_idx; frame 0 is labelled in this recording.
@@ -472,6 +490,7 @@ test_that("sleap-io's version is recorded when the provenance names no SLEAP", {
 })
 
 test_that("a sleap-io h5 keeps its skeleton", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   path <- sleap_fixture("SLEAP_two-flies_sleap-io.standard.analysis.h5")
   attached <- anicore::get_structure(read_sleap(path), "keypoint")
@@ -493,6 +512,7 @@ test_that("an old h5 without score datasets reads with NA confidence", {
 })
 
 test_that("SLEAP's own exports from its test data still read", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   h5 <- read_sleap(sleap_fixture("SLEAP_small-robot_legacy.analysis.h5"))
   expect_equal(nrow(h5), 3L * 3L)

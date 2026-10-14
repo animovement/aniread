@@ -88,6 +88,7 @@ test_that("CSV and TSV paths call write_aniframe_csv()", {
 # 4️⃣  Parquet dispatch
 # -------------------------------------------------------------------------
 test_that("Parquet path calls write_aniframe_parquet()", {
+  skip_if_not_installed("arrow")
   anif <- anicore::example_anipoint()
 
   parquet_called <- FALSE
@@ -119,6 +120,8 @@ test_that("Parquet path calls write_aniframe_parquet()", {
 # 5️⃣  Return value is invisible original object
 # ---------------------------------------------------------------------------
 test_that("write_aniframe() returns the original aniframe invisibly", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   anif <- anicore::example_anipoint()
   out <- write_aniframe(anif, create_tmp_file("csv")) |> suppressWarnings()
 

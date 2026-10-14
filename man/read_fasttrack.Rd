@@ -29,3 +29,10 @@ otherwise \code{max(y)} is used as a fallback.
 path <- system.file("extdata", "fasttrack.txt", package = "aniread")
 read_fasttrack(path)
 }
+\references{
+\itemize{
+\item Gallois, B., & Candelier, R. (2021). FastTrack: An open-source software
+for tracking varying numbers of deformable objects. \emph{PLOS Computational
+Biology}, 17(2), e1008697. \doi{10.1371/journal.pcbi.1008697}.
+}
+}

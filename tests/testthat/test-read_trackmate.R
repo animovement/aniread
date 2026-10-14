@@ -47,6 +47,7 @@ test_that("read_trackmate errors on wrong file suffix", {
 })
 
 test_that("read_trackmate errors when no tracks in XML", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -64,6 +65,7 @@ test_that("read_trackmate errors when no tracks in XML", {
 })
 
 test_that("read_trackmate errors when no filtered tracks in XML", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -85,6 +87,7 @@ test_that("read_trackmate errors when no filtered tracks in XML", {
 })
 
 test_that("read_trackmate parses valid XML correctly", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -123,6 +126,7 @@ test_that("read_trackmate parses valid XML correctly", {
 })
 
 test_that("read_trackmate turns the data the right way up and records the extent", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -158,6 +162,7 @@ test_that("read_trackmate turns the data the right way up and records the extent
 })
 
 test_that("read_trackmate `video_height` overrides ImageData height", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -192,6 +197,7 @@ test_that("read_trackmate `video_height` overrides ImageData height", {
 })
 
 test_that("read_trackmate falls back to max(y) when ImageData missing", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -224,6 +230,7 @@ test_that("read_trackmate falls back to max(y) when ImageData missing", {
 })
 
 test_that("read_trackmate converts units correctly", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="pixel" timeunits="sec"/>
@@ -263,6 +270,7 @@ test_that("read_trackmate converts units correctly", {
 })
 
 test_that("read_trackmate only includes filtered tracks", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -300,6 +308,7 @@ test_that("read_trackmate only includes filtered tracks", {
 })
 
 test_that("read_trackmate assigns keypoint column as centroid", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -334,6 +343,7 @@ test_that("read_trackmate assigns keypoint column as centroid", {
 })
 
 test_that("read_trackmate warns on duplicate track-frame combinations", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -364,6 +374,7 @@ test_that("read_trackmate warns on duplicate track-frame combinations", {
 })
 
 test_that("read_trackmate keeps z and sets cartesian_3d when z varies", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -401,6 +412,7 @@ test_that("read_trackmate keeps z and sets cartesian_3d when z varies", {
 })
 
 test_that("read_trackmate drops z when only one unique value", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -436,6 +448,7 @@ test_that("read_trackmate drops z when only one unique value", {
 })
 
 test_that("read_trackmate removes frame column when time stamps exist", {
+  skip_if_not_installed("xml2")
   xml_content <- '<?xml version="1.0" encoding="UTF-8"?>
 		<TrackMate>
 			<Model spatialunits="micron" timeunits="sec"/>
@@ -519,6 +532,7 @@ read_trackmate_quietly <- function(path) {
 }
 
 test_that("read_trackmate maps every TrackMate time unit onto anicore's", {
+  skip_if_not_installed("xml2")
   cases <- c(
     sec = "s",
     s = "s",
@@ -546,6 +560,7 @@ test_that("read_trackmate maps every TrackMate time unit onto anicore's", {
 })
 
 test_that("read_trackmate maps every TrackMate space unit onto anicore's", {
+  skip_if_not_installed("xml2")
   cases <- c(
     pixel = "px",
     pixels = "px",
@@ -572,6 +587,7 @@ test_that("read_trackmate maps every TrackMate space unit onto anicore's", {
 })
 
 test_that("read_trackmate falls back to unknown units with a warning", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_fixture(timeunits = "day")
   expect_warning(
     result <- read_trackmate_quietly(path),
@@ -595,6 +611,7 @@ test_that("read_trackmate falls back to unknown units with a warning", {
 })
 
 test_that("read_trackmate reads a file that records no units", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_fixture(timeunits = NULL, spatialunits = NULL)
   expect_no_warning(result <- read_trackmate_quietly(path))
   expect_equal(
@@ -609,6 +626,7 @@ test_that("read_trackmate reads a file that records no units", {
 })
 
 test_that("read_trackmate sets sampling_rate from the frame interval, in Hz", {
+  skip_if_not_installed("xml2")
   cases <- list(
     list(unit = "sec", interval = "0.5", rate = 2),
     list(unit = "sec", interval = "1.0", rate = 1),
@@ -633,6 +651,7 @@ test_that("read_trackmate sets sampling_rate from the frame interval, in Hz", {
 })
 
 test_that("read_trackmate leaves sampling_rate NA without a usable interval", {
+  skip_if_not_installed("xml2")
   # Frames are not a unit of time, so an interval in frames gives no rate
   path <- write_trackmate_fixture(timeunits = "frame", timeinterval = "1.0")
   result <- read_trackmate_quietly(path)
@@ -653,6 +672,7 @@ test_that("read_trackmate leaves sampling_rate NA without a usable interval", {
 })
 
 test_that("read_trackmate sets source_version from the root version", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_fixture(version = "7.11.1")
   result <- read_trackmate_quietly(path)
   expect_equal(anicore::get_metadata(result, "source_version"), "7.11.1")
@@ -700,6 +720,7 @@ write_trackmate_tracks <- function(
 }
 
 test_that("read_trackmate reflects around the height in the spatial unit", {
+  skip_if_not_installed("xml2")
   # 400 pixels at 0.5 micron per pixel: the image is 200 microns high, and
   # the positions are in microns
   path <- write_trackmate_tracks(
@@ -712,6 +733,7 @@ test_that("read_trackmate reflects around the height in the spatial unit", {
 })
 
 test_that("read_trackmate uses height alone without a usable pixelheight", {
+  skip_if_not_installed("xml2")
   for (image_data in c(
     'width="500" height="400"',
     'width="500" height="400" pixelheight="0.0"',
@@ -728,12 +750,14 @@ test_that("read_trackmate uses height alone without a usable pixelheight", {
 })
 
 test_that("read_trackmate `video_height` overrides the calibrated height", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_tracks('width="500" height="400" pixelheight="0.5"')
   result <- suppressMessages(read_trackmate(path, video_height = 300))
   expect_equal(anicore::get_metadata(result, "axis_extents"), c(y = 300))
 })
 
 test_that("read_trackmate labels tracks by their names", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_tracks(
     track_attrs = c('name="Cell A"', 'name="Cell B"')
   )
@@ -761,6 +785,7 @@ test_that("read_trackmate labels tracks by their names", {
 })
 
 test_that("read_trackmate orders track ids as numbers", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_tracks(
     track_attrs = c('name="Track_10"', 'name="Track_2"')
   )
@@ -778,6 +803,7 @@ test_that("read_trackmate orders track ids as numbers", {
 })
 
 test_that("read_trackmate gives a track that does not divide no parent", {
+  skip_if_not_installed("xml2")
   result <- read_trackmate_quietly(write_trackmate_tracks())
   expect_true("parent" %in% names(result))
   expect_true(all(is.na(result$parent)))
@@ -785,6 +811,7 @@ test_that("read_trackmate gives a track that does not divide no parent", {
 })
 
 test_that("read_trackmate only needs the names of the filtered tracks to differ", {
+  skip_if_not_installed("xml2")
   path <- write_trackmate_tracks(
     track_attrs = c('name="Cell A"', 'name="Cell B"'),
     extra_track = '<Track TRACK_ID="2" name="Cell A"/>'
@@ -794,6 +821,7 @@ test_that("read_trackmate only needs the names of the filtered tracks to differ"
 })
 
 test_that("read_trackmate labels tracks by ID when names cannot identify them", {
+  skip_if_not_installed("xml2")
   # A track without a name, or with an empty one
   for (attrs in list(c('name="Cell A"', ""), c('name="Cell A"', 'name=""'))) {
     path <- write_trackmate_tracks(track_attrs = attrs)
@@ -822,6 +850,7 @@ test_that("read_trackmate labels tracks by ID when names cannot identify them", 
 trackmate_file <- function(name) test_path("data/trackmate", name)
 
 test_that("read_trackmate reads a file written before TrackMate 7", {
+  skip_if_not_installed("xml2")
   path <- trackmate_file("crop_1_60_ManualCuration_trimmed.xml")
   expect_no_warning(result <- read_trackmate_quietly(path))
 
@@ -843,6 +872,7 @@ test_that("read_trackmate reads a file written before TrackMate 7", {
 })
 
 test_that("read_trackmate reads a blank spatial unit as pixels", {
+  skip_if_not_installed("xml2")
   # TrackMate 7.13.2 wrote spatialunits=" ", with a pixel size of 1.
   path <- trackmate_file("trpL_150310-11_trimmed.xml")
   expect_no_warning(result <- read_trackmate_quietly(path))
@@ -889,6 +919,7 @@ lineage <- function(data) {
 }
 
 test_that("read_trackmate splits a dividing track into its branches", {
+  skip_if_not_installed("xml2")
   path <- trackmate_file("CelegansEarly_MIP_trimmed.xml")
   expect_no_warning(result <- read_trackmate_quietly(path))
 
@@ -924,6 +955,7 @@ test_that("read_trackmate splits a dividing track into its branches", {
 })
 
 test_that("read_trackmate numbers the branches of a lineage by generation", {
+  skip_if_not_installed("xml2")
   # One cell dividing at frame 7, and both daughters at frame 11: 1, 2, then
   # 4 cells.
   result <- read_trackmate_quietly(trackmate_file("trpL_150310-11_trimmed.xml"))
@@ -945,6 +977,7 @@ test_that("read_trackmate numbers the branches of a lineage by generation", {
 })
 
 test_that("read_trackmate keeps whole a track that splits and merges in time", {
+  skip_if_not_installed("xml2")
   # Track_1 links frame 16 to both 17 and 18, and 17 to 18, so it never
   # holds two spots in a frame.
   result <- read_trackmate_quietly(
@@ -955,6 +988,7 @@ test_that("read_trackmate keeps whole a track that splits and merges in time", {
 })
 
 test_that("read_trackmate keeps whole a track whose branches merge", {
+  skip_if_not_installed("xml2")
   # Spots 1 and 2 share frame 0 and both link to spot 3.
   xml_content <- paste0(
     '<?xml version="1.0" encoding="UTF-8"?>',
@@ -1012,6 +1046,7 @@ write_trackmate_division <- function(
 }
 
 test_that("read_trackmate follows a link written backwards in time", {
+  skip_if_not_installed("xml2")
   # TrackMate links a spot to a later one; a link from the later spot reads
   # the same.
   expect_no_warning(
@@ -1023,6 +1058,7 @@ test_that("read_trackmate follows a link written backwards in time", {
 })
 
 test_that("read_trackmate numbers branches after every track in the file", {
+  skip_if_not_installed("xml2")
   # A track left out by the filter, with a larger TRACK_ID or name number
   for (extra in c(
     '<Track TRACK_ID="9" name="Track_4"/>',

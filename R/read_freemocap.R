@@ -84,6 +84,11 @@
 #' per-trajectory files, whose five columns any tidy export could have, or
 #' the Parquet file; read those with `read_freemocap()` directly.
 #'
+#' @references
+#' - Matthis, J. S., Queen, P., Cherian, A., Wirth, T., Idehen, E., et al.
+#'   FreeMoCap: a free, open-source markerless motion capture system
+#'   (software). \doi{10.5281/zenodo.7233713}.
+#'
 #' @examples
 #' path <- system.file("extdata", "freemocap.csv", package = "aniread")
 #' read_freemocap(path)

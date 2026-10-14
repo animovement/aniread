@@ -90,6 +90,16 @@
 #'
 #' @return a movement dataframe. The first frame of the video is at
 #'   `time = 0`, in frames or in seconds; see "Time" in [read_dataset()].
+#' @references
+#' - Romero-Ferrero, F., Bergomi, M. G., Hinz, R. C., Heras, F. J. H., & de
+#'   Polavieja, G. G. (2019). idtracker.ai: tracking all individuals in small
+#'   or large collectives of unmarked animals. *Nature Methods*, 16, 179-182.
+#'   \doi{10.1038/s41592-018-0295-5}.
+#' - Torrents, J., Costa, T., & de Polavieja, G. G. (2025). New idtracker.ai:
+#'   rethinking multi-animal tracking as a representation learning problem to
+#'   increase accuracy and reduce tracking times. *eLife* (reviewed preprint).
+#'   \doi{10.7554/eLife.107602}.
+#'
 #' @examples
 #' path <- system.file("extdata", "idtracker.csv", package = "aniread")
 #' read_idtracker(path)

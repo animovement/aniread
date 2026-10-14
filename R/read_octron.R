@@ -65,6 +65,11 @@
 #' @return An anipoint. `time` is OCTRON's `frame_idx`, with the first frame
 #'   of the video at 0; see "Time" in [read_dataset()].
 #'
+#' @references
+#' - Jacobsen, R. I., et al. (2025). OCTRON: a general purpose segmentation
+#'   and tracking pipeline for behavioral experiments. *bioRxiv*.
+#'   \doi{10.64898/2025.12.20.695663}.
+#'
 #' @examples
 #' path <- system.file("extdata", "octron.csv", package = "aniread")
 #' read_octron(path)

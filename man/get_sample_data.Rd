@@ -99,13 +99,14 @@ The predefined data sources are hosted at:
 }
 }
 \examples{
-\dontrun{
 # See all available sources and datasets
 get_sample_data(list_datasets = TRUE)
 
 # See datasets for a specific source
 get_sample_data("sleap", list_datasets = TRUE)
 
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
+# Downloading needs an internet connection
 # Get default dataset for SLEAP
 path <- get_sample_data("sleap")
 
@@ -116,6 +117,6 @@ path <- get_sample_data("sleap", dataset = "zebras_drone")
 paths <- get_sample_data("trex")
 
 # Download from a custom URL
-path <- get_sample_data("https://example.com/data/tracking.csv")
-}
+# path <- get_sample_data("https://example.com/data/tracking.csv")
+\dontshow{\}) # examplesIf}
 }

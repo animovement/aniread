@@ -21,16 +21,15 @@
 #' * Parquet files are written with the *arrow* package is installed (install‑on‑demand if missing).
 #'
 #' @examples
-#' \dontrun{
 #' ## Create a small aniframe for demonstration
 #' df <- anicore::example_anipoint()
 #'
 #' ## Write the aniframe as CSV
-#' write_aniframe(df, "demo.csv")
+#' write_aniframe(df, tempfile(fileext = ".csv"))
 #'
+#' @examplesIf rlang::is_installed(c("arrow", "jsonlite"))
 #' ## Write the same aniframe as Parquet
-#' write_aniframe(df, "demo.parquet")
-#' }
+#' write_aniframe(df, tempfile(fileext = ".parquet"))
 #' @export
 write_aniframe <- function(data, filename, ...) {
   dot_args <- list(...)

@@ -118,3 +118,15 @@ from the two columns, as for the CSV export.
 path <- system.file("extdata", "idtracker.csv", package = "aniread")
 read_idtracker(path)
 }
+\references{
+\itemize{
+\item Romero-Ferrero, F., Bergomi, M. G., Hinz, R. C., Heras, F. J. H., & de
+Polavieja, G. G. (2019). idtracker.ai: tracking all individuals in small
+or large collectives of unmarked animals. \emph{Nature Methods}, 16, 179-182.
+\doi{10.1038/s41592-018-0295-5}.
+\item Torrents, J., Costa, T., & de Polavieja, G. G. (2025). New idtracker.ai:
+rethinking multi-animal tracking as a representation learning problem to
+increase accuracy and reduce tracking times. \emph{eLife} (reviewed preprint).
+\doi{10.7554/eLife.107602}.
+}
+}

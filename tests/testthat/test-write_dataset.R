@@ -34,22 +34,27 @@ expect_round_trip <- function(data) {
 }
 
 test_that("an anipoint round-trips through Parquet", {
+  skip_if_not_installed("jsonlite")
   expect_round_trip(anicore::example_anipoint())
 })
 
 test_that("an anipoint with a structure round-trips through Parquet", {
+  skip_if_not_installed("jsonlite")
   expect_round_trip(structured_anipoint())
 })
 
 test_that("an anisegment round-trips through Parquet", {
+  skip_if_not_installed("jsonlite")
   expect_round_trip(anicore::as_anisegment(structured_anipoint()))
 })
 
 test_that("an anijoint round-trips through Parquet", {
+  skip_if_not_installed("jsonlite")
   expect_round_trip(anicore::as_anijoint(structured_anipoint()))
 })
 
 test_that("an anievent round-trips through Parquet", {
+  skip_if_not_installed("jsonlite")
   events <- read_boris(test_path(
     "data/boris/tabular/test_export_events_tabular.csv"
   ))
@@ -58,6 +63,7 @@ test_that("an anievent round-trips through Parquet", {
 })
 
 test_that("the format is inferred from the suffix", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   data <- anicore::example_anipoint()
   path <- withr::local_tempfile(fileext = ".parquet")
@@ -172,6 +178,7 @@ test_that("write_dataset rejects a suffix the named format does not write", {
 # - Errors: by not a key, not character, or disagreeing with the braces
 
 test_that("by writes one file per value of a key", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   data <- anicore::example_anipoint(n_obs = 2, n_individuals = 2)
   dir <- withr::local_tempdir()
@@ -188,6 +195,7 @@ test_that("by writes one file per value of a key", {
 })
 
 test_that("each file keeps the class and metadata of data", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   data <- anicore::example_anipoint(n_obs = 2, n_individuals = 2)
   dir <- withr::local_tempdir()
@@ -257,6 +265,7 @@ test_that("by = c('what', 'when') writes one file per track", {
 })
 
 test_that("braces in path name the files and set by", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   data <- anicore::example_anipoint(
     n_obs = 2,

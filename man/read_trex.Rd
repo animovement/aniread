@@ -85,16 +85,17 @@ The function performs several processing steps:
 path <- system.file("extdata", "trex_id3.npz", package = "aniread")
 read_trex(path)
 
-\dontrun{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # A whole recording is the vector of paths get_sample_data() returns
 read_trex(get_sample_data("trex"))
-}
-
+\dontshow{\}) # examplesIf}
 }
 \references{
-Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
+\itemize{
+\item Walter, T., & Couzin, I. D. (2021). TRex, a fast multi-animal tracking
 system with markerless identification, and 2D estimation of posture and
-visual fields. eLife, 10, e64000.
+visual fields. \emph{eLife}, 10, e64000. \doi{10.7554/eLife.64000}.
+}
 }
 \seealso{
 \itemize{

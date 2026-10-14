@@ -34,14 +34,14 @@ and \code{.tsv} tab-separated, unless \code{delim} is passed.
 }
 }
 \examples{
-\dontrun{
 ## Create a small aniframe for demonstration
 df <- anicore::example_anipoint()
 
 ## Write the aniframe as CSV
-write_aniframe(df, "demo.csv")
+write_aniframe(df, tempfile(fileext = ".csv"))
 
+\dontshow{if (rlang::is_installed(c("arrow", "jsonlite"))) withAutoprint(\{ # examplesIf}
 ## Write the same aniframe as Parquet
-write_aniframe(df, "demo.parquet")
-}
+write_aniframe(df, tempfile(fileext = ".parquet"))
+\dontshow{\}) # examplesIf}
 }

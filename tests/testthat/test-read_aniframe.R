@@ -8,6 +8,8 @@
 # - Errors when file does not exist
 
 test_that("read_aniframe returns a valid aniframe", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint()
   write_aniframe(data, path)
@@ -18,6 +20,8 @@ test_that("read_aniframe returns a valid aniframe", {
 })
 
 test_that("read_aniframe restores the aniframe class", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint()
   write_aniframe(data, path)
@@ -28,6 +32,8 @@ test_that("read_aniframe restores the aniframe class", {
 })
 
 test_that("read_aniframe preserves metadata", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint()
   original_metadata <- attr(data, "metadata")
@@ -39,6 +45,7 @@ test_that("read_aniframe preserves metadata", {
 })
 
 test_that("read_aniframe errors for non-parquet extensions", {
+  skip_if_not_installed("arrow")
   data <- anicore::example_anipoint()
   path_csv <- withr::local_tempfile(fileext = ".csv")
   path_tsv <- withr::local_tempfile(fileext = ".tsv")
@@ -57,6 +64,7 @@ test_that("read_aniframe errors for non-parquet extensions", {
 })
 
 test_that("read_aniframe errors for parquet without aniframe metadata", {
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   plain_df <- data.frame(x = 1:5, y = 1:5, time = 1:5)
   arrow::write_parquet(plain_df, path)
@@ -68,6 +76,8 @@ test_that("read_aniframe errors for parquet without aniframe metadata", {
 })
 
 test_that("read_aniframe restores the subclass recorded in the file", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint(n_obs = 3, n_individuals = 1) |>
     anicore::set_structure(anicore::example_structure()) |>
@@ -80,6 +90,7 @@ test_that("read_aniframe restores the subclass recorded in the file", {
 })
 
 test_that("read_aniframe infers the class of a file that records none", {
+  skip_if_not_installed("arrow")
   # Files written before the class was recorded carry only the metadata
   path <- withr::local_tempfile(fileext = ".parquet")
   data <- anicore::example_anipoint()
@@ -93,6 +104,7 @@ test_that("read_aniframe infers the class of a file that records none", {
 })
 
 test_that("read_aniframe tells an anievent by its metadata when no class is recorded", {
+  skip_if_not_installed("arrow")
   path <- withr::local_tempfile(fileext = ".parquet")
   events <- read_boris(test_path(
     "data/boris/tabular/test_export_events_tabular.csv"

@@ -97,6 +97,7 @@ test_that("a CSV export without a time column is timed by frame", {
 })
 
 test_that("the first frame of the video is at time 0, in every export (#150)", {
+  skip_if_not_installed("jsonlite")
   # idtracker.ai counts frames from 0, and every export of a recording starts
   # at its first frame, so each reads its first row as time 0.
   csv <- read_idtracker(no_fps("trajectories.csv"))
@@ -166,7 +167,7 @@ test_that("the h5 reader records the idtracker.ai version and frame rate", {
   expect_equal(anicore::get_metadata(data, "sampling_rate"), 28)
   # time stays the frame number; the frame rate is what converts it.
   expect_equal(as.character(anicore::get_metadata(data, "unit_time")), "frame")
-  expect_equal(sort(unique(data$time)), 0:507)
+  expect_equal(sort(unique(data$time)), 0:59)
 })
 
 test_that("read_dataset() records them too", {
@@ -326,13 +327,16 @@ idt <- function(...) test_path("data/idtrackerai", ...)
 tidy_csv <- idt("trajectories_tidy", "trajectories_tidy.csv")
 tidy_csv_no_fps <- idt("trajectories_tidy_no_fps", "trajectories_tidy.csv")
 
-# The first 60 frames of the h5, which the tidy exports were written from.
+# The tidy and Parquet exports were written from the h5's first 60 frames.
+# The h5 and the CSV export are themselves cut to those 60 frames (of 508),
+# so this keeps every frame; it guards against a longer h5.
 h5_first_60 <- function(...) {
   data <- read_idtracker(idt("trajectories.h5"), ...)
   data[data$time < 60, ]
 }
 
 test_that("the Parquet export reads as the h5 it was written from", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   skip_if_not_installed("rhdf5")
   data <- read_idtracker(idt("trajectories.parquet"), video_height = 1000)
@@ -355,6 +359,7 @@ test_that("the Parquet export reads as the h5 it was written from", {
 })
 
 test_that("the tidy CSV export reads as the Parquet one, to 3 decimals", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   data <- read_idtracker(tidy_csv)
   parquet <- read_idtracker(idt("trajectories.parquet"))
@@ -377,6 +382,7 @@ test_that("the tidy CSV export reads as the Parquet one, to 3 decimals", {
 })
 
 test_that("without a frame rate, time is the frame counted from 0", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   for (path in c(idt("trajectories_no_fps.parquet"), tidy_csv_no_fps)) {
     data <- read_idtracker(path)
@@ -465,6 +471,7 @@ test_that("the Parquet export's frame size and labels are used", {
 })
 
 test_that("probabilities passed beside a tidy export are ignored", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("arrow")
   expect_warning(
     data <- read_idtracker(
@@ -477,6 +484,7 @@ test_that("probabilities passed beside a tidy export are ignored", {
 })
 
 test_that("the export read is recorded, and can be named", {
+  skip_if_not_installed("jsonlite")
   expect_equal(
     anicore::get_metadata(
       read_idtracker(idt("trajectories_csv", "trajectories.csv")),
@@ -500,6 +508,7 @@ test_that("the export read is recorded, and can be named", {
 })
 
 test_that("read_dataset() detects and reads both tidy exports", {
+  skip_if_not_installed("jsonlite")
   expect_equal(detect_source(tidy_csv), "idtrackerai")
   expect_equal(
     as.data.frame(read_dataset(tidy_csv)),

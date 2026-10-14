@@ -16,22 +16,18 @@
 # - Names the file read when it has no `source_file`
 # - Errors clearly on bboxes, multi-view and non-movement files
 
-# Wrap the sample-data download so a failure (offline, slow GIN server,
-# etc.) doesn't error out the whole test file — tests that need the file
-# skip individually below.
-path <- tryCatch(
-  get_sample_data("movement", cache_dir = test_cache_dir(), quiet = TRUE),
-  error = function(e) NULL
-)
+# The example file the package ships: the first 4 frames of movement's
+# MOVE_two-mice_octagon.analysis.nc sample (see inst/extdata/README.md).
+path <- system.file("extdata", "movement.nc", package = "aniread")
 
 test_that("read_movement returns an aniframe", {
-  skip_if(is.null(path), "movement sample download unavailable")
+  skip_if_not_installed("rhdf5")
   result <- read_movement(path)
   expect_s3_class(result, "anipoint")
 })
 
 test_that("read_movement has required columns", {
-  skip_if(is.null(path), "movement sample download unavailable")
+  skip_if_not_installed("rhdf5")
   result <- read_movement(path)
   expect_true(all(
     c("individual", "keypoint", "time", "x", "y") %in% names(result)
@@ -39,7 +35,7 @@ test_that("read_movement has required columns", {
 })
 
 test_that("read_movement column types are correct", {
-  skip_if(is.null(path), "movement sample download unavailable")
+  skip_if_not_installed("rhdf5")
   result <- read_movement(path)
   expect_type(result$time, "double")
   expect_type(result$x, "double")
@@ -47,7 +43,7 @@ test_that("read_movement column types are correct", {
 })
 
 test_that("read_movement populates metadata", {
-  skip_if(is.null(path), "movement sample download unavailable")
+  skip_if_not_installed("rhdf5")
   result <- read_movement(path)
   meta <- anicore::get_metadata(result)
 
@@ -70,7 +66,7 @@ test_that("read_movement errors on wrong file extension", {
   expect_error(read_movement(tmp))
 })
 
-# Fixtures cut from the movement sample above: its first 4 frames, with the
+# Fixtures cut from movement's two-mice sample: its first 4 frames, with the
 # root attributes movement writes. `two-mice_seconds.nc` was saved with an fps
 # (time in seconds, `fps = 50`); `two-mice_frames.nc` without one (time in
 # frames, no `fps` attribute).
@@ -79,6 +75,7 @@ movement_fixture <- function(file) {
 }
 
 test_that("read_movement reads a file saved with an fps", {
+  skip_if_not_installed("rhdf5")
   result <- read_movement(movement_fixture("two-mice_seconds.nc"))
   meta <- anicore::get_metadata(result)
 
@@ -91,6 +88,7 @@ test_that("read_movement reads a file saved with an fps", {
 })
 
 test_that("read_movement reads a file saved without an fps", {
+  skip_if_not_installed("rhdf5")
   result <- read_movement(movement_fixture("two-mice_frames.nc"))
   meta <- anicore::get_metadata(result)
 
@@ -124,6 +122,7 @@ test_that("movement fps becomes a sampling rate only when positive", {
 })
 
 test_that("read_movement keeps confidence for each point", {
+  skip_if_not_installed("rhdf5")
   path <- movement_fixture("two-mice_seconds.nc")
   result <- read_movement(path)
   raw_x <- rhdf5::h5read(path, "position")
@@ -169,6 +168,7 @@ expect_movement_3d <- function(result) {
 }
 
 test_that("read_movement reads the axes from space, so 3D files read", {
+  skip_if_not_installed("rhdf5")
   # Values encode their position: 1000 * individual + 100 * keypoint +
   # 10 * axis + frame, and confidence (100 * individual + 10 * keypoint +
   # frame) / 1000. `synthetic_3d.nc` has the plural dimension names,
@@ -203,6 +203,7 @@ test_that("read_movement reads the axes from space, so 3D files read", {
 #   concatenated along `view` as `load_multiview_dataset()` does.
 
 test_that("read_movement reads movement's singular dimension names (#167)", {
+  skip_if_not_installed("rhdf5")
   singular <- read_movement(movement_fixture("two-mice_seconds_singular.nc"))
   plural <- read_movement(movement_fixture("two-mice_seconds_plural.nc"))
   meta <- anicore::get_metadata(singular)
@@ -231,6 +232,7 @@ test_that("read_movement reads movement's singular dimension names (#167)", {
 })
 
 test_that("read_movement reads a singular-name file saved without an fps", {
+  skip_if_not_installed("rhdf5")
   result <- read_movement(movement_fixture("two-mice_frames_singular.nc"))
   meta <- anicore::get_metadata(result)
 
@@ -240,6 +242,7 @@ test_that("read_movement reads a singular-name file saved without an fps", {
 })
 
 test_that("read_movement repeats a per-individual confidence for each keypoint", {
+  skip_if_not_installed("rhdf5")
   result <- read_movement(movement_fixture("individual-confidence_singular.nc"))
 
   expect_equal(nrow(result), 2 * 2 * 3)
@@ -260,6 +263,7 @@ test_that("read_movement repeats a per-individual confidence for each keypoint",
 })
 
 test_that("read_movement names the file read when there is no source_file", {
+  skip_if_not_installed("rhdf5")
   result <- read_movement(movement_fixture("individual-confidence_singular.nc"))
   meta <- anicore::get_metadata(result)
 
@@ -268,6 +272,7 @@ test_that("read_movement names the file read when there is no source_file", {
 })
 
 test_that("read_movement errors clearly on datasets it cannot read", {
+  skip_if_not_installed("rhdf5")
   expect_error(
     read_movement(movement_fixture("bboxes_singular.nc")),
     "bounding boxes dataset",
