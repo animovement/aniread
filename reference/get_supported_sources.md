@@ -34,6 +34,13 @@ row per supported source and direction, and the columns:
   List column of character vectors - the file suffix(es) the function
   reads or writes.
 
+- `format`:
+
+  List column of character vectors - the export layouts a reader tells
+  apart, as it records them in the `source_format` metadata field. Empty
+  for the `"write"` rows, and for `aniframe`, whose files keep the
+  `source_format` of the data they hold.
+
 ## Details
 
 Suffixes are returned without a leading dot (e.g. `"csv"`, `"h5"`),
@@ -55,41 +62,46 @@ Those of the `"write"` rows are accepted by the `format` argument of
 
 ``` r
 get_supported_sources()
-#> # A tibble: 20 × 4
-#>    source           direction fun                suffix   
-#>    <chr>            <chr>     <chr>              <list>   
-#>  1 aniframe         read      read_aniframe      <chr [1]>
-#>  2 aniframe         write     write_aniframe     <chr [3]>
-#>  3 animalta         read      read_animalta      <chr [1]>
-#>  4 anipose          read      read_anipose       <chr [1]>
-#>  5 bonsai           read      read_bonsai        <chr [1]>
-#>  6 boris            read      read_boris         <chr [2]>
-#>  7 c3d              read      read_c3d           <chr [1]>
-#>  8 deeplabcut       read      read_deeplabcut    <chr [2]>
-#>  9 fasttrack        read      read_fasttrack     <chr [1]>
-#> 10 fictrac          read      read_fictrac       <chr [1]>
-#> 11 freemocap        read      read_freemocap     <chr [1]>
-#> 12 idtrackerai      read      read_idtracker     <chr [3]>
-#> 13 intracktive      write     write_intracktive  <chr [1]>
-#> 14 lightningpose    read      read_lightningpose <chr [1]>
-#> 15 movement         read      read_movement      <chr [2]>
-#> 16 octron           read      read_octron        <chr [1]>
-#> 17 sleap            read      read_sleap         <chr [2]>
-#> 18 trackball_bonsai read      read_trackball     <chr [1]>
-#> 19 trackmate        read      read_trackmate     <chr [1]>
-#> 20 trex             read      read_trex          <chr [2]>
+#> # A tibble: 20 × 5
+#>    source           direction fun                suffix    format   
+#>    <chr>            <chr>     <chr>              <list>    <list>   
+#>  1 aniframe         read      read_aniframe      <chr [1]> <chr [0]>
+#>  2 aniframe         write     write_aniframe     <chr [3]> <chr [0]>
+#>  3 animalta         read      read_animalta      <chr [1]> <chr [3]>
+#>  4 anipose          read      read_anipose       <chr [1]> <chr [1]>
+#>  5 bonsai           read      read_bonsai        <chr [1]> <chr [1]>
+#>  6 boris            read      read_boris         <chr [2]> <chr [2]>
+#>  7 c3d              read      read_c3d           <chr [1]> <chr [1]>
+#>  8 deeplabcut       read      read_deeplabcut    <chr [2]> <chr [8]>
+#>  9 fasttrack        read      read_fasttrack     <chr [1]> <chr [1]>
+#> 10 fictrac          read      read_fictrac       <chr [1]> <chr [3]>
+#> 11 freemocap        read      read_freemocap     <chr [1]> <chr [6]>
+#> 12 idtrackerai      read      read_idtracker     <chr [3]> <chr [4]>
+#> 13 intracktive      write     write_intracktive  <chr [1]> <chr [0]>
+#> 14 lightningpose    read      read_lightningpose <chr [1]> <chr [4]>
+#> 15 movement         read      read_movement      <chr [2]> <chr [1]>
+#> 16 octron           read      read_octron        <chr [1]> <chr [1]>
+#> 17 sleap            read      read_sleap         <chr [2]> <chr [2]>
+#> 18 trackball_bonsai read      read_trackball     <chr [1]> <chr [1]>
+#> 19 trackmate        read      read_trackmate     <chr [1]> <chr [1]>
+#> 20 trex             read      read_trex          <chr [2]> <chr [2]>
 
 # The formats aniread can write:
 supported <- get_supported_sources()
 supported[supported$direction == "write", ]
-#> # A tibble: 2 × 4
-#>   source      direction fun               suffix   
-#>   <chr>       <chr>     <chr>             <list>   
-#> 1 aniframe    write     write_aniframe    <chr [3]>
-#> 2 intracktive write     write_intracktive <chr [1]>
+#> # A tibble: 2 × 5
+#>   source      direction fun               suffix    format   
+#>   <chr>       <chr>     <chr>             <list>    <list>   
+#> 1 aniframe    write     write_aniframe    <chr [3]> <chr [0]>
+#> 2 intracktive write     write_intracktive <chr [1]> <chr [0]>
+
+# The export layouts FreeMoCap has written:
+readers <- supported[supported$direction == "read", ]
+readers$format[[which(readers$source == "freemocap")]]
+#> [1] "by_frame_8col" "by_frame_9col" "by_trajectory" "wide"         
+#> [5] "v2_by_frame"   "v2_trajectory"
 
 # Which sources read HDF5 (`.h5`) files?
-readers <- supported[supported$direction == "read", ]
 readers$source[vapply(readers$suffix, \(s) "h5" %in% s, logical(1))]
 #> [1] "deeplabcut"  "idtrackerai" "movement"    "sleap"      
 ```

@@ -188,7 +188,8 @@ anievent with an anipoint to keep frame-aligned semantics.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An <code><a href="https://animovement.dev/anicore/reference/anievent.html" class="external-link">anicore::anievent()</a></code> with metadata fields <code>source</code>,
-<code>filename</code>, <code>unit_time</code>, and <code>sampling_rate</code> populated. <code>start</code> and
+<code>source_format</code> (the format read), <code>filename</code>, <code>unit_time</code>, and
+<code>sampling_rate</code> populated. <code>start</code> and
 <code>stop</code> are BORIS's times in seconds, or its frame numbers with the
 first frame of the video at 0; see "Time" in <code><a href="read_dataset.html">read_dataset()</a></code>. The
 sampling rate is set when every media file in the export has the

@@ -303,6 +303,26 @@
 - [`read_sleap()`](https://animovement.dev/aniread/reference/read_sleap.md)
   records which export it read in the `source_format` metadata field.
 
+- Every reader now records the export it read in the `source_format`
+  metadata field
+  ([\#118](https://github.com/animovement/aniread/issues/118)), so which
+  layout a frame came from no longer has to be guessed.
+  [`read_boris()`](https://animovement.dev/aniread/reference/read_boris.md)
+  records `"aggregated"` or `"tabular"`,
+  [`read_fictrac()`](https://animovement.dev/aniread/reference/read_fictrac.md)
+  its layout by column count, `"23col"`, `"24col"` or `"25col"`, and
+  [`read_deeplabcut()`](https://animovement.dev/aniread/reference/read_deeplabcut.md)
+  and
+  [`read_lightningpose()`](https://animovement.dev/aniread/reference/read_lightningpose.md)
+  the file type, single- or multi-animal, and 3D, such as
+  `"csv_multi_animal"` or `"h5_single_animal_3d"`; a reader of a single
+  layout records its file type, such as `"csv"` for
+  [`read_octron()`](https://animovement.dev/aniread/reference/read_octron.md).
+  [`get_supported_sources()`](https://animovement.dev/aniread/reference/get_supported_sources.md)
+  gains a `format` list column with the values each reader records, so
+  the layouts aniread reads can be listed, and checked against the test
+  fixtures.
+
 - [`read_trex()`](https://animovement.dev/aniread/reference/read_trex.md)
   reads TRex’s native `.npz` export
   ([\#116](https://github.com/animovement/aniread/issues/116)). It is a
@@ -493,6 +513,14 @@
   names the detailed data files. `detailed` is deprecated:
   `detailed = TRUE` and `detailed = FALSE` still read as `"variable"`
   and `"fixed"`, with a warning.
+
+- [`read_idtracker()`](https://animovement.dev/aniread/reference/read_idtracker.md)’s
+  `version` argument is deprecated
+  ([\#118](https://github.com/animovement/aniread/issues/118)). It was
+  never used: the reader recognises the export from the file, as
+  `format` names it, and reads the version that wrote it into
+  `source_version` where the file records one. Passing `version` still
+  reads the file, with a warning.
 
 - [`read_trackmate()`](https://animovement.dev/aniread/reference/read_trackmate.md)
   labels tracks by the name TrackMate gave them rather than by the

@@ -13,7 +13,7 @@ so pass `video_height` explicitly to get an accurate flip (otherwise
 read_idtracker(
   path,
   path_probabilities = NULL,
-  version = 6,
+  version = deprecated(),
   video_height = NULL,
   format = c("auto", "h5", "csv", "csv_tidy", "parquet")
 )
@@ -32,7 +32,9 @@ read_idtracker(
 
 - version:
 
-  idtracker.ai version. Currently only v6 output is implemented
+  **\[deprecated\]** Unused: the export is recognised from the file, and
+  the version that wrote it is read from the file where it is recorded.
+  Use `format` to name the export.
 
 - video_height:
 

@@ -49,6 +49,10 @@ A multi-animal project tracks the bodyparts it does not assign to an
 animal (its `uniquebodyparts`) under the pseudo-individual `single`.
 They are kept as the keypoints of an `individual` called `"single"`.
 
+The layout read is recorded in the `source_format` metadata field: the
+file type, single- or multi-animal, and `_3d` for triangulated
+positions, such as `"csv_single_animal"` or `"h5_multi_animal"`.
+
 ## 3D files
 
 DeepLabCut's triangulation writes `x`, `y` and `z` and no likelihood, so

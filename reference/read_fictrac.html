@@ -119,7 +119,9 @@ the time since the last frame (ms). <code>time</code> is taken from column 22.</
 sequence counter, 24 the time since the last frame, 25 the "alt.
 timestamp", the frame capture time in ms since midnight. <code>time</code> is taken
 from column 25.</p></li>
-</ul><p><code>time</code> counts in seconds from the first row. A time in ms since midnight
+</ul><p>Which layout was read is recorded in the <code>source_format</code> metadata field,
+as <code>"23col"</code>, <code>"24col"</code> or <code>"25col"</code>.</p>
+<p><code>time</code> counts in seconds from the first row. A time in ms since midnight
 starts again from zero at midnight, so where it drops by more than twelve
 hours from one row to the next, the reader takes it as having passed
 midnight and adds a day from there on. A recording that crosses midnight

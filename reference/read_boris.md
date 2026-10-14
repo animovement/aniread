@@ -68,10 +68,10 @@ read_boris(
 
 An
 [`anicore::anievent()`](https://animovement.dev/anicore/reference/anievent.html)
-with metadata fields `source`, `filename`, `unit_time`, and
-`sampling_rate` populated. `start` and `stop` are BORIS's times in
-seconds, or its frame numbers with the first frame of the video at 0;
-see "Time" in
+with metadata fields `source`, `source_format` (the format read),
+`filename`, `unit_time`, and `sampling_rate` populated. `start` and
+`stop` are BORIS's times in seconds, or its frame numbers with the first
+frame of the video at 0; see "Time" in
 [`read_dataset()`](https://animovement.dev/aniread/reference/read_dataset.md).
 The sampling rate is set when every media file in the export has the
 same FPS; an observation of several media files lists one FPS per file

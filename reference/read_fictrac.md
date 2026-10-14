@@ -59,6 +59,9 @@ timestamps:
   timestamp", the frame capture time in ms since midnight. `time` is
   taken from column 25.
 
+Which layout was read is recorded in the `source_format` metadata field,
+as `"23col"`, `"24col"` or `"25col"`.
+
 `time` counts in seconds from the first row. A time in ms since midnight
 starts again from zero at midnight, so where it drops by more than
 twelve hours from one row to the next, the reader takes it as having

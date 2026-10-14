@@ -105,6 +105,11 @@ file in that format cannot be attributed to one or the other. Such a file is
 read with <code><a href="read_deeplabcut.html">read_deeplabcut()</a></code> - the parse is the same either way - and its
 <code>source</code> metadata is set to <code>"deeplabcut/lightningpose"</code> to record that the
 distinction is undetermined. Pass <code>source</code> explicitly to override this.</p>
+<p>Every reader records the export it read in the <code>source_format</code> metadata
+field, so a file in a layout a reader does not expect can be traced back
+to it; <code><a href="get_supported_sources.html">get_supported_sources()</a></code> lists the values each reader records.
+The version of the software that wrote the file goes in <code>source_version</code>
+only where the file states it, and is <code>NA</code> otherwise.</p>
     </div>
     <div class="section level2">
     <h2 id="time">Time<a class="anchor" aria-label="anchor" href="#time"></a></h2>

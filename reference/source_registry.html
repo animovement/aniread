@@ -101,6 +101,11 @@ a format that is only written.</p></dd>
 <dd><p>File suffix(es) the reader accepts, without a leading
 dot.</p></dd>
 
+<dt><code>format</code></dt>
+<dd><p>The values the reader can record in the <code>source_format</code>
+metadata field, one per export layout it reads. Empty for <code>aniframe</code>,
+whose files keep the <code>source_format</code> of the data they hold.</p></dd>
+
 <dt><code>detector</code></dt>
 <dd><p>Function of a single path returning <code>TRUE</code> when the
 file is of this source. See <code><a href="detect_source.html">detect_source()</a></code> for the contract.</p></dd>

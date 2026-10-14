@@ -43,6 +43,12 @@ A list of registry entries.
 
   File suffix(es) the reader accepts, without a leading dot.
 
+- `format`:
+
+  The values the reader can record in the `source_format` metadata
+  field, one per export layout it reads. Empty for `aniframe`, whose
+  files keep the `source_format` of the data they hold.
+
 - `detector`:
 
   Function of a single path returning `TRUE` when the file is of this
