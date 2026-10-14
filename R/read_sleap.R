@@ -51,6 +51,11 @@
 #' @return a movement dataframe. `time` is SLEAP's frame index, so the first
 #'   frame of the video is at `time = 0`; see "Time" in [read_dataset()].
 #'
+#' @references
+#' - Pereira, T. D., Tabris, N., Matsliah, A., et al. (2022). SLEAP: A deep
+#'   learning system for multi-animal pose tracking. *Nature Methods*, 19,
+#'   486-495. \doi{10.1038/s41592-022-01426-1}.
+#'
 #' @examples
 #' # Two flies tracked with SLEAP, in the analysis CSV
 #' path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")

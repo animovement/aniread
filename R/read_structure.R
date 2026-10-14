@@ -41,12 +41,33 @@
 #'
 #' @return An [anicore::anistructure()].
 #'
-#' @examples
-#' \dontrun{
-#' skeleton <- read_structure("my-project/config.yaml")
-#' af <- read_deeplabcut("my-project/videos/mouse1DLC.csv") |>
+#' @examplesIf rlang::is_installed("yaml")
+#' # A DeepLabCut project keeps its skeleton in config.yaml
+#' config <- tempfile(fileext = ".yaml")
+#' writeLines(
+#'   c(
+#'     "bodyparts:",
+#'     "- head",
+#'     "- stinger",
+#'     "skeleton:",
+#'     "- - head",
+#'     "  - stinger"
+#'   ),
+#'   config
+#' )
+#' skeleton <- read_structure(config)
+#' skeleton
+#'
+#' # Attach it to a frame with the same body parts
+#' path <- system.file("extdata", "deeplabcut.csv", package = "aniread")
+#' read_deeplabcut(path) |>
 #'   anicore::set_structure(skeleton)
-#' }
+#'
+#' @examplesIf rlang::is_installed("rhdf5")
+#' # A SLEAP analysis .h5 carries the skeleton of its tracks
+#' path <- system.file("extdata", "sleap.analysis.h5", package = "aniread")
+#' skeleton <- read_structure(path)
+#' skeleton
 #' @export
 read_structure <- function(path, source = "auto") {
   if (!rlang::is_string(source)) {

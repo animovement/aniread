@@ -129,3 +129,15 @@ data |>
   )
 \dontshow{\}) # examplesIf}
 }
+\references{
+\itemize{
+\item Tinevez, J.-Y., Perry, N., Schindelin, J., Hoopes, G. M., Reynolds, G.
+D., Laplantine, E., Bednarek, S. Y., Shorte, S. L., & Eliceiri, K. W.
+(2017). TrackMate: An open and extensible platform for single-particle
+tracking. \emph{Methods}, 115, 80-90. \doi{10.1016/j.ymeth.2016.09.016}.
+\item Ershov, D., Phan, M.-S., Pylvänäinen, J. W., et al. (2022). TrackMate 7:
+integrating state-of-the-art segmentation algorithms into tracking
+pipelines. \emph{Nature Methods}, 19, 829-832.
+\doi{10.1038/s41592-022-01507-1}.
+}
+}

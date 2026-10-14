@@ -55,17 +55,18 @@
 #' @return Returns the input data unchanged.
 #'
 #' @references
-#' Huijben, T.A.P.M., Anderson, A.G., Sweet, A. et al. (2025). inTRACKtive: a
-#' web-based tool for interactive cell tracking visualization. Nature Methods.
+#' - Huijben, T. A. P. M., Anderson, A. G., Sweet, A., et al. (2025). inTRACKtive:
+#'   a web-based tool for interactive cell tracking visualization.
+#'   *Nature Methods*. \doi{10.1038/s41592-025-02777-1}.
 #'
 #' @examples
-#' \dontrun{
-#' # Write aniframe to inTRACKtive CSV
-#' write_intracktive(my_data, "tracks.csv")
-#'
-#' # Get formatted data without writing
-#' formatted <- write_intracktive(my_data)
-#' }
+#' # Two flies tracked with SLEAP, one track for each fly and keypoint
+#' flies <- read_sleap(
+#'   system.file("extdata", "sleap.analysis.csv", package = "aniread")
+#' )
+#' path <- tempfile(fileext = ".csv")
+#' write_intracktive(flies, path)
+#' head(read.csv(path))
 #'
 #' @export
 write_intracktive <- function(data, filename, quiet = FALSE) {

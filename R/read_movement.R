@@ -49,6 +49,12 @@
 #'   given one, so a file whose time is in frames leaves `sampling_rate`
 #'   `NA`. Set it with [anicore::set_metadata()] if you know it.
 #'
+#' @references
+#' - Sirmpilatze, N., Lo, C. H., Miñano, S., Peri, B. D., Sharma, D., Porta,
+#'   L., Varela, I., & Tyson, A. L. movement: Python tools for analysing body
+#'   movements across space and time (software).
+#'   \doi{10.5281/zenodo.12755724}.
+#'
 #' @examplesIf rlang::is_installed("rhdf5")
 #' # Two mice tracked with SLEAP, saved by movement with an fps of 50
 #' path <- system.file("extdata", "movement.nc", package = "aniread")

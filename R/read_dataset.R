@@ -89,22 +89,24 @@
 #'   `read_*()` functions for format-specific arguments.
 #'
 #' @examples
-#' \dontrun{
 #' # Let aniread work out the format
-#' data <- read_dataset("mouse.h5")
+#' path <- system.file("extdata", "sleap.analysis.csv", package = "aniread")
+#' read_dataset(path)
 #'
 #' # Name it explicitly
-#' data <- read_dataset("mouse.h5", source = "sleap")
+#' read_dataset(path, source = "sleap")
 #'
 #' # Reader-specific arguments pass straight through
-#' data <- read_dataset(
-#'   c("sensor1.csv", "sensor2.csv"),
-#'   sampling_rate = 60,
-#'   col_time = 4,
-#'   col_dx = 1,
-#'   col_dy = 2
+#' paths <- c(
+#'   system.file("extdata", "trackball_sensor_1.csv", package = "aniread"),
+#'   system.file("extdata", "trackball_sensor_2.csv", package = "aniread")
 #' )
-#' }
+#' read_dataset(
+#'   paths,
+#'   setup = "of_free",
+#'   sampling_rate = 60,
+#'   col_time = "datetime"
+#' )
 #' @export
 read_dataset <- function(paths, source = "auto", ...) {
   if (!rlang::is_string(source)) {

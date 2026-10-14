@@ -13,12 +13,16 @@ validate_trackball(paths, setup, col_time)
 
 \item{col_time}{Column which contains time}
 }
+\value{
+\code{NULL}, invisibly. Called for its side effect of throwing an error
+when a check fails.
+}
 \description{
 The validator ensures that:
 \itemize{
 \item A valid setup is given.
 \item A valid number of files are provided.
-\item Identical suffixes when tewo files are given.
+\item Identical suffixes when two files are given.
 }
 }
 \keyword{internal}

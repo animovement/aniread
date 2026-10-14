@@ -25,13 +25,18 @@
 #   movement's sample data on SWC GIN, CC BY 4.0.
 
 # --- Setup ---
-# Download H5 sample data once at the start. Wrap so a failed download
-# (offline, slow GIN server, etc.) doesn't error out the whole test file
-# — tests that need the file skip individually below.
-h5_path <- tryCatch(
-  get_sample_data("deeplabcut", cache_dir = test_cache_dir(), quiet = TRUE),
-  error = function(e) NULL
-)
+# The H5 sample, downloaded inside the tests that need it so that a test run
+# offline or on CRAN never downloads it. A failed download (offline, slow GIN
+# server, etc.) skips the test.
+dlc_sample <- function() {
+  skip_if_no_network()
+  path <- tryCatch(
+    get_sample_data("deeplabcut", cache_dir = test_cache_dir(), quiet = TRUE),
+    error = function(e) NULL
+  )
+  skip_if(is.null(path), "deeplabcut sample download unavailable")
+  path
+}
 
 gin_poses <- function(filename) {
   paste0(
@@ -124,9 +129,8 @@ test_that("read_deeplabcut dispatches to CSV reader for .csv files", {
 
 test_that("read_deeplabcut dispatches to H5 reader for .h5 files", {
   skip_if_not_installed("rhdf5")
-  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
 
-  result <- read_deeplabcut(h5_path)
+  result <- read_deeplabcut(fixture_path("dlc3_single.h5"))
 
   expect_s3_class(result, "anipoint")
   expect_true("time" %in% names(result))
@@ -445,7 +449,7 @@ test_that("parse_pickle refuses opcodes it does not read", {
 
 test_that("read_deeplabcut_h5 returns expected columns for single-animal", {
   skip_if_not_installed("rhdf5")
-  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
+  h5_path <- dlc_sample()
 
   result <- read_deeplabcut_points(h5_path)
   expected_cols <- c("time", "keypoint", "x", "y", "confidence")
@@ -459,7 +463,7 @@ test_that("read_deeplabcut_h5 returns expected columns for single-animal", {
 
 test_that("single-animal CSV and H5 produce consistent column names", {
   skip_if_not_installed("rhdf5")
-  skip_if(is.null(h5_path), "deeplabcut sample download unavailable")
+  h5_path <- dlc_sample()
 
   csv_result <- read_deeplabcut(fixture_path("mouse_single.csv"))
   h5_result <- read_deeplabcut(h5_path)

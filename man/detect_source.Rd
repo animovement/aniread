@@ -46,10 +46,10 @@ runs each one with messages and warnings suppressed and treats an error as
 }
 
 \examples{
-\dontrun{
-detect_source("mouse.csv")
-#> [1] "deeplabcut/lightningpose"
-}
+detect_source(system.file("extdata", "sleap.analysis.csv", package = "aniread"))
+
+# DeepLabCut and Lightning Pose write the same CSV layout
+detect_source(system.file("extdata", "deeplabcut.csv", package = "aniread"))
 }
 \seealso{
 \code{\link[=read_dataset]{read_dataset()}} to read the file, \code{\link[=get_supported_sources]{get_supported_sources()}} for

@@ -100,7 +100,7 @@
 #' @references
 #' - Chiara, V., & Kim, S.-Y. (2023). AnimalTA: A highly flexible and easy-to-use
 #' program for tracking and analysing animal movement in different environments.
-#' *Methods in Ecology and Evolution*, 14, 1699–1707. \doi{0.1111/2041-210X.14115}.
+#' *Methods in Ecology and Evolution*, 14, 1699–1707. \doi{10.1111/2041-210X.14115}.
 #'
 #' @examples
 #' path <- system.file("extdata", "animalta.csv", package = "aniread")

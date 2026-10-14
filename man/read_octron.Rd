@@ -91,3 +91,10 @@ reflected with \code{y} and not declared as the frame's orientation.
 path <- system.file("extdata", "octron.csv", package = "aniread")
 read_octron(path)
 }
+\references{
+\itemize{
+\item Jacobsen, R. I., et al. (2025). OCTRON: a general purpose segmentation
+and tracking pipeline for behavioral experiments. \emph{bioRxiv}.
+\doi{10.64898/2025.12.20.695663}.
+}
+}

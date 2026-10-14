@@ -67,6 +67,7 @@ fly <- list(
 )
 
 test_that("a DeepLabCut config becomes points and directed segments", {
+  skip_if_not_installed("yaml")
   path <- write_config(c(
     "Task: mouse",
     "bodyparts:",
@@ -88,6 +89,7 @@ test_that("a DeepLabCut config becomes points and directed segments", {
 })
 
 test_that("a multi-animal config reads the animals' body parts, not the unique ones", {
+  skip_if_not_installed("yaml")
   path <- write_config(c(
     "multianimalproject: true",
     "bodyparts: MULTI!",
@@ -104,6 +106,7 @@ test_that("a multi-animal config reads the animals' body parts, not the unique o
 })
 
 test_that("a config without a skeleton gives points alone, and one without parts errors", {
+  skip_if_not_installed("yaml")
   s <- read_structure_deeplabcut(write_config(c("bodyparts: [a, b]")))
   expect_equal(s$points, c("a", "b"))
   expect_equal(nrow(s$segments), 0L)
@@ -114,6 +117,7 @@ test_that("a config without a skeleton gives points alone, and one without parts
 })
 
 test_that("a .slp skeleton keeps body edges and drops symmetry edges", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   s <- read_structure(write_slp(sleap_labels(list(fly))))
   expect_equal(s$points, c("head", "thorax", "ear_l", "ear_r"))
@@ -123,6 +127,7 @@ test_that("a .slp skeleton keeps body edges and drops symmetry edges", {
 })
 
 test_that("a .slp with several skeletons needs one chosen", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   other <- fly
   other$graph$name <- "other"
@@ -167,6 +172,7 @@ test_that("read_structure() says what it cannot read", {
 })
 
 test_that("link types are resolved in the order they are defined, as sleap-io does", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   # The first link is a symmetry edge, so py/id 1 refers to SYMMETRY here.
   mirrored <- list(
@@ -185,6 +191,7 @@ test_that("link types are resolved in the order they are defined, as sleap-io do
 })
 
 test_that("a reference to an undefined link type is read as the type itself", {
+  skip_if_not_installed("jsonlite")
   skip_if_not_installed("rhdf5")
   bare <- list(
     graph = list(name = "bare"),

@@ -20,7 +20,9 @@ Parquet files are required as they preserve the metadata necessary for
 aniframe objects.
 }
 \examples{
-\dontrun{
-data <- read_aniframe("movement_data.parquet")
-}
+\dontshow{if (rlang::is_installed(c("arrow", "jsonlite"))) withAutoprint(\{ # examplesIf}
+path <- tempfile(fileext = ".parquet")
+write_aniframe(anicore::example_anipoint(), path)
+read_aniframe(path)
+\dontshow{\}) # examplesIf}
 }

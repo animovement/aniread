@@ -5,11 +5,14 @@
 #'
 #'  - A valid setup is given.
 #'  - A valid number of files are provided.
-#'  - Identical suffixes when tewo files are given.
+#'  - Identical suffixes when two files are given.
 #'
 #' @param paths Path to the file(s).
 #' @param setup Experimental setup used. Expects either "of_free", "of_fixed" or "fictrac".
 #' @param col_time Column which contains time
+#'
+#' @return `NULL`, invisibly. Called for its side effect of throwing an error
+#'   when a check fails.
 #'
 #' @keywords internal
 #' @export
