@@ -47,7 +47,8 @@
 #'   anievent with an anipoint to keep frame-aligned semantics.
 #'
 #' @return An [anicore::anievent()] with metadata fields `source`,
-#'   `filename`, `unit_time`, and `sampling_rate` populated. `start` and
+#'   `source_format` (the format read), `filename`, `unit_time`, and
+#'   `sampling_rate` populated. `start` and
 #'   `stop` are BORIS's times in seconds, or its frame numbers with the
 #'   first frame of the video at 0; see "Time" in [read_dataset()]. The
 #'   sampling rate is set when every media file in the export has the
@@ -84,7 +85,7 @@ read_boris <- function(
     tabular = read_boris_tabular(path)
   )
 
-  finalise_boris(events, path = path, unit_time = unit_time)
+  finalise_boris(events, path = path, unit_time = unit_time, format = format)
 }
 
 
@@ -548,7 +549,7 @@ clean_modifier_tokens <- function(tokens) {
 # ---- Finalisation: unit_time, channels, metadata ----
 
 #' @keywords internal
-finalise_boris <- function(data, path, unit_time) {
+finalise_boris <- function(data, path, unit_time, format) {
   unit_time <- choose_unit_time(data, unit_time)
 
   # Capture FPS before dropping the column - also needed for the
@@ -629,6 +630,7 @@ finalise_boris <- function(data, path, unit_time) {
   ae <- anicore::set_metadata(
     ae,
     source = "boris",
+    source_format = format,
     filename = basename(path),
     unit_time = unit_time
   )

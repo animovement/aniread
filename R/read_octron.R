@@ -212,6 +212,7 @@ read_octron <- function(
   ) |>
     anicore::set_metadata(
       source = "octron",
+      source_format = "csv",
       filename = basename(path)
     ) |>
     reflect_to_bottom_left(video_height = video_height)

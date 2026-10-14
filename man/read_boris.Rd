@@ -23,7 +23,8 @@ anievent with an anipoint to keep frame-aligned semantics.}
 }
 \value{
 An \code{\link[anicore:anievent]{anicore::anievent()}} with metadata fields \code{source},
-\code{filename}, \code{unit_time}, and \code{sampling_rate} populated. \code{start} and
+\code{source_format} (the format read), \code{filename}, \code{unit_time}, and
+\code{sampling_rate} populated. \code{start} and
 \code{stop} are BORIS's times in seconds, or its frame numbers with the
 first frame of the video at 0; see "Time" in \code{\link[=read_dataset]{read_dataset()}}. The
 sampling rate is set when every media file in the export has the

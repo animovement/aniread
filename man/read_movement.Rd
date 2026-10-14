@@ -51,7 +51,8 @@ what has a place in the metadata:
 \item \code{source_software} becomes \code{source}, and the name of \code{source_file}
 becomes \code{filename}. A file without \code{source_file} (a dataset movement
 built from arrays rather than loaded from a file) takes the name of the
-file read.
+file read. \code{source_format} is \code{"netcdf"}, the format movement saves
+to, whichever suffix the file has.
 \item \code{time_unit} becomes \code{unit_time}. movement writes \code{"seconds"} when it was
 given the frame rate and \code{"frames"} when it was not; these become \code{"s"}
 and \code{"frame"}.

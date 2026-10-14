@@ -164,6 +164,7 @@ test_that("read_fictrac metadata is correctly set", {
 
   # Check all metadata fields
   expect_equal(meta$source, "fictrac")
+  expect_equal(meta$source_format, "25col")
   expect_equal(meta$filename, basename(temp_file))
   expect_type(meta$sampling_rate, "double")
   expect_equal(
@@ -489,6 +490,7 @@ test_that("read_fictrac reads the 23-column layout of FicTrac 2.0 to 2.02", {
     100,
     tolerance = 0.01
   )
+  expect_equal(anicore::get_metadata(result, "source_format"), "23col")
 })
 
 test_that("read_fictrac reads the 24-column layout of July 2019", {
@@ -506,6 +508,7 @@ test_that("read_fictrac reads the 24-column layout of July 2019", {
   # crosses midnight, and time keeps running forward across it.
   expect_equal(result$time, (seq_len(nrow(raw)) - 1) * 0.01)
   expect_equal(anicore::get_metadata(result, "sampling_rate"), 100)
+  expect_equal(anicore::get_metadata(result, "source_format"), "24col")
 })
 
 test_that("read_fictrac keeps time running forward past midnight", {

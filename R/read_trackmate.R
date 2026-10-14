@@ -209,6 +209,7 @@ read_trackmate <- function(path, slim = TRUE, video_height = NULL) {
   ) |>
     anicore::set_metadata(
       source = "trackmate",
+      source_format = "xml",
       filename = basename(path),
       unit_time = unit_time,
       unit_space = unit_space

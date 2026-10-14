@@ -178,6 +178,7 @@ read_trackball <- function(
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = "trackball_bonsai",
+      source_format = "csv",
       filename = paths,
       sampling_rate = sampling_rate,
       source_sampling_rate = NaN,

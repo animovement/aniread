@@ -41,6 +41,12 @@ file in that format cannot be attributed to one or the other. Such a file is
 read with \code{\link[=read_deeplabcut]{read_deeplabcut()}} - the parse is the same either way - and its
 \code{source} metadata is set to \code{"deeplabcut/lightningpose"} to record that the
 distinction is undetermined. Pass \code{source} explicitly to override this.
+
+Every reader records the export it read in the \code{source_format} metadata
+field, so a file in a layout a reader does not expect can be traced back
+to it; \code{\link[=get_supported_sources]{get_supported_sources()}} lists the values each reader records.
+The version of the software that wrote the file goes in \code{source_version}
+only where the file states it, and is \code{NA} otherwise.
 }
 \section{Time}{
 

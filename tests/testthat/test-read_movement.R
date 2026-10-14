@@ -48,6 +48,7 @@ test_that("read_movement populates metadata", {
   meta <- anicore::get_metadata(result)
 
   expect_false(is.null(meta$source))
+  expect_equal(meta$source_format, "netcdf")
   expect_false(is.null(meta$filename))
   expect_false(is.null(meta$unit_time))
   expect_false(is.null(meta$unit_space))

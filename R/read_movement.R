@@ -41,7 +41,8 @@
 #' * `source_software` becomes `source`, and the name of `source_file`
 #'   becomes `filename`. A file without `source_file` (a dataset movement
 #'   built from arrays rather than loaded from a file) takes the name of the
-#'   file read.
+#'   file read. `source_format` is `"netcdf"`, the format movement saves
+#'   to, whichever suffix the file has.
 #' * `time_unit` becomes `unit_time`. movement writes `"seconds"` when it was
 #'   given the frame rate and `"frames"` when it was not; these become `"s"`
 #'   and `"frame"`.
@@ -133,6 +134,7 @@ read_movement <- function(path, video_height = NULL) {
     anicore::as_anipoint() |>
     anicore::set_metadata(
       source = metadata$source_software,
+      source_format = "netcdf",
       filename = basename(metadata$source_file %||% path),
       unit_time = unit_time,
       unit_space = "px"
